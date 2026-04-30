@@ -95,7 +95,7 @@ const (
 	ErrorMissingAuthHeader   = "authorization header is missing"
 	ErrorInvalidAuthFormat   = "authorization header must be in the format: Bearer {token}"
 	ErrorUnauthorized        = "You don't have a required permission"
-	ErrorForbidden           = "forbidden error"
+	ErrorForbidden           = "you don't have a required role"
 	ErrorInvalidToken        = "invalid token error"
 )
 

@@ -30,6 +30,15 @@ func (s *ProfileService) GetUserByID(userID uint) (*models.User, error) {
 	return &user, nil
 }
 
+func (s *ProfileService) GetUsers(limit, offset int) ([]models.User, error) {
+	var users []models.User
+	err := s.db.Limit(limit).Offset(offset).Find(&users).Error
+	if err != nil {
+		return nil, utils.ErrInternal(err)
+	}
+	return users, nil
+}
+
 // UpdateUserProfile updates non‑sensitive user fields.
 func (s *ProfileService) UpdateUserProfile(userID uint, firstName, lastName, phone string) (*models.User, error) {
 	var user models.User

@@ -44,12 +44,13 @@ func (r *Router) Setup() {
 			// Example: get current user profile
 			protected.GET("/profile", r.controllers.Profile.GetProfile)
 			protected.POST("/auth/logout", r.controllers.Auth.Logout)
+			protected.GET("/users", r.controllers.Profile.GetAllUsers)
 
 			// Role-specific example: admin only
 			admin := protected.Group("/admin")
 			admin.Use(middleware.RequireRole("admin"))
 			{
-				// admin routes
+				admin.GET("/users", r.controllers.Profile.GetAllUsers)
 			}
 		}
 	}
