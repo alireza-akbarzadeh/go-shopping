@@ -230,3 +230,15 @@ More endpoints will be added in future steps (user registration, login, products
 This README is now ready for your shopping platform project. It covers everything from setup to production considerations. You can adjust the GitHub repository URL and license file later.
 
 **Next step:** After you approve the README, I'll proceed to **Step 2 – User Registration & JWT Generation**.
+
+
+
+# Register
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"12345678","first_name":"John","last_name":"Doe"}'
+
+# Login
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"12345678"}'
