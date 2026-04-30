@@ -34,14 +34,16 @@ func (r *Router) Setup() {
 		{
 			auth.POST("/register", r.controllers.Auth.Register)
 			auth.POST("/login", r.controllers.Auth.Login)
-		}
 
+		}
+		v1.POST("/auth/refresh", r.controllers.Auth.Refresh)
 		// Protected routes (require JWT)
 		protected := v1.Group("/")
 		protected.Use(middleware.AuthMiddleware(r.cfg))
 		{
 			// Example: get current user profile
 			protected.GET("/profile", r.controllers.Profile.GetProfile)
+			protected.POST("/auth/logout", r.controllers.Auth.Logout)
 
 			// Role-specific example: admin only
 			admin := protected.Group("/admin")

@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -43,7 +45,6 @@ func ValidateToken(tokenString, secret string) (*JWTClaims, error) {
 		}
 		return []byte(secret), nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
@@ -54,4 +55,13 @@ func ValidateToken(tokenString, secret string) (*JWTClaims, error) {
 	}
 
 	return claims, nil
+}
+
+// GenerateRefreshToken creates a random string (used as refresh token).
+func GenerateRefreshToken() (string, error) {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+	return base64.URLEncoding.EncodeToString(bytes), nil
 }

@@ -6,10 +6,11 @@ const (
 	MsgLoginSuccess        = "login successful"
 
 	// Generic
-	MsgFetchSuccess  = "data retrieved successfully"
-	MsgCreateSuccess = "resource created successfully"
-	MsgUpdateSuccess = "resource updated successfully"
-	MsgDeleteSuccess = "resource deleted successfully"
+	MsgFetchSuccess   = "data retrieved successfully"
+	MsgCreateSuccess  = "resource created successfully"
+	MsgUpdateSuccess  = "resource updated successfully"
+	MsgDeleteSuccess  = "resource deleted successfully"
+	MsgRefreshSuccess = "access token refreshed successfully"
 )
 
 // Optional: Helper to map validation tags to user-friendly messages (used in controllers)
