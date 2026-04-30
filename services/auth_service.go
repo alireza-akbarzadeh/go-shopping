@@ -80,19 +80,19 @@ func (s *AuthService) Login(req LoginRequest) (string, *models.User, error) {
 	var user models.User
 	if err := s.db.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return "", nil, utils.ErrUnauthorizedApp(messages.ErrInvalidCredentials)
+			return "", nil, utils.ErrUnauthorized(messages.ErrInvalidCredentials)
 		}
 		return "", nil, err
 	}
 
 	// Check if user is active
 	if !user.IsActive {
-		return "", nil, utils.ErrUnauthorizedApp(messages.ErrAccountDeactivated)
+		return "", nil, utils.ErrUnauthorized(messages.ErrAccountDeactivated)
 	}
 
 	// Verify password
 	if !utils.CheckPasswordHash(req.Password, user.PasswordHash) {
-		return "", nil, utils.ErrUnauthorizedApp(messages.ErrInvalidCredentials)
+		return "", nil, utils.ErrUnauthorized(messages.ErrInvalidCredentials)
 	}
 
 	// Update last login timestamp

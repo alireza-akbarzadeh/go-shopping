@@ -32,8 +32,7 @@ func main() {
 
 	// 5. Initialize services
 	authService := services.NewAuthService(db, cfg)
-	profileService := services.NewProfileServie(db, cfg)
-	// future: productService := services.NewProductService(db, cfg)
+	profileService := services.NewProfileService(db, cfg)
 
 	// 6. Initialize controllers
 	ctrl := &controllers.Container{
@@ -44,7 +43,7 @@ func main() {
 
 	// 7. Setup Gin engine and routes
 	engine := setupGin()
-	router := routes.NewRouter(engine, ctrl)
+	router := routes.NewRouter(engine, ctrl, cfg)
 	router.Setup()
 
 	// 8. Start server

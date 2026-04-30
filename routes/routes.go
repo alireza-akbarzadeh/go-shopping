@@ -10,12 +10,14 @@ import (
 type Router struct {
 	engine      *gin.Engine
 	controllers *controllers.Container
+	cfg         *config.Config
 }
 
-func NewRouter(engine *gin.Engine, ctrl *controllers.Container) *Router {
+func NewRouter(engine *gin.Engine, ctrl *controllers.Container, cfg *config.Config) *Router {
 	return &Router{
 		engine:      engine,
 		controllers: ctrl,
+		cfg:         cfg,
 	}
 }
 
@@ -45,7 +47,7 @@ func (r *Router) Setup() {
 			admin := protected.Group("/admin")
 			admin.Use(middleware.RequireRole("admin"))
 			{
-				admin.GET("/dashboard", r.controllers.Admin.Dashboard) // we'll implement later
+				// admin routes
 			}
 		}
 	}
@@ -54,6 +56,4 @@ func (r *Router) Setup() {
 // RegisterMiddleware attaches any custom middleware not already applied globally
 func (r *Router) RegisterMiddleware(cfg *config.Config) {
 	r.engine.Use(middleware.CORS())
-	r.engine.Use(middleware.AuthMiddleware())
-	r.engine.Use(middleware.RequireRole())
 }

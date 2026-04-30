@@ -1,24 +1,107 @@
 package messages
 
+// ==================== AUTHENTICATION & AUTHORIZATION ====================
 const (
-	EMAIL_ALREADY_REGISTERED = "email already registered"
-	// Auth errors
-	ErrEmailAlreadyExists = "email already registered"
-	ErrInvalidCredentials = "invalid email or password"
-	ErrAccountDeactivated = "account is deactivated"
-	ErrUserNotFound       = "user not found"
-	ErrInvalidToken       = "invalid or expired token"
+	ErrEmailAlreadyExists   = "email already registered"
+	ErrInvalidCredentials   = "invalid email or password"
+	ErrAccountDeactivated   = "account is deactivated"
+	ErrUserNotFound         = "user not found"
+	ErrInvalidToken         = "invalid or expired token"
+	ErrMissingAuthHeader    = "authorization header is missing"
+	ErrInvalidAuthFormat    = "authorization header must be: Bearer {token}"
+	ErrUnauthorized         = "unauthorized access"
+	ErrForbidden            = "access denied – insufficient permissions"
+	ErrTokenExpired         = "token has expired"
+	ErrTokenInvalid         = "token is malformed or invalid"
+	ErrPasswordResetFailed  = "password reset failed"
+	ErrOldPasswordIncorrect = "current password is incorrect"
+	ErrWeakPassword         = "password is too weak – use at least 8 chars with mix"
+)
 
-	// Validation errors
-	ErrValidationFailed     = "validation failed"
-	ErrInvalidRequestFormat = "invalid request format"
+// ==================== USER PROFILE ====================
+const (
+	ErrFetchProfile       = "failed to fetch user profile"
+	ErrUpdateProfile      = "failed to update user profile"
+	ErrInvalidPhoneFormat = "phone number must be in E.164 format (e.g., +1234567890)"
+	ErrEmailNotVerified   = "email not verified – please verify your email first"
+	ErrVerificationFailed = "email verification failed"
+)
 
-	// Generic errors
-	ErrInternalServer = "internal server error"
-	ErrUnauthorized   = "unauthorized"
-	ErrForbidden      = "access denied"
-	ErrNotFound       = "resource not found"
+// ==================== PRODUCTS ====================
+const (
+	ErrProductNotFound     = "product not found"
+	ErrProductOutOfStock   = "product is out of stock"
+	ErrProductInactive     = "product is no longer available"
+	ErrInvalidProductPrice = "invalid product price (must be positive)"
+	ErrInvalidProductStock = "invalid stock quantity (must be >= 0)"
+	ErrDuplicateProductSKU = "product with this SKU already exists"
+	ErrCategoryNotFound    = "category not found"
+	ErrInvalidProductData  = "invalid product data"
+)
 
-	// Success messages
+// ==================== ORDERS ====================
+const (
+	ErrOrderNotFound          = "order not found"
+	ErrInvalidOrderStatus     = "invalid order status transition"
+	ErrOrderAlreadyPaid       = "order already paid – cannot modify"
+	ErrOrderCancelled         = "order is cancelled"
+	ErrOrderExpired           = "order has expired"
+	ErrEmptyCart              = "cannot place order with empty cart"
+	ErrInvalidShippingAddress = "shipping address is invalid"
+)
+
+// ==================== CART ====================
+const (
+	ErrCartItemNotFound     = "item not found in cart"
+	ErrCartEmpty            = "cart is empty"
+	ErrInvalidQuantity      = "invalid quantity (must be at least 1)"
+	ErrQuantityExceedsStock = "requested quantity exceeds available stock"
+)
+
+// ==================== PAYMENTS ====================
+const (
+	ErrPaymentFailed           = "payment processing failed"
+	ErrPaymentMethodInvalid    = "invalid payment method"
+	ErrPaymentAlreadyProcessed = "payment already processed for this order"
+	ErrInsufficientFunds       = "insufficient funds"
+	ErrPaymentTimeout          = "payment gateway timeout – please try again"
+)
+
+// ==================== SHIPPING ====================
+const (
+	ErrShippingNotAvailable  = "shipping not available for this address"
+	ErrInvalidTrackingNumber = "invalid tracking number"
+	ErrShippingDelay         = "shipping carrier reported delay"
+)
+
+// ==================== RATE LIMITING / REQUEST ====================
+const (
+	ErrTooManyRequests   = "too many requests – please slow down"
+	ErrRateLimitExceeded = "rate limit exceeded – try again later"
+)
+
+// ==================== GENERAL / DATABASE ====================
+const (
+	ErrInternalServer        = "internal server error – please try again later"
+	ErrValidationFailed      = "validation failed – check your input"
+	ErrInvalidRequestFormat  = "request body is malformed"
+	ErrConflict              = "resource conflict – duplicate or state mismatch"
+	ErrNotFound              = "resource not found"
+	ErrBadRequest            = "bad request – missing or invalid parameters"
+	ErrDatabaseOperation     = "database operation failed"
+	ErrDependencyUnavailable = "external service is temporarily unavailable"
+	MsgRegistrationFailed    = "registration failed"
+	MsgLoginFailed           = "login failed"
+	ErrorMissingAuthHeader   = "authorization header is missing"
+	ErrorInvalidAuthFormat   = "authorization header must be in the format: Bearer {token}"
+	ErrorUnauthorized        = "You don't have a required permission"
+	ErrorForbidden           = "forbidden error"
+	ErrorInvalidToken        = "invalid token error"
+)
+
+// ==================== SUCCESS MESSAGES (remaining as they are) ====================
+const (
 	MsgLogoutSuccess = "logout successful"
+	// Add others if needed (already defined in earlier step)
+
 )
