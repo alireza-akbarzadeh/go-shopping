@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/alireza-akbarzadeh/shopping-platform/config"
 	"github.com/alireza-akbarzadeh/shopping-platform/controllers"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ func (r *Router) Setup() {
 
 	v1 := r.engine.Group("/api/v1")
 	{
-		// Public routes
+		// Public routes (no auth)
 		v1.GET("/health", r.controllers.Health.Check)
 
 		auth := v1.Group("/auth")
@@ -33,12 +34,26 @@ func (r *Router) Setup() {
 			auth.POST("/login", r.controllers.Auth.Login)
 		}
 
-		// Protected routes (will add auth middleware later)
-		// ...
+		// Protected routes (require JWT)
+		protected := v1.Group("/")
+		protected.Use(middleware.AuthMiddleware(r.cfg))
+		{
+			// Example: get current user profile
+			protected.GET("/profile", r.controllers.Profile.GetProfile)
+
+			// Role-specific example: admin only
+			admin := protected.Group("/admin")
+			admin.Use(middleware.RequireRole("admin"))
+			{
+				admin.GET("/dashboard", r.controllers.Admin.Dashboard) // we'll implement later
+			}
+		}
 	}
 }
 
 // RegisterMiddleware attaches any custom middleware not already applied globally
-func (r *Router) RegisterMiddleware() {
+func (r *Router) RegisterMiddleware(cfg *config.Config) {
 	r.engine.Use(middleware.CORS())
+	r.engine.Use(middleware.AuthMiddleware())
+	r.engine.Use(middleware.RequireRole())
 }

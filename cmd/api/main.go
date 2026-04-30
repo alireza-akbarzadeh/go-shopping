@@ -32,13 +32,14 @@ func main() {
 
 	// 5. Initialize services
 	authService := services.NewAuthService(db, cfg)
+	profileService := services.NewProfileServie(db, cfg)
 	// future: productService := services.NewProductService(db, cfg)
 
 	// 6. Initialize controllers
 	ctrl := &controllers.Container{
-		Health: controllers.NewHealthController(db),
-		Auth:   controllers.NewAuthController(authService),
-		// future: Product: controllers.NewProductController(productService),
+		Health:  controllers.NewHealthController(db),
+		Auth:    controllers.NewAuthController(authService),
+		Profile: controllers.NewProfileController(profileService),
 	}
 
 	// 7. Setup Gin engine and routes

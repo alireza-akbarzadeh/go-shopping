@@ -25,9 +25,13 @@ func NewAppError(code int, message string, err error) *AppError {
 	}
 }
 
-// Common app error constructors
+// ErrBadRequest Common app error constructors
 func ErrBadRequest(message string) *AppError {
 	return NewAppError(400, message, nil)
+}
+
+func ErrNotfound() *AppError {
+	return NewAppError(404, messages.ErrNotFound, nil)
 }
 
 func ErrUnauthorizedApp(message string) *AppError {
