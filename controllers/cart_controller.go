@@ -49,7 +49,7 @@ func (ctrl *CartController) AddItem(c *gin.Context) {
 		Quantity  int  `json:"quantity" validate:"required,gt=0"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
 		return
 	}
 	if err := ctrl.validate.Struct(req); err != nil {
@@ -158,7 +158,7 @@ func (ctrl *CartController) UpdateItem(c *gin.Context) {
 		Quantity int `json:"quantity" validate:"required,gt=0"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
 		return
 	}
 	if err := ctrl.validate.Struct(req); err != nil {

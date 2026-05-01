@@ -38,12 +38,12 @@ func NewAuthController(authService services.AuthServiceInterface) *AuthControlle
 func (ctrl *AuthController) Register(c *gin.Context) {
 	var req services.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
 		return
 	}
 
 	if err := ctrl.validate.Struct(req); err != nil {
-		utils.ValidationErrorResponse(c, formatValidationErrors(err))
+		utils.HandleValidationError(c, err)
 		return
 	}
 
@@ -95,12 +95,12 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 func (ctrl *AuthController) Login(c *gin.Context) {
 	var req services.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
 		return
 	}
 
 	if err := ctrl.validate.Struct(req); err != nil {
-		utils.ValidationErrorResponse(c, formatValidationErrors(err))
+		utils.HandleValidationError(c, err)
 		return
 	}
 
@@ -155,12 +155,12 @@ type RefreshRequest struct {
 func (ctrl *AuthController) Refresh(c *gin.Context) {
 	var req RefreshRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
 		return
 	}
 
 	if err := ctrl.validate.Struct(req); err != nil {
-		utils.ValidationErrorResponse(c, formatValidationErrors(err))
+		utils.HandleValidationError(c, err)
 		return
 	}
 

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 // Response represents the standard API response structure.
@@ -41,15 +42,6 @@ func ErrorResponse(c *gin.Context, status int, message string) {
 	})
 }
 
-// ValidationErrorResponse sends a 400 Bad Request with validation details.
-func ValidationErrorResponse(c *gin.Context, errors interface{}) {
-	c.JSON(http.StatusBadRequest, Response{
-		Success: false,
-		Message: "validation failed",
-		Errors:  errors,
-	})
-}
-
 // UnauthorizedResponse sends a 401 Unauthorized error.
 func UnauthorizedResponse(c *gin.Context, message string) {
 	ErrorResponse(c, http.StatusUnauthorized, message)
@@ -78,4 +70,42 @@ func InternalServerErrorResponse(c *gin.Context, err error, message string) {
 		Log.Error(message)
 	}
 	ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+}
+
+// FormatValidationErrors converts validator.ValidationErrors to a map of field → tag
+func FormatValidationErrors(err error) map[string]string {
+	errorsMap := make(map[string]string)
+	if ve, ok := err.(validator.ValidationErrors); ok {
+		for _, fe := range ve {
+			errorsMap[fe.Field()] = fe.Tag()
+		}
+	}
+	return errorsMap
+}
+
+// ValidationErrorResponse sends a 400 Bad Request with validation details.
+func ValidationErrorResponse(c *gin.Context, errors interface{}) {
+	c.JSON(http.StatusBadRequest, Response{
+		Success: false,
+		Message: "validation failed",
+		Errors:  errors,
+	})
+}
+
+// HandleValidationError checks if error is validator.ValidationErrors and returns structured response.
+func HandleValidationError(c *gin.Context, err error) bool {
+	if err == nil {
+		return false
+	}
+	if ve, ok := err.(validator.ValidationErrors); ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Validation failed",
+			"errors":  FormatValidationErrors(ve),
+		})
+		return true
+	}
+	// Fallback for non-validation errors (should not happen if only validate.Struct is used)
+	ValidationErrorResponse(c, err.Error())
+	return true
 }
