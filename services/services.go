@@ -9,11 +9,13 @@ import (
 type Services struct {
 	Auth    AuthServiceInterface
 	Profile ProfileServiceInterface
+	Cart    CartServiceInterface
 }
 
 func NewServices(db *gorm.DB, cfg *config.Config) *Services {
 	return &Services{
 		Auth:    NewAuthServices(db, cfg),
 		Profile: NewProfileService(db, cfg),
+		Cart:    NewCartService(db),
 	}
 }

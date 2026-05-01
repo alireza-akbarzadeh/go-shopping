@@ -53,6 +53,12 @@ func (r *Router) Setup() {
 			protected.PUT("/profile", r.controllers.Profile.UpdateProfile)
 			protected.POST("/auth/logout", r.controllers.Auth.Logout)
 
+			// Cart routes
+			protected.GET("/cart", r.controllers.Cart.GetCart)
+			protected.POST("/cart/items", r.controllers.Cart.AddItem)
+			protected.PUT("/cart/items/:id", r.controllers.Cart.UpdateItem)
+			protected.DELETE("/cart/items/:id", r.controllers.Cart.RemoveItem)
+
 			admin := protected.Group("/admin")
 			admin.Use(middleware.RequireRole("admin"))
 			{
