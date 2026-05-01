@@ -26,12 +26,12 @@ func NewAuthController(authService services.AuthServiceInterface) *AuthControlle
 
 // Register handles user registration.
 // @Summary      Register a new user
-// @Description  Create a new account and return access & refresh tokens
-// @Tags         auth
+// @Description  Create a new account and returns a pair of JWT tokens
+// @Tags         Authentication
 // @Accept       json
 // @Produce      json
 // @Param        request body services.RegisterRequest true "Registration data"
-// @Success      201 {object} utils.Response
+// @Success      201 {object} utils.Response{data=object{access_token=string,refresh_token=string,user=object{id=uint,email=string,first_name=string,last_name=string,role=string}}}
 // @Failure      400 {object} utils.Response
 // @Failure      409 {object} utils.Response
 // @Router       /auth/register [post]
@@ -84,7 +84,7 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 // Login handles user authentication.
 // @Summary      Login user
 // @Description  Authenticate and return access & refresh tokens
-// @Tags         auth
+// @Tags         Authentication
 // @Accept       json
 // @Produce      json
 // @Param        request body services.LoginRequest true "Login credentials"
@@ -142,12 +142,13 @@ type RefreshRequest struct {
 
 // Refresh generates a new access token using a valid refresh token.
 // @Summary      Refresh access token
-// @Description  Obtain a new access token using a refresh token
-// @Tags         auth
+// @Description  Obtain a new access token using a valid refresh token
+// @Tags         Authentication
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        request body RefreshRequest true "Refresh token"
-// @Success      200 {object} utils.Response
+// @Success      200 {object} utils.Response{data=object{access_token=string,refresh_token=string}}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Router       /auth/refresh [post]
@@ -183,9 +184,10 @@ func (ctrl *AuthController) Refresh(c *gin.Context) {
 // Logout revokes the user's refresh token(s).
 // @Summary      Logout user
 // @Description  Invalidate the refresh token (optional specific token)
-// @Tags         auth
+// @Tags         Authentication
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        request body object false "Optional {refresh_token}"
 // @Success      200 {object} utils.Response
 // @Failure      401 {object} utils.Response

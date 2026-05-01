@@ -9,6 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
+type ProfileServiceInterface interface {
+	GetUserByID(userID uint) (*models.User, error)
+	GetUsers(limit, offset int) ([]models.User, error)
+	UpdateUserProfile(userID uint, firstName, lastName, phone string) (*models.User, error)
+}
 type ProfileService struct {
 	db  *gorm.DB
 	cfg *config.Config

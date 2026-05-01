@@ -5,6 +5,10 @@ import (
 	"github.com/alireza-akbarzadeh/shopping-platform/controllers"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "github.com/alireza-akbarzadeh/shopping-platform/docs" // This line is critical
 )
 
 type Router struct {
@@ -22,31 +26,29 @@ func NewRouter(engine *gin.Engine, ctrl *controllers.Container, cfg *config.Conf
 }
 
 func (r *Router) Setup() {
-	// Global middleware
 	r.engine.Use(middleware.CORS())
 
 	v1 := r.engine.Group("/api/v1")
+	r.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	{
-		// Public routes (no auth)
 		v1.GET("/health", r.controllers.Health.Check)
 
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/register", r.controllers.Auth.Register)
 			auth.POST("/login", r.controllers.Auth.Login)
-
 		}
+
 		v1.POST("/auth/refresh", r.controllers.Auth.Refresh)
-		// Protected routes (require JWT)
+
 		protected := v1.Group("/")
 		protected.Use(middleware.AuthMiddleware(r.cfg))
 		{
-			// Example: get current user profile
 			protected.GET("/profile", r.controllers.Profile.GetProfile)
+			protected.PUT("/profile", r.controllers.Profile.UpdateProfile)
 			protected.POST("/auth/logout", r.controllers.Auth.Logout)
-			protected.GET("/users", r.controllers.Profile.GetAllUsers)
 
-			// Role-specific example: admin only
 			admin := protected.Group("/admin")
 			admin.Use(middleware.RequireRole("admin"))
 			{

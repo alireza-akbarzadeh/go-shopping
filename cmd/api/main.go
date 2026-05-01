@@ -11,6 +11,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @title           Shopping Platform API
+// @version         1.0
+// @description     Production-grade e-commerce backend
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.email  support@shopping-platform.com
+
+// @license.name   MIT
+// @license.url    https://opensource.org/licenses/MIT
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and the JWT token.
 func main() {
 	// 1. Load configuration
 	cfg, err := config.Load()
@@ -31,16 +49,10 @@ func main() {
 	defer closeDatabase(db)
 
 	// 5. Initialize services
-	authService := services.NewAuthService(db, cfg)
-	profileService := services.NewProfileService(db, cfg)
+	services := services.NewServices(db, cfg)
 
 	// 6. Initialize controllers
-	ctrl := &controllers.Container{
-		Health:  controllers.NewHealthController(db),
-		Auth:    controllers.NewAuthController(authService),
-		Profile: controllers.NewProfileController(profileService),
-	}
-
+	ctrl := controllers.NewContainer(db, cfg, services)
 	// 7. Setup Gin engine and routes
 	engine := setupGin()
 	router := routes.NewRouter(engine, ctrl, cfg)

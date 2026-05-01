@@ -17,13 +17,12 @@ type AuthServiceInterface interface {
 	RefreshTokens(refreshToken string) (newAccessToken, newRefreshToken string, err error) // changed name & returns
 	Logout(userID uint, refreshToken string) error
 }
-
 type AuthService struct {
 	db  *gorm.DB
 	cfg *config.Config
 }
 
-func NewAuthService(db *gorm.DB, cfg *config.Config) *AuthService {
+func NewAuthServices(db *gorm.DB, cfg *config.Config) *AuthService {
 	return &AuthService{db: db, cfg: cfg}
 }
 

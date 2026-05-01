@@ -136,3 +136,9 @@ setup: install-tools deps migrate-up ## Install tools, dependencies, and run mig
 
 reset-db: migrate-reset migrate-up ## Full reset: rollback all migrations and reapply
 	@echo "${GREEN}Database reset complete${RESET}"
+
+
+swagger: ## Generate Swagger documentation
+	@echo "${GREEN}Generating Swagger docs...${RESET}"
+	swag init --parseDependency --parseInternal -g cmd/api/main.go
+	@echo "${GREEN}Swagger docs generated${RESET}"

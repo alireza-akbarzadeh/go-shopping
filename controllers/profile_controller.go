@@ -13,11 +13,11 @@ import (
 )
 
 type ProfileController struct {
-	profileService *services.ProfileService
+	profileService services.ProfileServiceInterface
 	validate       *validator.Validate
 }
 
-func NewProfileController(profileService *services.ProfileService) *ProfileController {
+func NewProfileController(profileService services.ProfileServiceInterface) *ProfileController {
 	return &ProfileController{
 		profileService: profileService,
 		validate:       validator.New(),
@@ -25,6 +25,17 @@ func NewProfileController(profileService *services.ProfileService) *ProfileContr
 }
 
 // GetProfile returns the authenticated user's profile.
+// @Summary      Get user profile
+// @Description  Returns the profile of the currently authenticated user
+// @Tags         Profile
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200 {object} utils.Response{data=object{id=uint,email=string,first_name=string,last_name=string,phone=string,role=string,is_active=bool,created_at=string}}
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
+// @Failure      500 {object} utils.Response
+// @Router       /profile [get]
 func (pc *ProfileController) GetProfile(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
@@ -58,6 +69,19 @@ func (pc *ProfileController) GetProfile(c *gin.Context) {
 }
 
 // UpdateProfile updates the authenticated user's profile.
+// @Summary      Update user profile
+// @Description  Updates the first name, last name, and phone number of the authenticated user
+// @Tags         Profile
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body object true "Profile update data" SchemaExample({"first_name":"John","last_name":"Doe","phone":"+1234567890"})
+// @Success      200 {object} utils.Response{data=object{id=uint,email=string,first_name=string,last_name=string,phone=string}}
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
+// @Failure      500 {object} utils.Response
+// @Router       /profile [put]
 func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 	var req struct {
 		FirstName string `json:"first_name" validate:"required,min=1,max=100"`
@@ -106,6 +130,19 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 }
 
 // GetAllUsers returns a paginated list of users (admin only).
+// @Summary      Get all users
+// @Description  Returns a paginated list of all users. Requires admin role.
+// @Tags         Admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit  query  int  false  "Items per page"  default(20)  minimum(1)  maximum(100)
+// @Param        offset query  int  false  "Offset (skip number of items)"  default(0)  minimum(0)
+// @Success      200 {object} utils.Response{data=object{users=[]object{id=uint,email=string,first_name=string,last_name=string,phone=string,role=string,is_active=bool,created_at=string},limit=int,offset=int,count=int}}
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Failure      500 {object} utils.Response
+// @Router       /admin/users [get]
 func (pc *ProfileController) GetAllUsers(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
