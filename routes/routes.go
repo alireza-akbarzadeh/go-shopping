@@ -29,6 +29,9 @@ func (r *Router) Setup() {
 	r.engine.Use(middleware.CORS())
 
 	v1 := r.engine.Group("/api/v1")
+	r.engine.GET("/", r.controllers.Page.LandingPage)
+	r.engine.Static("/static", "./views/static")
+
 	r.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	{
