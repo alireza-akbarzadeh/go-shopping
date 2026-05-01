@@ -37,7 +37,8 @@ func (r *Router) Setup() {
 
 	{
 		v1.GET("/health", r.controllers.Health.Check)
-
+		v1.GET("/products", r.controllers.Product.List)
+		v1.GET("/products/:identifier", r.controllers.Product.GetOne)
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/register", r.controllers.Auth.Register)
@@ -63,6 +64,9 @@ func (r *Router) Setup() {
 			admin.Use(middleware.RequireRole("admin"))
 			{
 				admin.GET("/users", r.controllers.Profile.GetAllUsers)
+				admin.POST("/products", r.controllers.Product.Create)
+				admin.PUT("/products/:id", r.controllers.Product.Update)
+				admin.DELETE("/products/:id", r.controllers.Product.Delete)
 			}
 		}
 	}

@@ -27,6 +27,10 @@ const (
 	DefaultRequestTimeoutDuration time.Duration = 60 * time.Second
 	DefaultWatcherSleepInterval   time.Duration = 5 * time.Second
 	DefaultGzipLevel              int           = 5
+	DefaultLimit                  int           = 20
+	MaxLimit                      int           = 100
+	MinLimit                      int           = 1
+	MinOffset                     int           = 0
 )
 
 // ==================== Feature flags ====================

@@ -7,6 +7,186 @@ definitions:
     required:
     - refresh_token
     type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Category:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      level:
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      parent:
+        allOf:
+        - $ref: '#/definitions/models.Category'
+        description: Associations
+      parent_id:
+        type: integer
+      path:
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/models.Product'
+        type: array
+      slug:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  models.Product:
+    properties:
+      barcode:
+        type: string
+      category:
+        allOf:
+        - $ref: '#/definitions/models.Category'
+        description: Associations
+      category_id:
+        type: integer
+      compare_at_price:
+        minimum: 0
+        type: number
+      cost:
+        minimum: 0
+        type: number
+      created_at:
+        type: string
+      created_by:
+        description: Audit
+        type: integer
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      images:
+        items:
+          type: string
+        type: array
+      is_digital:
+        type: boolean
+      low_stock_threshold:
+        type: integer
+      meta_description:
+        type: string
+      meta_title:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 50
+        minLength: 3
+        type: string
+      slug:
+        type: string
+      status:
+        enum:
+        - draft
+        - active
+        - inactive
+        - archived
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+      updated_at:
+        type: string
+      updated_by:
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    required:
+    - name
+    - price
+    - sku
+    - slug
+    type: object
+  services.CreateProductRequest:
+    properties:
+      barcode:
+        type: string
+      category_id:
+        type: integer
+      compare_at_price:
+        minimum: 0
+        type: number
+      cost:
+        minimum: 0
+        type: number
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      is_digital:
+        type: boolean
+      low_stock_threshold:
+        type: integer
+      meta_description:
+        type: string
+      meta_title:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 50
+        minLength: 3
+        type: string
+      status:
+        enum:
+        - draft
+        - active
+        - inactive
+        - archived
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    required:
+    - name
+    - price
+    - sku
+    type: object
   services.LoginRequest:
     properties:
       email:
@@ -39,6 +219,57 @@ definitions:
     - first_name
     - last_name
     - password
+    type: object
+  services.UpdateProductRequest:
+    properties:
+      barcode:
+        type: string
+      category_id:
+        type: integer
+      compare_at_price:
+        minimum: 0
+        type: number
+      cost:
+        minimum: 0
+        type: number
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      is_digital:
+        type: boolean
+      low_stock_threshold:
+        type: integer
+      meta_description:
+        type: string
+      meta_title:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 50
+        minLength: 3
+        type: string
+      status:
+        enum:
+        - draft
+        - active
+        - inactive
+        - archived
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+      weight:
+        minimum: 0
+        type: number
     type: object
   utils.Response:
     properties:
@@ -484,6 +715,317 @@ paths:
       summary: Health check
       tags:
       - health
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Get products with pagination and filtering by status, name, category,
+        price range, and digital flag.
+      parameters:
+      - default: 20
+        description: Items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Number of items to skip (default 0)
+        in: query
+        name: offset
+        type: integer
+      - description: Product status (e.g., active, draft, archived)
+        example: active
+        in: query
+        name: status
+        type: string
+      - description: Filter by product name (partial match)
+        example: laptop
+        in: query
+        name: name
+        type: string
+      - description: Filter by category ID
+        example: 5
+        in: query
+        name: category_id
+        type: integer
+      - description: Minimum price filter
+        example: 10.99
+        in: query
+        name: min_price
+        type: number
+      - description: Maximum price filter
+        example: 999.99
+        in: query
+        name: max_price
+        type: number
+      - description: Filter digital products (true/false)
+        example: true
+        in: query
+        name: is_digital
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+                    products:
+                      items:
+                        $ref: '#/definitions/models.Product'
+                      type: array
+                    total:
+                      type: integer
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List products
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Add a new product to the catalog
+      parameters:
+      - description: Product details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    product:
+                      properties:
+                        created_at:
+                          type: string
+                        description:
+                          type: string
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        price:
+                          format: float64
+                          type: number
+                        stock:
+                          type: integer
+                        updated_at:
+                          type: string
+                      type: object
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Create product
+      tags:
+      - Products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing product permanently from the catalog
+      parameters:
+      - description: Product ID
+        example: 123
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted (no data returned)
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete product
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Product update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.UpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    product:
+                      properties:
+                        description:
+                          type: string
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        price:
+                          format: float64
+                          type: number
+                        stock:
+                          type: integer
+                        updated_at:
+                          type: string
+                      type: object
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Update product
+      tags:
+      - Products
+  /products/{identifier}:
+    get:
+      consumes:
+      - application/json
+      description: Fetch a single product using either its numeric ID or slug (URL-friendly
+        name)
+      parameters:
+      - description: Product identifier (ID or slug)
+        example: "123"
+        in: path
+        name: identifier
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get product by ID or slug
+      tags:
+      - Products
   /profile:
     get:
       consumes:
