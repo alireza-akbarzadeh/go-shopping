@@ -1,3 +1,5 @@
+// Package models defines the GORM data structures (User, RefreshToken) and their
+// validation tags, corresponding to the PostgreSQL database schema.
 package models
 
 import (

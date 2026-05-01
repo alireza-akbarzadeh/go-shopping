@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/messages"
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +14,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			utils.UnauthorizedResponse(c, messages.ErrorMissingAuthHeader)
+			utils.UnauthorizedResponse(c, constants.ErrorMissingAuthHeader)
 			c.Abort()
 			return
 		}
@@ -22,7 +22,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		// Expected format: "Bearer <token>"
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			utils.UnauthorizedResponse(c, messages.ErrorInvalidAuthFormat)
+			utils.UnauthorizedResponse(c, constants.ErrorInvalidAuthFormat)
 			c.Abort()
 			return
 		}
@@ -30,7 +30,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		tokenString := parts[1]
 		claims, err := utils.ValidateToken(tokenString, cfg.JWT.Secret)
 		if err != nil {
-			utils.UnauthorizedResponse(c, messages.ErrorInvalidToken)
+			utils.UnauthorizedResponse(c, constants.ErrorInvalidToken)
 			c.Abort()
 			return
 		}

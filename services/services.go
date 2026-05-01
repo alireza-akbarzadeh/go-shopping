@@ -1,3 +1,4 @@
+// Package services contains business logic for app.
 package services
 
 import (

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/messages"
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -59,11 +59,11 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 				utils.ErrorResponse(c, http.StatusBadRequest, appErr.Message)
 				return
 			default:
-				utils.InternalServerErrorResponse(c, err, messages.MsgRegistrationFailed)
+				utils.InternalServerErrorResponse(c, err, constants.MsgRegistrationFailed)
 				return
 			}
 		}
-		utils.InternalServerErrorResponse(c, err, messages.MsgRegistrationFailed)
+		utils.InternalServerErrorResponse(c, err, constants.MsgRegistrationFailed)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 			"role":       user.Role,
 		},
 	}
-	utils.CreatedResponse(c, messages.MsgRegistrationSuccess, data)
+	utils.CreatedResponse(c, constants.MsgRegistrationSuccess, data)
 }
 
 // Login handles user authentication.
@@ -113,11 +113,11 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 				utils.UnauthorizedResponse(c, appErr.Message)
 				return
 			default:
-				utils.InternalServerErrorResponse(c, err, messages.MsgLoginFailed)
+				utils.InternalServerErrorResponse(c, err, constants.MsgLoginFailed)
 				return
 			}
 		}
-		utils.InternalServerErrorResponse(c, err, messages.MsgLoginFailed)
+		utils.InternalServerErrorResponse(c, err, constants.MsgLoginFailed)
 		return
 	}
 
@@ -132,7 +132,7 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 			"role":       user.Role,
 		},
 	}
-	utils.SuccessResponse(c, messages.MsgLoginSuccess, data)
+	utils.SuccessResponse(c, constants.MsgLoginSuccess, data)
 }
 
 // RefreshRequest represents the body for token refresh.
@@ -175,7 +175,7 @@ func (ctrl *AuthController) Refresh(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, messages.MsgRefreshSuccess, gin.H{
+	utils.SuccessResponse(c, constants.MsgRefreshSuccess, gin.H{
 		"access_token":  newAccessToken,
 		"refresh_token": newRefreshToken,
 	})
@@ -195,19 +195,19 @@ func (ctrl *AuthController) Refresh(c *gin.Context) {
 func (ctrl *AuthController) Logout(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		utils.UnauthorizedResponse(c, messages.ErrUnauthorized)
+		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
 		return
 	}
 
 	var req struct {
 		RefreshToken string `json:"refresh_token,omitempty"`
 	}
-	_ = c.ShouldBindJSON(&req) // optional
+	_ = c.ShouldBindJSON(&req)
 
 	if err := ctrl.authService.Logout(userID, req.RefreshToken); err != nil {
 		utils.InternalServerErrorResponse(c, err, "logout failed")
 		return
 	}
 
-	utils.SuccessResponse(c, messages.MsgLogoutSuccess, nil)
+	utils.SuccessResponse(c, constants.MsgLogoutSuccess, nil)
 }

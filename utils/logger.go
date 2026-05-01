@@ -1,3 +1,5 @@
+// Package utils provides shared helpers including logging, JWT handling,
+// password hashing, consistent API responses, and custom error types.
 package utils
 
 import (

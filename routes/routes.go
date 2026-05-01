@@ -1,3 +1,4 @@
+// Package routes defines HTTP routing, middleware registration, and endpoint groupings.
 package routes
 
 import (

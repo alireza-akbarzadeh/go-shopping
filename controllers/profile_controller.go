@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/messages"
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -39,7 +39,7 @@ func NewProfileController(profileService services.ProfileServiceInterface) *Prof
 func (pc *ProfileController) GetProfile(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		utils.UnauthorizedResponse(c, messages.ErrUnauthorized)
+		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
 		return
 	}
 
@@ -47,10 +47,10 @@ func (pc *ProfileController) GetProfile(c *gin.Context) {
 	if err != nil {
 		var appErr *utils.AppError
 		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, messages.ErrUserNotFound)
+			utils.NotFoundResponse(c, constants.ErrUserNotFound)
 			return
 		}
-		utils.InternalServerErrorResponse(c, err, messages.ErrInternalServer)
+		utils.InternalServerErrorResponse(c, err, constants.ErrInternalServer.Error())
 		return
 	}
 
@@ -65,7 +65,7 @@ func (pc *ProfileController) GetProfile(c *gin.Context) {
 		"is_active":  user.IsActive,
 		"created_at": user.CreatedAt,
 	}
-	utils.SuccessResponse(c, messages.MsgFetchSuccess, data)
+	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }
 
 // UpdateProfile updates the authenticated user's profile.
@@ -104,7 +104,7 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		utils.UnauthorizedResponse(c, messages.ErrUnauthorized)
+		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
 		return
 	}
 
@@ -112,10 +112,10 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 	if err != nil {
 		var appErr *utils.AppError
 		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, messages.ErrUserNotFound)
+			utils.NotFoundResponse(c, constants.ErrUserNotFound)
 			return
 		}
-		utils.InternalServerErrorResponse(c, err, messages.ErrInternalServer)
+		utils.InternalServerErrorResponse(c, err, constants.ErrInternalServer.Error())
 		return
 	}
 
@@ -126,7 +126,7 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 		"last_name":  user.LastName,
 		"phone":      user.Phone,
 	}
-	utils.SuccessResponse(c, messages.MsgUpdateSuccess, data)
+	utils.SuccessResponse(c, constants.MsgUpdateSuccess, data)
 }
 
 // GetAllUsers returns a paginated list of users (admin only).
@@ -183,5 +183,5 @@ func (pc *ProfileController) GetAllUsers(c *gin.Context) {
 		"offset": offset,
 		"count":  len(users),
 	}
-	utils.SuccessResponse(c, messages.MsgFetchSuccess, data)
+	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }

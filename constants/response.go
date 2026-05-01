@@ -1,4 +1,5 @@
-package messages
+// Package constants defines constant messages (success, error, validation) used across the application.
+package constants
 
 const (
 	// Auth
@@ -13,7 +14,6 @@ const (
 	MsgRefreshSuccess = "access token refreshed successfully"
 )
 
-// Optional: Helper to map validation tags to user-friendly messages (used in controllers)
 var ValidationTagMessages = map[string]string{
 	"required": "this field is required",
 	"email":    "must be a valid email address",

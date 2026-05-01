@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/messages"
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"gorm.io/gorm"
@@ -45,7 +45,7 @@ type LoginRequest struct {
 func (s *AuthService) Register(req RegisterRequest) (string, string, *models.User, error) {
 	var existingUser models.User
 	if err := s.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
-		return "", "", nil, utils.ErrConflict(messages.ErrEmailAlreadyExists)
+		return "", "", nil, utils.ErrConflict(constants.ErrEmailAlreadyExists)
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", "", nil, utils.ErrInternal(err)
 	}
@@ -82,17 +82,17 @@ func (s *AuthService) Login(req LoginRequest) (string, string, *models.User, err
 	var user models.User
 	if err := s.db.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return "", "", nil, utils.ErrUnauthorized(messages.ErrInvalidCredentials)
+			return "", "", nil, utils.ErrUnauthorized(constants.ErrInvalidCredentials)
 		}
 		return "", "", nil, utils.ErrInternal(err)
 	}
 
 	if !user.IsActive {
-		return "", "", nil, utils.ErrUnauthorized(messages.ErrAccountDeactivated)
+		return "", "", nil, utils.ErrUnauthorized(constants.ErrAccountDeactivated)
 	}
 
 	if !utils.CheckPasswordHash(req.Password, user.PasswordHash) {
-		return "", "", nil, utils.ErrUnauthorized(messages.ErrInvalidCredentials)
+		return "", "", nil, utils.ErrUnauthorized(constants.ErrInvalidCredentials)
 	}
 
 	now := time.Now()
@@ -150,14 +150,14 @@ func (s *AuthService) RefreshTokens(refreshToken string) (newAccessToken, newRef
 		First(&storedToken).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return "", "", utils.ErrUnauthorized(messages.ErrInvalidToken)
+			return "", "", utils.ErrUnauthorized(constants.ErrInvalidToken)
 		}
 		return "", "", utils.ErrInternal(err)
 	}
 
 	// 2. Verify the provided refresh token matches the stored hash
 	if !utils.CheckPasswordHash(refreshToken, storedToken.Token) {
-		return "", "", utils.ErrUnauthorized(messages.ErrInvalidToken)
+		return "", "", utils.ErrUnauthorized(constants.ErrInvalidToken)
 	}
 
 	// 3. Revoke the old token (rotation)
@@ -169,7 +169,7 @@ func (s *AuthService) RefreshTokens(refreshToken string) (newAccessToken, newRef
 	// 4. Get the user
 	var user models.User
 	if err := s.db.First(&user, storedToken.UserID).Error; err != nil {
-		return "", "", utils.ErrUnauthorized(messages.ErrUserNotFound)
+		return "", "", utils.ErrUnauthorized(constants.ErrUserNotFound)
 	}
 
 	// 5. Generate a fresh token pair (access + new refresh)

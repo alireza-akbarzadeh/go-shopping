@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/messages"
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +11,7 @@ func RequireRole(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, ok := GetUserRole(c)
 		if !ok {
-			utils.UnauthorizedResponse(c, messages.ErrorUnauthorized)
+			utils.UnauthorizedResponse(c, constants.ErrorUnauthorized)
 			c.Abort()
 			return
 		}
@@ -23,7 +23,7 @@ func RequireRole(allowedRoles ...string) gin.HandlerFunc {
 			}
 		}
 
-		utils.ForbiddenResponse(c, messages.ErrorForbidden)
+		utils.ForbiddenResponse(c, constants.ErrorForbidden)
 		c.Abort()
 	}
 }

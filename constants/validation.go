@@ -1,4 +1,4 @@
-package messages
+package constants
 
 // ==================== AUTHENTICATION & AUTHORIZATION ====================
 const (
@@ -82,7 +82,6 @@ const (
 
 // ==================== GENERAL / DATABASE ====================
 const (
-	ErrInternalServer        = "internal server error – please try again later"
 	ErrValidationFailed      = "validation failed – check your input"
 	ErrInvalidRequestFormat  = "request body is malformed"
 	ErrConflict              = "resource conflict – duplicate or state mismatch"

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/messages"
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 )
 
 // AppError represents a custom application error with HTTP status and a message.
@@ -32,7 +32,7 @@ func NewAppError(code int, message string, err error) *AppError {
 // ErrBadRequest returns a 400 Bad Request error.
 // If customMsg is provided, it overrides the default message.
 func ErrBadRequest(customMsg ...string) *AppError {
-	msg := messages.ErrBadRequest
+	msg := constants.ErrBadRequest
 	if len(customMsg) > 0 && customMsg[0] != "" {
 		msg = customMsg[0]
 	}
@@ -41,7 +41,7 @@ func ErrBadRequest(customMsg ...string) *AppError {
 
 // ErrNotFound returns a 404 Not Found error.
 func ErrNotFound(customMsg ...string) *AppError {
-	msg := messages.ErrNotFound
+	msg := constants.ErrNotFound
 	if len(customMsg) > 0 && customMsg[0] != "" {
 		msg = customMsg[0]
 	}
@@ -50,7 +50,7 @@ func ErrNotFound(customMsg ...string) *AppError {
 
 // ErrUnauthorized returns a 401 Unauthorized error.
 func ErrUnauthorized(customMsg ...string) *AppError {
-	msg := messages.ErrUnauthorized
+	msg := constants.ErrUnauthorized
 	if len(customMsg) > 0 && customMsg[0] != "" {
 		msg = customMsg[0]
 	}
@@ -59,7 +59,7 @@ func ErrUnauthorized(customMsg ...string) *AppError {
 
 // ErrForbidden returns a 403 Forbidden error.
 func ErrForbidden(customMsg ...string) *AppError {
-	msg := messages.ErrForbidden
+	msg := constants.ErrForbidden
 	if len(customMsg) > 0 && customMsg[0] != "" {
 		msg = customMsg[0]
 	}
@@ -68,7 +68,7 @@ func ErrForbidden(customMsg ...string) *AppError {
 
 // ErrConflict returns a 409 Conflict error.
 func ErrConflict(customMsg ...string) *AppError {
-	msg := messages.ErrConflict
+	msg := constants.ErrConflict
 	if len(customMsg) > 0 && customMsg[0] != "" {
 		msg = customMsg[0]
 	}
@@ -77,7 +77,7 @@ func ErrConflict(customMsg ...string) *AppError {
 
 // ErrValidationFailed returns a 400 Bad Request with validation message.
 func ErrValidationFailed(customMsg ...string) *AppError {
-	msg := messages.ErrValidationFailed
+	msg := constants.ErrValidationFailed
 	if len(customMsg) > 0 && customMsg[0] != "" {
 		msg = customMsg[0]
 	}
@@ -86,7 +86,7 @@ func ErrValidationFailed(customMsg ...string) *AppError {
 
 // ErrInternal returns a 500 Internal Server Error, always logs the underlying error.
 func ErrInternal(err error, customMsg ...string) *AppError {
-	msg := messages.ErrInternalServer
+	msg := constants.ErrInternalServer.Error()
 	if len(customMsg) > 0 && customMsg[0] != "" {
 		msg = customMsg[0]
 	}
@@ -95,7 +95,7 @@ func ErrInternal(err error, customMsg ...string) *AppError {
 
 // ErrTooManyRequests returns a 429 Too Many Requests error.
 func ErrTooManyRequests(customMsg ...string) *AppError {
-	msg := messages.ErrTooManyRequests
+	msg := constants.ErrTooManyRequests
 	if len(customMsg) > 0 && customMsg[0] != "" {
 		msg = customMsg[0]
 	}
