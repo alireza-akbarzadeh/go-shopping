@@ -14,8 +14,15 @@ type ProductServiceInterface interface {
 	GetByID(id uint) (*models.Product, error)
 	GetBySlug(slug string) (*models.Product, error)
 	Create(req CreateProductRequest) (*models.Product, error)
+	BulkCreate(products []CreateProductRequest) ([]*models.Product, error)
 	Update(productID uint, req UpdateProductRequest) (*models.Product, error)
 	Delete(id uint) error
+	BulkDelete(productIDs []uint) error
+}
+
+type BulkStockUpdate struct {
+	ProductID uint `json:"product_id" validate:"required,gt=0"`
+	Stock     int  `json:"stock" validate:"gte=0"`
 }
 
 type CreateProductRequest struct {
@@ -221,7 +228,7 @@ func (s *productService) Delete(id uint) error {
 	return nil
 }
 
-// retrieve list of product
+// List retrieve list of product
 func (s *productService) List(limit, offset int, filters map[string]interface{}) ([]models.Product, int64, error) {
 	const maxLimit = 100
 	if limit <= 0 {
@@ -274,4 +281,69 @@ func (s *productService) List(limit, offset int, filters map[string]interface{})
 	}
 
 	return products, total, nil
+}
+
+// BulkCreate create multiple product
+func (s *productService) BulkCreate(products []CreateProductRequest) ([]*models.Product, error) {
+	if len(products) == 0 {
+		return nil, utils.ErrBadRequest("no products provided")
+	}
+	var createProducts []*models.Product
+
+	err := s.db.Transaction(func(tx *gorm.DB) error {
+		for _, product := range products {
+			baseSlug := generateSlug(product.Name)
+			slug := s.UniqSlug(baseSlug, 0)
+			req := &models.Product{
+				Name:              product.Name,
+				Slug:              slug,
+				Description:       product.Description,
+				Price:             product.Price,
+				CompareAtPrice:    product.CompareAtPrice,
+				Cost:              product.Cost,
+				SKU:               product.SKU,
+				Barcode:           product.Barcode,
+				Stock:             product.Stock,
+				LowStockThreshold: product.LowStockThreshold,
+				Weight:            product.Weight,
+				IsDigital:         product.IsDigital,
+				CategoryID:        product.CategoryID,
+				Images:            product.Images,
+				Status:            product.Status,
+				MetaTitle:         product.MetaTitle,
+				MetaDescription:   product.MetaDescription,
+			}
+			if product.Status == "" {
+				product.Status = "draft"
+			}
+			if product.LowStockThreshold == 0 {
+				product.LowStockThreshold = 5
+			}
+
+			if err := tx.Create(product).Error; err != nil {
+				return err
+			}
+			createProducts = append(createProducts, req)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, utils.ErrInternal(err)
+	}
+	return createProducts, nil
+}
+
+// BulkDelete remove multiple product with the give ids
+func (s *productService) BulkDelete(productIDs []uint) error {
+	if len(productIDs) == 0 {
+		return utils.ErrBadRequest("no product IDs provided")
+	}
+	rest := s.db.Where("id IN ?", productIDs).Delete(&models.Product{})
+	if rest.Error != nil {
+		return utils.ErrInternal(rest.Error)
+	}
+	if rest.RowsAffected == 0 {
+		return utils.ErrNotFound("products not found")
+	}
+	return nil
 }

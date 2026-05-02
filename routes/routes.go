@@ -65,8 +65,11 @@ func (r *Router) Setup() {
 			{
 				admin.GET("/users", r.controllers.Profile.GetAllUsers)
 				admin.POST("/products", r.controllers.Product.Create)
+				admin.POST("/products/bulk", r.controllers.Product.BulkDelete)
 				admin.PUT("/products/:id", r.controllers.Product.Update)
 				admin.DELETE("/products/:id", r.controllers.Product.Delete)
+				admin.DELETE("/products/bulk", r.controllers.Product.BulkDelete)
+
 			}
 		}
 	}

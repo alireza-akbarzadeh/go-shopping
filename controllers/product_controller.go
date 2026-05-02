@@ -271,3 +271,88 @@ func (ctrl *ProductController) List(c *gin.Context) {
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }
+
+// Get BulkCreate creates multiple products at once (admin only).
+// @Summary      Bulk create products
+// @Description  Create multiple products in a single request (admin only)
+// @Tags         Admin Products
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body []services.CreateProductRequest true "Array of products"
+// @Success      201 {object} utils.Response{data=[]models.Product}
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Router       /admin/products/bulk [post]
+func (ctrl *ProductController) Get(c *gin.Context) {
+	var reqs []services.CreateProductRequest
+	if err := c.ShouldBindJSON(&reqs); err != nil {
+		utils.ValidationErrorResponse(c, "invalid request body")
+		return
+	}
+	if len(reqs) == 0 {
+		utils.ErrorResponse(c, 400, "no products provided")
+		return
+	}
+	for i, req := range reqs {
+		if err := ctrl.validate.Struct(req); err != nil {
+			utils.ValidationErrorResponse(c, gin.H{
+				"index": i,
+				"error": err.Error(),
+			})
+			return
+		}
+	}
+	products, err := ctrl.productService.BulkCreate(reqs)
+	if err != nil {
+		utils.InternalServerErrorResponse(c, err, "failed to bulk create products")
+	}
+	utils.CreatedResponse(c, constants.MsgCreateSuccess, products)
+}
+
+// BulkDelete removes multiple products at once (admin only).
+// @Summary      Bulk delete products
+// @Description  Soft delete multiple products by their IDs (admin only)
+// @Tags         Admin Products
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body object true "Product IDs to delete" SchemaExample({"product_ids":[1,2,3]})
+// @Success      200 {object} utils.Response
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Failure      404 {object} utils.Response
+// @Router       /admin/products/bulk [delete]
+func (ctrl *ProductController) BulkDelete(c *gin.Context) {
+	var req struct {
+		ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ValidationErrorResponse(c, "invalid request body")
+		return
+	}
+	if err := ctrl.validate.Struct(req); err != nil {
+		utils.ValidationErrorResponse(c, err.Error())
+		return
+	}
+	if err := ctrl.productService.BulkDelete(req.ProductIDs); err != nil {
+		var appErr *utils.AppError
+		if errors.As(err, &appErr) {
+			switch appErr.Code {
+			case http.StatusBadRequest:
+				utils.ErrBadRequest(appErr.Message)
+				return
+			case http.StatusNotFound:
+				utils.NotFoundResponse(c, appErr.Message)
+			default:
+				utils.InternalServerErrorResponse(c, err, "failed to delete products")
+				return
+			}
+		}
+		utils.InternalServerErrorResponse(c, err, "failed to delete products")
+		return
+	}
+	utils.SuccessResponse(c, "products deleted successfully", nil)
+}
