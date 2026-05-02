@@ -1,11 +1,9 @@
 package routes
 
-package routes
-
 import (
-"github.com/alireza-akbarzadeh/shopping-platform/controllers"
-"github.com/alireza-akbarzadeh/shopping-platform/middleware"
-"github.com/gin-gonic/gin"
+	"github.com/alireza-akbarzadeh/shopping-platform/controllers"
+	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 // SetupCategoryRoutes registers all category routes (public + admin)
