@@ -242,3 +242,6 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"12345678"}'
+
+
+[//]: # (goose -dir ./migrations create add_orders_indexes sql)

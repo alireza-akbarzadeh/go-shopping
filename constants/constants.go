@@ -110,6 +110,7 @@ const (
 	MsgInternalServer           = "internal server error"
 	MsgShutdownServerCompleted  = "Graceful shutdown complete."
 	MsgUserRegisterSuccess      = "User registered successfully"
+	ErrShipmentNotFound         = "shipment not found"
 )
 
 // ==================== Log levels ====================

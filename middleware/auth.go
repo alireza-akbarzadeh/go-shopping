@@ -44,7 +44,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	}
 }
 
-// Optional: helper to get current user ID from context
+// GetUserID Optional: helper to get current user ID from context
 func GetUserID(c *gin.Context) (uint, bool) {
 	val, exists := c.Get("user_id")
 	if !exists {

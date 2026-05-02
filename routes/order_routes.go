@@ -12,8 +12,8 @@ func SetupOrderRoutes(protected *gin.RouterGroup, ctrl *controllers.Container) {
 	protected.GET("/orders/my", ctrl.Order.GetUserOrders)
 	protected.GET("/orders/:id", ctrl.Order.GetOrder)
 
-	admin.Use(middleware.RequireRole("admin"))
+	protected.Use(middleware.RequireRole("admin"))
 	{
-		admin.GET("/orders", ctrl.Order.ListAllOrders)
+		protected.GET("/orders", ctrl.Order.ListAllOrders)
 	}
 }
