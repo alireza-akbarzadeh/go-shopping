@@ -12,6 +12,7 @@ type Services struct {
 	Cart     CartServiceInterface
 	Product  ProductServiceInterface
 	Category CategoryServiceInterface
+	Order    OrderServiceInterface
 }
 
 func NewServices(db *gorm.DB, cfg *config.Config) *Services {
@@ -21,5 +22,6 @@ func NewServices(db *gorm.DB, cfg *config.Config) *Services {
 		Cart:     NewCartService(db),
 		Product:  NewProductService(db),
 		Category: NewCategoryService(db),
+		Order:    NewOrderService(db),
 	}
 }

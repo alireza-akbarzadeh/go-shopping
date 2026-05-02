@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -11,8 +12,9 @@ import (
 
 type OrderServiceInterface interface {
 	Checkout(userID uint) (*models.Order, error)
-	GetUserOrders(userID uint, limit, offset int) ([]models.Order, int64, error)
+	GetUserOrders(filter OrderFilters, userID uint, limit, offset int) ([]models.Order, int64, error)
 	GetOrderByID(orderID uint, userID uint) (*models.Order, error)
+	GetAllOrders(filters AdminOrderFilters, limit, offset int) ([]models.Order, int64, error)
 }
 
 type orderService struct {
@@ -97,16 +99,44 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 	return order, nil
 }
 
+type OrderFilters struct {
+	Status    string
+	FromDate  *time.Time
+	ToDate    *time.Time
+	MinAmount *float64
+	MaxAmount *float64
+}
+
 // GetUserOrders returns all orders for a user (paginated).
-func (s *orderService) GetUserOrders(userID uint, limit, offset int) ([]models.Order, int64, error) {
+func (s *orderService) GetUserOrders(filter OrderFilters, userID uint, limit, offset int) ([]models.Order, int64, error) {
 	var orders []models.Order
 	var total int64
 
 	query := s.db.Model(&models.Order{}).Where("user_id = ?", userID)
+
+	// Apply filters
+	if filter.Status != "" {
+		query = query.Where("status = ?", filter.Status)
+	}
+	if filter.FromDate != nil {
+		query = query.Where("created_at >= ?", filter.FromDate)
+	}
+	if filter.ToDate != nil {
+		query = query.Where("created_at <= ?", filter.ToDate)
+	}
+	if filter.MinAmount != nil {
+		query = query.Where("total_amount >= ?", *filter.MinAmount)
+	}
+	if filter.MaxAmount != nil {
+		query = query.Where("total_amount <= ?", *filter.MaxAmount)
+	}
+
+	// Count total matching records (efficient)
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, utils.ErrInternal(err)
 	}
 
+	// Pagination with ordering – uses indexes
 	if err := query.Limit(limit).Offset(offset).
 		Preload("Items.Product").
 		Order("created_at DESC").
@@ -130,4 +160,54 @@ func (s *orderService) GetOrderByID(orderID uint, userID uint) (*models.Order, e
 		return nil, utils.ErrInternal(err)
 	}
 	return &order, nil
+}
+
+// AdminOrderFilters adds user_id filter
+type AdminOrderFilters struct {
+	OrderFilters
+	UserID *uint `json:"user_id,omitempty"`
+}
+
+// GetAllOrders returns all orders (admin only) with advanced filters and pagination.
+func (s *orderService) GetAllOrders(filters AdminOrderFilters, limit, offset int) ([]models.Order, int64, error) {
+	var orders []models.Order
+	var total int64
+
+	query := s.db.Model(&models.Order{})
+
+	// Apply filters
+	if filters.Status != "" {
+		query = query.Where("status = ?", filters.Status)
+	}
+	if filters.FromDate != nil {
+		query = query.Where("created_at >= ?", filters.FromDate)
+	}
+	if filters.ToDate != nil {
+		query = query.Where("created_at <= ?", filters.ToDate)
+	}
+	if filters.MinAmount != nil {
+		query = query.Where("total_amount >= ?", *filters.MinAmount)
+	}
+	if filters.MaxAmount != nil {
+		query = query.Where("total_amount <= ?", *filters.MaxAmount)
+	}
+	if filters.UserID != nil {
+		query = query.Where("user_id = ?", *filters.UserID)
+	}
+
+	// Count total
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, utils.ErrInternal(err)
+	}
+
+	// Paginated results with preload
+	if err := query.Limit(limit).Offset(offset).
+		Preload("Items.Product").
+		Preload("User").
+		Order("created_at DESC").
+		Find(&orders).Error; err != nil {
+		return nil, 0, utils.ErrInternal(err)
+	}
+
+	return orders, total, nil
 }

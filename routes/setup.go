@@ -30,9 +30,10 @@ func (r *Router) Setup() {
 		// Each module file receives both groups and registers its endpoints
 		SetupAuthRoutes(public, protected, r.controllers)
 		SetupProductRoutes(public, protected, r.controllers)
+		SetupCategoryRoutes(public, protected, r.controllers)
 		SetupUserRoutes(protected, r.controllers)
 		SetupCartRoutes(protected, r.controllers)
-		SetupCategoryRoutes(public, protected, r.controllers)
+		SetupOrderRoutes(protected, r.controllers)
 
 	}
 }
