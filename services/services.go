@@ -7,17 +7,19 @@ import (
 )
 
 type Services struct {
-	Auth    AuthServiceInterface
-	Profile ProfileServiceInterface
-	Cart    CartServiceInterface
-	Product ProductServiceInterface
+	Auth     AuthServiceInterface
+	Profile  ProfileServiceInterface
+	Cart     CartServiceInterface
+	Product  ProductServiceInterface
+	Category CategoryServiceInterface
 }
 
 func NewServices(db *gorm.DB, cfg *config.Config) *Services {
 	return &Services{
-		Auth:    NewAuthServices(db, cfg),
-		Profile: NewProfileService(db, cfg),
-		Cart:    NewCartService(db),
-		Product: NewProductService(db),
+		Auth:     NewAuthServices(db, cfg),
+		Profile:  NewProfileService(db, cfg),
+		Cart:     NewCartService(db),
+		Product:  NewProductService(db),
+		Category: NewCategoryService(db),
 	}
 }

@@ -32,5 +32,7 @@ func (r *Router) Setup() {
 		SetupProductRoutes(public, protected, r.controllers)
 		SetupUserRoutes(protected, r.controllers)
 		SetupCartRoutes(protected, r.controllers)
+		SetupCategoryRoutes(public, protected, r.controllers)
+
 	}
 }
