@@ -11,26 +11,26 @@ type ContextKey string
 
 // ==================== Defaults ====================
 const (
-	DefaultProtectedAPIPort       int           = 8080
-	DefaultPublicAPIPort          int           = 8081
-	DefaultHiddenAPIPort          int           = 8079
-	DefaultHost                   string        = "0.0.0.0"
-	DefaultDevHost                string        = "127.0.0.1"
-	DefaultLogLevel               string        = "warn"
-	DefaultDevLogLevel            string        = "debug"
-	DefaultCORSAllowOrigins       string        = "*"
-	DefaultDBPlatform             string        = DBPlatformSQLite
-	DefaultDBTimezone             string        = DBTimezoneUTC
-	DefaultDBSSLMode              string        = DBSSLModeDisabled
-	DefaultSQLiteDBName           string        = "sqlite.db"
-	DefaultLoggerTimestampFormat  string        = "2006-01-02 15:04:05.00000"
-	DefaultRequestTimeoutDuration time.Duration = 60 * time.Second
-	DefaultWatcherSleepInterval   time.Duration = 5 * time.Second
-	DefaultGzipLevel              int           = 5
-	DefaultLimit                  int           = 20
-	MaxLimit                      int           = 100
-	MinLimit                      int           = 1
-	MinOffset                     int           = 0
+	DefaultProtectedAPIPort       int    = 8080
+	DefaultPublicAPIPort          int    = 8081
+	DefaultHiddenAPIPort          int    = 8079
+	DefaultHost                   string = "0.0.0.0"
+	DefaultDevHost                string = "127.0.0.1"
+	DefaultLogLevel               string = "warn"
+	DefaultDevLogLevel            string = "debug"
+	DefaultCORSAllowOrigins       string = "*"
+	DefaultDBPlatform             string = DBPlatformSQLite
+	DefaultDBTimezone             string = DBTimezoneUTC
+	DefaultDBSSLMode              string = DBSSLModeDisabled
+	DefaultSQLiteDBName           string = "sqlite.db"
+	DefaultLoggerTimestampFormat  string = "2006-01-02 15:04:05.00000"
+	DefaultRequestTimeoutDuration        = 60 * time.Second
+	DefaultWatcherSleepInterval          = 5 * time.Second
+	DefaultGzipLevel              int    = 5
+	DefaultLimit                  int    = 20
+	MaxLimit                      int    = 100
+	MinLimit                      int    = 1
+	MinOffset                     int    = 0
 )
 
 // ==================== Feature flags ====================
@@ -127,4 +127,11 @@ var (
 	ErrBindingBody       = errors.New(MsgUnableToBindBody)
 	ErrUnknownDBPlatform = errors.New(MsgUnknownDBPlatform)
 	ErrInternalServer    = errors.New(MsgInternalServer)
+)
+
+const (
+	Day   = 24 * time.Hour
+	Week  = 7 * Day
+	Month = 30 * Day
+	Year  = 365 * Day
 )
