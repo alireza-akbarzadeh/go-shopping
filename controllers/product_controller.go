@@ -272,7 +272,8 @@ func (ctrl *ProductController) List(c *gin.Context) {
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }
 
-// Get BulkCreate creates multiple products at once (admin only).
+//	BulkCreate creates multiple products at once (admin only).
+//
 // @Summary      Bulk create products
 // @Description  Create multiple products in a single request (admin only)
 // @Tags         Admin Products
@@ -285,7 +286,7 @@ func (ctrl *ProductController) List(c *gin.Context) {
 // @Failure      401 {object} utils.Response
 // @Failure      403 {object} utils.Response
 // @Router       /admin/products/bulk [post]
-func (ctrl *ProductController) Get(c *gin.Context) {
+func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 	var reqs []services.CreateProductRequest
 	if err := c.ShouldBindJSON(&reqs); err != nil {
 		utils.ValidationErrorResponse(c, "invalid request body")
