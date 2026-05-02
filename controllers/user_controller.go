@@ -142,7 +142,7 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 // @Failure      401 {object} utils.Response
 // @Failure      403 {object} utils.Response
 // @Failure      500 {object} utils.Response
-// @Router       /admin/users [get]
+// @Router       /users [get]
 func (pc *ProfileController) GetAllUsers(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))

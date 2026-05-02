@@ -285,7 +285,7 @@ func (ctrl *ProductController) List(c *gin.Context) {
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      403 {object} utils.Response
-// @Router       /admin/products/bulk [post]
+// @Router       /products/bulk [post]
 func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 	var reqs []services.CreateProductRequest
 	if err := c.ShouldBindJSON(&reqs); err != nil {
@@ -325,7 +325,7 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 // @Failure      401 {object} utils.Response
 // @Failure      403 {object} utils.Response
 // @Failure      404 {object} utils.Response
-// @Router       /admin/products/bulk [delete]
+// @Router       /products/bulk [delete]
 func (ctrl *ProductController) BulkDelete(c *gin.Context) {
 	var req struct {
 		ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
