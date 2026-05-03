@@ -1,4 +1,4 @@
-// Package services contains business logic for app.
+// Package services defines the core business logic of the shopping platform. It includes service interfaces and their implementations for authentication, user profiles, shopping carts, products, categories, orders, and shipments. The Services struct aggregates all individual services for easy dependency injection into controllers and other components.
 package services
 
 import (

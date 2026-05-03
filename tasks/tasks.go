@@ -1,3 +1,4 @@
+// package tasks provides a simple worker pool implementation for processing background jobs asynchronously. It defines a Job struct representing a unit of work, and a WorkerPool struct that manages a fixed number of worker goroutines to process jobs from a channel. The WorkerPool supports starting, enqueuing jobs, and graceful shutdown. This allows the application to offload time-consuming tasks such as sending emails, processing payments, or performing database maintenance without blocking the main request handling flow.
 package tasks
 
 import (

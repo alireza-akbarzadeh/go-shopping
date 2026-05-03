@@ -1,3 +1,4 @@
+// Package jobs defines scheduled tasks that run at specified intervals using the robfig/cron library. It includes a CronJobs struct that manages the scheduler and registers various jobs related to cart cleanup, product updates, and order processing. The Recoverer function is a job wrapper that recovers from panics to prevent the scheduler from crashing.
 package jobs
 
 import (

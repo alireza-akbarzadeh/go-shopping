@@ -1,3 +1,4 @@
+// Package middleware provides reusable Gin middleware functions, such as rate limiting, logging, and authentication.
 package middleware
 
 import (

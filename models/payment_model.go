@@ -1,3 +1,4 @@
+// Package models defines the data models for the shopping platform, including User, Product, Category, Order, and Payment. Each model includes fields with GORM annotations for database mapping, as well as JSON tags for API responses. The models also define relationships between entities, such as foreign keys and associations.
 package models
 
 import (

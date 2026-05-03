@@ -1,3 +1,4 @@
+// Packge config handles application configuration loading and management using Viper. It defines a Config struct that holds all configuration values, provides defaults, and validates required fields. The DSN method generates a PostgreSQL connection string based on the loaded configuration.
 package config
 
 import (
