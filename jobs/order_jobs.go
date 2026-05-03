@@ -1,14 +1,17 @@
 package jobs
 
-import "log"
+import (
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/utils"
+)
 
 func (c *CronJobs) registerOrderJobs() {
-	c.addJob("0 2 * * *", "update_overdue_orders", c.updateOverdueOrders)
+	c.addJob(constants.CronUpdateOverdueOrders, "update_overdue_orders", c.updateOverdueOrders)
 }
 
 func (c *CronJobs) updateOverdueOrders() {
-	log.Println("Updating overdue orders...")
+	utils.Log.Info("Updating overdue orders...")
 	if err := c.svc.Order.UpdateOverdueOrders(); err != nil {
-		log.Printf("Overdue orders update failed: %v", err)
+		utils.Log.WithError(err).Error("Overdue orders update failed")
 	}
 }

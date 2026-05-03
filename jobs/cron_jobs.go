@@ -1,11 +1,11 @@
 package jobs
 
 import (
-	"log"
 	"time"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/tasks"
+	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"github.com/robfig/cron/v3"
 )
 
@@ -20,7 +20,7 @@ func Recoverer(next cron.Job) cron.Job {
 	return cron.FuncJob(func() {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Printf("Cron job panic recovered: %v", r)
+				utils.Log.WithField("panic", r).Error("Cron job panic recovered")
 			}
 		}()
 		next.Run()
@@ -50,7 +50,10 @@ func (c *CronJobs) registerJobs() {
 func (c *CronJobs) addJob(schedule, name string, cmd func()) {
 	_, err := c.scheduler.AddFunc(schedule, cmd)
 	if err != nil {
-		log.Printf("Failed to schedule job '%s' with schedule '%s': %v", name, schedule, err)
+		utils.Log.WithFields(map[string]interface{}{
+			"job_name": name,
+			"schedule": schedule,
+		}).WithError(err).Error("Failed to schedule job")
 	}
 }
 
@@ -60,11 +63,11 @@ func (c *CronJobs) addJob(schedule, name string, cmd func()) {
 func (c *CronJobs) Start() {
 	c.registerJobs()
 	c.scheduler.Start()
-	log.Println("CronJobs started.")
+	utils.Log.Info("CronJobs started.")
 }
 
 func (c *CronJobs) Stop() {
 	ctx := c.scheduler.Stop()
 	<-ctx.Done()
-	log.Println("CronJobs stopped.")
+	utils.Log.Info("CronJobs stopped.")
 }

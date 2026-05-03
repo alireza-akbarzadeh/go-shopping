@@ -1,20 +1,23 @@
 package jobs
 
-import "log"
+import (
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/utils"
+)
 
 func (c *CronJobs) registerProductJobs() {
-	c.addJob("0 9 * * *", "low_stock_alert", c.checkLowStock)
-	c.addJob("0 1 * * *", "sync_product_prices", c.syncProductPrices) // example
+	c.addJob(constants.CronLowStockAlert, "low_stock_alert", c.checkLowStock)
+	c.addJob(constants.CronSyncProductPrices, "sync_product_prices", c.syncProductPrices) // example
 }
 
 func (c *CronJobs) checkLowStock() {
-	log.Println("Checking low stock products...")
+	utils.Log.Info("Checking low stock products...")
 	if err := c.svc.Product.CheckLowStockAndAlert(); err != nil {
-		log.Printf("Low stock check failed: %v", err)
+		utils.Log.WithError(err).Error("Low stock check failed")
 	}
 }
 
 func (c *CronJobs) syncProductPrices() {
-	log.Println("Syncing product prices with external feed...")
+	utils.Log.Info("Syncing product prices with external feed...")
 	// external API call, update DB, etc.
 }

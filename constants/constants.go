@@ -136,6 +136,36 @@ const (
 	Year  = 365 * Day
 )
 
+// ==================== Cron job schedules ====================
+const (
+	// Cart jobs
+	CronAbandonedCartCleanup = "@every 30m"
+
+	// Order jobs
+	CronUpdateOverdueOrders = "0 2 * * *" // Daily at 2 AM UTC
+
+	// Product jobs
+	CronLowStockAlert     = "0 9 * * *" // Daily at 9 AM UTC
+	CronSyncProductPrices = "0 1 * * *" // Daily at 1 AM UTC
+
+	// Common schedules for future use
+	CronEvery5Minutes  = "@every 5m"   // Every 5 minutes
+	CronEvery15Minutes = "@every 15m"  // Every 15 minutes
+	CronEvery30Minutes = "@every 30m"  // Every 30 minutes
+	CronEveryHour      = "@every 1h"   // Every hour
+	CronEvery2Hours    = "@every 2h"   // Every 2 hours
+	CronEvery6Hours    = "@every 6h"   // Every 6 hours
+	CronEvery12Hours   = "@every 12h"  // Every 12 hours
+	CronDailyMidnight  = "0 0 * * *"   // Daily at midnight UTC
+	CronDaily6AM       = "0 6 * * *"   // Daily at 6 AM UTC
+	CronDailyNoon      = "0 12 * * *"  // Daily at noon UTC
+	CronDaily6PM       = "0 18 * * *"  // Daily at 6 PM UTC
+	CronWeeklySunday   = "0 0 * * 0"   // Weekly on Sunday at midnight
+	CronWeeklyMonday   = "0 0 * * 1"   // Weekly on Monday at midnight
+	CronMonthlyFirst   = "0 0 1 * *"   // Monthly on the 1st at midnight
+	CronQuarterly      = "0 0 1 */3 *" // Quarterly on the 1st of Jan, Apr, Jul, Oct
+)
+
 // ==================== Domain statuses ====================
 const (
 	// Cart statuses
