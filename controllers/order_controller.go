@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"strconv"
 	"time"
 
@@ -41,12 +40,7 @@ func (ctrl *OrderController) Checkout(c *gin.Context) {
 
 	order, err := ctrl.orderService.Checkout(userID)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 400 {
-			utils.ErrorResponse(c, 400, appErr.Message)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to create order")
+		utils.HandleAppError(c, err, "failed to create order")
 		return
 	}
 
@@ -156,12 +150,7 @@ func (ctrl *OrderController) GetOrder(c *gin.Context) {
 
 	order, err := ctrl.orderService.GetOrderByID(uint(orderID), userID)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, appErr.Message)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to fetch order")
+		utils.HandleAppError(c, err, "failed to fetch order")
 		return
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, order)

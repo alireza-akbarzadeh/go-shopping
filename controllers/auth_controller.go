@@ -1,9 +1,6 @@
 package controllers
 
 import (
-	"errors"
-	"net/http"
-
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
@@ -37,33 +34,13 @@ func NewAuthController(authService services.AuthServiceInterface) *AuthControlle
 // @Router       /auth/register [post]
 func (ctrl *AuthController) Register(c *gin.Context) {
 	var req services.RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
-		return
-	}
-
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.HandleValidationError(c, err)
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 
 	accessToken, refreshToken, user, err := ctrl.authService.Register(req)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) {
-			switch appErr.Code {
-			case http.StatusConflict:
-				utils.ConflictResponse(c, appErr.Message)
-				return
-			case http.StatusBadRequest:
-				utils.ErrorResponse(c, http.StatusBadRequest, appErr.Message)
-				return
-			default:
-				utils.InternalServerErrorResponse(c, err, constants.MsgRegistrationFailed)
-				return
-			}
-		}
-		utils.InternalServerErrorResponse(c, err, constants.MsgRegistrationFailed)
+		utils.HandleAppError(c, err, constants.MsgRegistrationFailed)
 		return
 	}
 
@@ -94,30 +71,13 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 // @Router       /auth/login [post]
 func (ctrl *AuthController) Login(c *gin.Context) {
 	var req services.LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
-		return
-	}
-
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.HandleValidationError(c, err)
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 
 	accessToken, refreshToken, user, err := ctrl.authService.Login(req)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) {
-			switch appErr.Code {
-			case http.StatusUnauthorized:
-				utils.UnauthorizedResponse(c, appErr.Message)
-				return
-			default:
-				utils.InternalServerErrorResponse(c, err, constants.MsgLoginFailed)
-				return
-			}
-		}
-		utils.InternalServerErrorResponse(c, err, constants.MsgLoginFailed)
+		utils.HandleAppError(c, err, constants.MsgLoginFailed)
 		return
 	}
 
@@ -154,24 +114,13 @@ type RefreshRequest struct {
 // @Router       /auth/refresh [post]
 func (ctrl *AuthController) Refresh(c *gin.Context) {
 	var req RefreshRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
-		return
-	}
-
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.HandleValidationError(c, err)
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 
 	newAccessToken, newRefreshToken, err := ctrl.authService.RefreshTokens(req.RefreshToken)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == http.StatusUnauthorized {
-			utils.UnauthorizedResponse(c, appErr.Message)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to refresh tokens")
+		utils.HandleAppError(c, err, "failed to refresh tokens")
 		return
 	}
 

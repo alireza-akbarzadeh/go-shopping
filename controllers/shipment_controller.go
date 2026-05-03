@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -10,14 +9,19 @@ import (
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type ShipmentController struct {
 	shipmentService services.ShipmentServiceInterface
+	validate        *validator.Validate
 }
 
 func NewShipmentController(shipmentService services.ShipmentServiceInterface) *ShipmentController {
-	return &ShipmentController{shipmentService: shipmentService}
+	return &ShipmentController{
+		shipmentService: shipmentService,
+		validate:        validator.New(),
+	}
 }
 
 // CreateShipment creates a new shipment (admin only) and enqueues background processing.
@@ -58,14 +62,7 @@ func (ctrl *ShipmentController) CreateShipment(c *gin.Context) {
 		Country        string `json:"country" validate:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
-		return
-	}
-
-	// Basic validation – can be extended
-	if req.OrderID == 0 {
-		utils.ErrorResponse(c, 400, "order_id is required")
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 
@@ -81,18 +78,7 @@ func (ctrl *ShipmentController) CreateShipment(c *gin.Context) {
 		req.Country,
 	)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) {
-			if appErr.Code == 404 {
-				utils.NotFoundResponse(c, appErr.Message)
-				return
-			}
-			if appErr.Code == 400 {
-				utils.ErrorResponse(c, 400, appErr.Message)
-				return
-			}
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to create shipment")
+		utils.HandleAppError(c, err, "failed to create shipment")
 		return
 	}
 
@@ -132,12 +118,7 @@ func (ctrl *ShipmentController) GetShipment(c *gin.Context) {
 
 	shipment, err := ctrl.shipmentService.GetShipmentByID(uint(shipmentID))
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, constants.ErrNotFound)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to fetch shipment")
+		utils.HandleAppError(c, err, "failed to fetch shipment")
 		return
 	}
 

@@ -112,7 +112,7 @@ func (s *categoryService) Create(req CreateCategoryRequest) (*models.Category, e
 func (s *categoryService) GetByID(id uint) (*models.Category, error) {
 	var category models.Category
 	if err := s.db.Preload("Parent").Preload("Children").First(&category, id).Error; err != nil {
-		if errors.As(err, &gorm.ErrRecordNotFound) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, utils.ErrNotFound("category not found")
 		}
 		return nil, utils.ErrInternal(err)

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -23,6 +22,7 @@ func NewCategoryController(categoryService services.CategoryServiceInterface) *C
 		validate:        validator.New(),
 	}
 }
+
 // Create creates a new category (admin only).
 // @Summary      Create a new category
 // @Description  Creates a new product category. Only accessible by users with the "admin" role.
@@ -39,12 +39,7 @@ func NewCategoryController(categoryService services.CategoryServiceInterface) *C
 // @Router       /categories [post]
 func (ctrl *CategoryController) Create(c *gin.Context) {
 	var req services.CreateCategoryRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
-		return
-	}
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 	category, err := ctrl.categoryService.Create(req)
@@ -80,19 +75,13 @@ func (ctrl *CategoryController) Update(c *gin.Context) {
 	}
 
 	var req services.UpdateCategoryRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 
 	category, err := ctrl.categoryService.Update(uint(id), req)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, appErr.Message)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to update category")
+		utils.HandleAppError(c, err, "failed to update category")
 		return
 	}
 	utils.SuccessResponse(c, constants.MsgUpdateSuccess, category)
@@ -122,26 +111,11 @@ func (ctrl *CategoryController) Delete(c *gin.Context) {
 	}
 
 	if err := ctrl.categoryService.Delete(uint(id)); err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) {
-			switch appErr.Code {
-			case 400:
-				utils.ErrorResponse(c, 400, appErr.Message)
-				return
-			case 404:
-				utils.NotFoundResponse(c, appErr.Message)
-				return
-			default:
-				utils.InternalServerErrorResponse(c, err, "failed to delete category")
-				return
-			}
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to delete category")
+		utils.HandleAppError(c, err, "failed to delete category")
 		return
 	}
 	utils.SuccessResponse(c, constants.MsgDeleteSuccess, nil)
 }
-
 
 // GetOne retrieves a single category by ID or slug (public).
 // @Summary      Get a category by ID or slug
@@ -165,12 +139,7 @@ func (ctrl *CategoryController) GetOne(c *gin.Context) {
 		category, err = ctrl.categoryService.GetBySlug(identifier)
 	}
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, constants.ErrNotFound)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to fetch category")
+		utils.HandleAppError(c, err, "failed to fetch category")
 		return
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, category)
@@ -227,7 +196,6 @@ func (ctrl *CategoryController) List(c *gin.Context) {
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }
 
-
 // BulkCreate creates multiple categories in one request (admin only).
 // @Summary      Bulk create categories
 // @Description  Creates multiple categories at once. Only accessible by users with the "admin" role.
@@ -244,23 +212,16 @@ func (ctrl *CategoryController) List(c *gin.Context) {
 // @Router       /categories/bulk [post]
 func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
 	var reqs []services.CreateCategoryRequest
-	if err := c.ShouldBindJSON(&reqs); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+	if !utils.BindAndValidate(c, &reqs, ctrl.validate) {
 		return
 	}
 	if len(reqs) == 0 {
 		utils.ErrorResponse(c, 400, "no categories provided")
 		return
 	}
-	for i, req := range reqs {
-		if err := ctrl.validate.Struct(req); err != nil {
-			utils.ValidationErrorResponse(c, gin.H{"index": i, "error": err.Error()})
-			return
-		}
-	}
 	categories, err := ctrl.categoryService.BulkCreate(reqs)
 	if err != nil {
-		utils.InternalServerErrorResponse(c, err, "failed to bulk create categories")
+		utils.HandleAppError(c, err, "failed to bulk create categories")
 		return
 	}
 	utils.CreatedResponse(c, "categories created successfully", categories)
@@ -286,21 +247,11 @@ func (ctrl *CategoryController) BulkDelete(c *gin.Context) {
 	var req struct {
 		IDs []uint `json:"ids" validate:"required,min=1"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
-		return
-	}
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 	if err := ctrl.categoryService.BulkDelete(req.IDs); err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 400 {
-			utils.ErrorResponse(c, 400, appErr.Message)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to bulk delete categories")
+		utils.HandleAppError(c, err, "failed to bulk delete categories")
 		return
 	}
 	utils.SuccessResponse(c, "categories deleted successfully", nil)

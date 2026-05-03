@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -45,12 +44,7 @@ func (pc *ProfileController) GetProfile(c *gin.Context) {
 
 	user, err := pc.profileService.GetUserByID(userID)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, constants.ErrUserNotFound)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, constants.ErrInternalServer.Error())
+		utils.HandleAppError(c, err, constants.ErrInternalServer.Error())
 		return
 	}
 
@@ -88,17 +82,7 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 		LastName  string `json:"last_name" validate:"required,min=1,max=100"`
 		Phone     string `json:"phone" validate:"omitempty,e164"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
-		return
-	}
-
-	if err := pc.validate.Struct(req); err != nil {
-		validationErrors := make(map[string]string)
-		for _, err := range err.(validator.ValidationErrors) {
-			validationErrors[err.Field()] = err.Tag()
-		}
-		utils.ValidationErrorResponse(c, validationErrors)
+	if !utils.BindAndValidate(c, &req, pc.validate) {
 		return
 	}
 
@@ -110,12 +94,7 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 
 	user, err := pc.profileService.UpdateUserProfile(userID, req.FirstName, req.LastName, req.Phone)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, constants.ErrUserNotFound)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, constants.ErrInternalServer.Error())
+		utils.HandleAppError(c, err, constants.ErrInternalServer.Error())
 		return
 	}
 

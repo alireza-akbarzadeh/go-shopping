@@ -50,7 +50,7 @@ func (c *CronJobs) registerJobs() {
 func (c *CronJobs) addJob(schedule, name string, cmd func()) {
 	_, err := c.scheduler.AddFunc(schedule, cmd)
 	if err != nil {
-		log.Printf("Failed to schedule job '%c' with schedule '%c': %v", name, schedule, err)
+		log.Printf("Failed to schedule job '%s' with schedule '%s': %v", name, schedule, err)
 	}
 }
 

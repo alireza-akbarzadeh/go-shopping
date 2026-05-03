@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"errors"
 	"net/http"
+	"reflect"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -92,20 +94,86 @@ func ValidationErrorResponse(c *gin.Context, errors interface{}) {
 	})
 }
 
-// HandleValidationError checks if error is validator.ValidationErrors and returns structured response.
-func HandleValidationError(c *gin.Context, err error) bool {
-	if err == nil {
+// BindAndValidate binds JSON request body and validates the resulting struct or slice.
+// It sends a 400 response when the body is invalid or validation fails.
+func BindAndValidate(c *gin.Context, req interface{}, validate *validator.Validate) bool {
+	if err := c.ShouldBindJSON(req); err != nil {
+		return handleBindingError(c, err)
+	}
+	return handleValidationError(c, req, validate)
+}
+
+// BindAndValidateQuery binds query params and validates the resulting struct.
+func BindAndValidateQuery(c *gin.Context, req interface{}, validate *validator.Validate) bool {
+	if err := c.ShouldBindQuery(req); err != nil {
+		return handleBindingError(c, err)
+	}
+	return handleValidationError(c, req, validate)
+}
+
+func handleBindingError(c *gin.Context, err error) bool {
+	if ve, ok := err.(validator.ValidationErrors); ok {
+		ValidationErrorResponse(c, FormatValidationErrors(ve))
 		return false
 	}
-	if ve, ok := err.(validator.ValidationErrors); ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "Validation failed",
-			"errors":  FormatValidationErrors(ve),
-		})
-		return true
-	}
-	// Fallback for non-validation errors (should not happen if only validate.Struct is used)
 	ValidationErrorResponse(c, err.Error())
+	return false
+}
+
+func handleValidationError(c *gin.Context, req interface{}, validate *validator.Validate) bool {
+	if err := validateStruct(req, validate); err != nil {
+		if ve, ok := err.(validator.ValidationErrors); ok {
+			ValidationErrorResponse(c, FormatValidationErrors(ve))
+			return false
+		}
+		ValidationErrorResponse(c, err.Error())
+		return false
+	}
 	return true
+}
+
+func validateStruct(req interface{}, validate *validator.Validate) error {
+	value := reflect.ValueOf(req)
+	if value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	}
+	if !value.IsValid() {
+		return nil
+	}
+
+	switch value.Kind() {
+	case reflect.Slice, reflect.Array:
+		return validate.Var(value.Interface(), "dive")
+	default:
+		return validate.Struct(value.Interface())
+	}
+}
+
+// HandleAppError converts AppError into a consistent HTTP response.
+func HandleAppError(c *gin.Context, err error, message string) {
+	if err == nil {
+		InternalServerErrorResponse(c, nil, message)
+		return
+	}
+	var appErr *AppError
+	if errors.As(err, &appErr) {
+		switch appErr.Code {
+		case http.StatusBadRequest:
+			ErrorResponse(c, http.StatusBadRequest, appErr.Message)
+		case http.StatusUnauthorized:
+			UnauthorizedResponse(c, appErr.Message)
+		case http.StatusForbidden:
+			ForbiddenResponse(c, appErr.Message)
+		case http.StatusNotFound:
+			NotFoundResponse(c, appErr.Message)
+		case http.StatusConflict:
+			ConflictResponse(c, appErr.Message)
+		case http.StatusTooManyRequests:
+			ErrorResponse(c, http.StatusTooManyRequests, appErr.Message)
+		default:
+			InternalServerErrorResponse(c, appErr.Err, message)
+		}
+		return
+	}
+	InternalServerErrorResponse(c, err, message)
 }

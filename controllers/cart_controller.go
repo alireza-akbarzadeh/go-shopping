@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"errors"
-	"net/http"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -48,31 +46,12 @@ func (ctrl *CartController) AddItem(c *gin.Context) {
 		ProductID uint `json:"product_id" validate:"required,gt=0"`
 		Quantity  int  `json:"quantity" validate:"required,gt=0"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
-		return
-	}
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 	item, err := ctrl.cartService.AddItem(userID, req.ProductID, req.Quantity)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) {
-			switch appErr.Code {
-			case http.StatusBadRequest:
-				utils.ErrorResponse(c, http.StatusBadRequest, appErr.Message)
-				return
-			case http.StatusNotFound:
-				utils.NotFoundResponse(c, appErr.Message)
-				return
-			default:
-				utils.InternalServerErrorResponse(c, err, "failed to add item")
-				return
-			}
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to add item")
+		utils.HandleAppError(c, err, "failed to add item")
 		return
 	}
 	utils.SuccessResponse(c, "item added to cart", gin.H{
@@ -157,30 +136,11 @@ func (ctrl *CartController) UpdateItem(c *gin.Context) {
 	var req struct {
 		Quantity int `json:"quantity" validate:"required,gt=0"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
-		return
-	}
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 	if err := ctrl.cartService.UpdateItemQuantity(userID, uint(itemID), req.Quantity); err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) {
-			switch appErr.Code {
-			case 400:
-				utils.ErrorResponse(c, 400, appErr.Message)
-				return
-			case 404:
-				utils.NotFoundResponse(c, appErr.Message)
-				return
-			default:
-				utils.InternalServerErrorResponse(c, err, "failed to update item")
-				return
-			}
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to update item")
+		utils.HandleAppError(c, err, "failed to update item")
 		return
 	}
 
@@ -211,12 +171,7 @@ func (ctrl *CartController) RemoveItem(c *gin.Context) {
 	}
 
 	if err := ctrl.cartService.RemoveItem(userID, uint(itemID)); err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, appErr.Message)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to remove item")
+		utils.HandleAppError(c, err, "failed to remove item")
 		return
 	}
 

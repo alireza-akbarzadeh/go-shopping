@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"errors"
-	"net/http"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -41,25 +39,13 @@ func NewProductController(productServices services.ProductServiceInterface) *Pro
 // @Router       /products [post]
 func (ctrl *ProductController) Create(c *gin.Context) {
 	var req services.CreateProductRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
-		return
-	}
-
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.HandleValidationError(c, err)
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 
 	product, err := ctrl.productService.Create(req)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 409 {
-			utils.ConflictResponse(c, appErr.Message)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to create product")
+		utils.HandleAppError(c, err, "failed to create product")
 		return
 	}
 
@@ -89,29 +75,12 @@ func (ctrl *ProductController) Update(c *gin.Context) {
 		utils.ErrorResponse(c, 400, "invalid product id")
 		return
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, "Invalid request payload: "+err.Error())
-		return
-	}
-
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.HandleValidationError(c, err)
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 	product, err := ctrl.productService.Update(uint(id), req)
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) {
-			switch appErr.Code {
-			case http.StatusNotFound:
-				utils.NotFoundResponse(c, appErr.Message)
-			case http.StatusConflict:
-				utils.ConflictResponse(c, appErr.Message)
-			default:
-				utils.InternalServerErrorResponse(c, err, "failed to update product")
-			}
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to update product")
+		utils.HandleAppError(c, err, "failed to update product")
 		return
 	}
 	utils.SuccessResponse(c, constants.MsgUpdateSuccess, product)
@@ -139,12 +108,7 @@ func (ctrl *ProductController) Delete(c *gin.Context) {
 	}
 
 	if err := ctrl.productService.Delete(uint(id)); err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, appErr.Message)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to delete product")
+		utils.HandleAppError(c, err, "failed to delete product")
 		return
 	}
 
@@ -175,12 +139,7 @@ func (ctrl *ProductController) GetOne(c *gin.Context) {
 		product, err = ctrl.productService.GetBySlug(identifier)
 	}
 	if err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) && appErr.Code == 404 {
-			utils.NotFoundResponse(c, constants.ErrNotFound)
-			return
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to fetch product")
+		utils.HandleAppError(c, err, "failed to fetch product")
 		return
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, product)
@@ -288,26 +247,17 @@ func (ctrl *ProductController) List(c *gin.Context) {
 // @Router       /products/bulk [post]
 func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 	var reqs []services.CreateProductRequest
-	if err := c.ShouldBindJSON(&reqs); err != nil {
-		utils.ValidationErrorResponse(c, "invalid request body")
+	if !utils.BindAndValidate(c, &reqs, ctrl.validate) {
 		return
 	}
 	if len(reqs) == 0 {
 		utils.ErrorResponse(c, 400, "no products provided")
 		return
 	}
-	for i, req := range reqs {
-		if err := ctrl.validate.Struct(req); err != nil {
-			utils.ValidationErrorResponse(c, gin.H{
-				"index": i,
-				"error": err.Error(),
-			})
-			return
-		}
-	}
 	products, err := ctrl.productService.BulkCreate(reqs)
 	if err != nil {
-		utils.InternalServerErrorResponse(c, err, "failed to bulk create products")
+		utils.HandleAppError(c, err, "failed to bulk create products")
+		return
 	}
 	utils.CreatedResponse(c, constants.MsgCreateSuccess, products)
 }
@@ -330,29 +280,11 @@ func (ctrl *ProductController) BulkDelete(c *gin.Context) {
 	var req struct {
 		ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, "invalid request body")
-		return
-	}
-	if err := ctrl.validate.Struct(req); err != nil {
-		utils.ValidationErrorResponse(c, err.Error())
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 	if err := ctrl.productService.BulkDelete(req.ProductIDs); err != nil {
-		var appErr *utils.AppError
-		if errors.As(err, &appErr) {
-			switch appErr.Code {
-			case http.StatusBadRequest:
-				utils.ErrBadRequest(appErr.Message)
-				return
-			case http.StatusNotFound:
-				utils.NotFoundResponse(c, appErr.Message)
-			default:
-				utils.InternalServerErrorResponse(c, err, "failed to delete products")
-				return
-			}
-		}
-		utils.InternalServerErrorResponse(c, err, "failed to delete products")
+		utils.HandleAppError(c, err, "failed to delete products")
 		return
 	}
 	utils.SuccessResponse(c, "products deleted successfully", nil)
