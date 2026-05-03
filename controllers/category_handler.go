@@ -244,9 +244,7 @@ func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
 // @Failure      500 {object} utils.Response
 // @Router       /categories/bulk [delete]
 func (ctrl *CategoryController) BulkDelete(c *gin.Context) {
-	var req struct {
-		IDs []uint `json:"ids" validate:"required,min=1"`
-	}
+	var req services.BulkDeleteCategoryRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}

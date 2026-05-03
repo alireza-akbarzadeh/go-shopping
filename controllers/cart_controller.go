@@ -42,14 +42,11 @@ func (ctrl *CartController) AddItem(c *gin.Context) {
 		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
 		return
 	}
-	var req struct {
-		ProductID uint `json:"product_id" validate:"required,gt=0"`
-		Quantity  int  `json:"quantity" validate:"required,gt=0"`
-	}
+	var req services.AddItemRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
-	item, err := ctrl.cartService.AddItem(userID, req.ProductID, req.Quantity)
+	item, err := ctrl.cartService.AddItem(userID, req)
 	if err != nil {
 		utils.HandleAppError(c, err, "failed to add item")
 		return
@@ -133,13 +130,11 @@ func (ctrl *CartController) UpdateItem(c *gin.Context) {
 		utils.ErrorResponse(c, 400, "invalid item id")
 		return
 	}
-	var req struct {
-		Quantity int `json:"quantity" validate:"required,gt=0"`
-	}
+	var req services.UpdateCartItemRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
-	if err := ctrl.cartService.UpdateItemQuantity(userID, uint(itemID), req.Quantity); err != nil {
+	if err := ctrl.cartService.UpdateItemQuantity(userID, uint(itemID), req); err != nil {
 		utils.HandleAppError(c, err, "failed to update item")
 		return
 	}

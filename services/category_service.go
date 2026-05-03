@@ -20,6 +20,10 @@ type CategoryServiceInterface interface {
 	BulkDelete(ids []uint) error
 }
 
+type BulkDeleteCategoryRequest struct {
+	IDs []uint `json:"ids" validate:"required,min=1"`
+}
+
 type categoryService struct {
 	db *gorm.DB
 }

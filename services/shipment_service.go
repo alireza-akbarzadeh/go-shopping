@@ -12,9 +12,20 @@ import (
 	"gorm.io/gorm"
 )
 
+type CreateShipmentRequest struct {
+	OrderID        uint   `json:"order_id" validate:"required,gt=0"`
+	Carrier        string `json:"carrier" validate:"required"`
+	TrackingNumber string `json:"tracking_number,omitempty"`
+	AddressLine1   string `json:"address_line1" validate:"required"`
+	AddressLine2   string `json:"address_line2,omitempty"`
+	City           string `json:"city" validate:"required"`
+	State          string `json:"state,omitempty"`
+	PostalCode     string `json:"postal_code" validate:"required"`
+	Country        string `json:"country" validate:"required"`
+}
+
 type ShipmentServiceInterface interface {
-	CreateShipment(orderID uint, carrier, trackingNumber string,
-		addressLine1, addressLine2, city, state, postalCode, country string) (*models.Shipment, error)
+	CreateShipment(req CreateShipmentRequest) (*models.Shipment, error)
 	GetShipmentByID(id uint) (*models.Shipment, error)
 	GetShipmentsByOrderID(orderID uint) ([]models.Shipment, error)
 	UpdateShipmentStatus(id uint, status string) error
@@ -30,11 +41,10 @@ func NewShipmentService(db *gorm.DB, workerPool *tasks.WorkerPool) ShipmentServi
 }
 
 // CreateShipment creates a shipment record and enqueues a background job.
-func (s *shipmentService) CreateShipment(orderID uint, carrier, trackingNumber string,
-	addressLine1, addressLine2, city, state, postalCode, country string) (*models.Shipment, error) {
+func (s *shipmentService) CreateShipment(req CreateShipmentRequest) (*models.Shipment, error) {
 
 	var order models.Order
-	if err := s.db.First(&order, orderID).Error; err != nil {
+	if err := s.db.First(&order, req.OrderID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, utils.ErrNotFound(constants.ErrOrderNotFound)
 		}
@@ -42,17 +52,17 @@ func (s *shipmentService) CreateShipment(orderID uint, carrier, trackingNumber s
 	}
 
 	shipment := &models.Shipment{
-		OrderID:        orderID,
+		OrderID:        req.OrderID,
 		UserID:         order.UserID,
-		Carrier:        carrier,
-		TrackingNumber: trackingNumber,
+		Carrier:        req.Carrier,
+		TrackingNumber: req.TrackingNumber,
 		Status:         "pending",
-		AddressLine1:   addressLine1,
-		AddressLine2:   addressLine2,
-		City:           city,
-		State:          state,
-		PostalCode:     postalCode,
-		Country:        country,
+		AddressLine1:   req.AddressLine1,
+		AddressLine2:   req.AddressLine2,
+		City:           req.City,
+		State:          req.State,
+		PostalCode:     req.PostalCode,
+		Country:        req.Country,
 	}
 
 	if err := s.db.Create(shipment).Error; err != nil {

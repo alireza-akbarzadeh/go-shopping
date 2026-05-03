@@ -50,33 +50,12 @@ func NewShipmentController(shipmentService services.ShipmentServiceInterface) *S
 // @Failure      500 {object} utils.Response
 // @Router       /admin/shipments [post]
 func (ctrl *ShipmentController) CreateShipment(c *gin.Context) {
-	var req struct {
-		OrderID        uint   `json:"order_id" validate:"required"`
-		Carrier        string `json:"carrier" validate:"required"`
-		TrackingNumber string `json:"tracking_number"`
-		AddressLine1   string `json:"address_line1" validate:"required"`
-		AddressLine2   string `json:"address_line2"`
-		City           string `json:"city" validate:"required"`
-		State          string `json:"state"`
-		PostalCode     string `json:"postal_code" validate:"required"`
-		Country        string `json:"country" validate:"required"`
-	}
-
+	var req services.CreateShipmentRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 
-	shipment, err := ctrl.shipmentService.CreateShipment(
-		req.OrderID,
-		req.Carrier,
-		req.TrackingNumber,
-		req.AddressLine1,
-		req.AddressLine2,
-		req.City,
-		req.State,
-		req.PostalCode,
-		req.Country,
-	)
+	shipment, err := ctrl.shipmentService.CreateShipment(req)
 	if err != nil {
 		utils.HandleAppError(c, err, "failed to create shipment")
 		return
@@ -145,6 +124,10 @@ func (ctrl *ShipmentController) GetShipment(c *gin.Context) {
 // @Failure      403       {object} utils.Response
 // @Failure      404       {object} utils.Response
 // @Router       /shipments [get]
+type GetShipmentsByOrderRequest struct {
+	OrderID uint `form:"order_id" validate:"required,gt=0"`
+}
+
 func (ctrl *ShipmentController) GetShipmentsByOrder(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
@@ -152,9 +135,8 @@ func (ctrl *ShipmentController) GetShipmentsByOrder(c *gin.Context) {
 		return
 	}
 
-	orderID, err := strconv.ParseUint(c.Query("order_id"), 10, 64)
-	if err != nil {
-		utils.ErrorResponse(c, 400, "invalid order_id")
+	var req GetShipmentsByOrderRequest
+	if !utils.BindAndValidateQuery(c, &req, ctrl.validate) {
 		return
 	}
 
@@ -162,7 +144,7 @@ func (ctrl *ShipmentController) GetShipmentsByOrder(c *gin.Context) {
 	// For simplicity we use the shipment service to fetch, but we need order ownership check.
 	// We'll rely on the service to filter by userID.
 	// Alternatively, we can query order directly. We'll assume the service enforces ownership.
-	shipments, err := ctrl.shipmentService.GetShipmentsByOrderID(uint(orderID))
+	shipments, err := ctrl.shipmentService.GetShipmentsByOrderID(req.OrderID)
 	if err != nil {
 		utils.InternalServerErrorResponse(c, err, "failed to fetch shipments")
 		return

@@ -9,10 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
+type UpdateProfileRequest struct {
+	FirstName string `json:"first_name" validate:"required,min=1,max=100"`
+	LastName  string `json:"last_name" validate:"required,min=1,max=100"`
+	Phone     string `json:"phone" validate:"omitempty,e164"`
+}
+
 type ProfileServiceInterface interface {
 	GetUserByID(userID uint) (*models.User, error)
 	GetUsers(limit, offset int) ([]models.User, error)
-	UpdateUserProfile(userID uint, firstName, lastName, phone string) (*models.User, error)
+	UpdateUserProfile(userID uint, req UpdateProfileRequest) (*models.User, error)
 }
 type ProfileService struct {
 	db  *gorm.DB
@@ -45,15 +51,15 @@ func (s *ProfileService) GetUsers(limit, offset int) ([]models.User, error) {
 }
 
 // UpdateUserProfile updates non‑sensitive user fields.
-func (s *ProfileService) UpdateUserProfile(userID uint, firstName, lastName, phone string) (*models.User, error) {
+func (s *ProfileService) UpdateUserProfile(userID uint, req UpdateProfileRequest) (*models.User, error) {
 	var user models.User
 	if err := s.db.First(&user, userID).Error; err != nil {
 		return nil, utils.ErrNotFound()
 	}
 
-	user.FirstName = firstName
-	user.LastName = lastName
-	user.Phone = phone
+	user.FirstName = req.FirstName
+	user.LastName = req.LastName
+	user.Phone = req.Phone
 
 	if err := s.db.Save(&user).Error; err != nil {
 		return nil, utils.ErrInternal(err)

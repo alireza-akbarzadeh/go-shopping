@@ -190,8 +190,7 @@ func (ctrl *ProductController) List(c *gin.Context) {
 
 	// Bind filters
 	var filters ProductListFilters
-	if err := c.ShouldBindQuery(&filters); err != nil {
-		utils.ValidationErrorResponse(c, "Invalid query parameters")
+	if !utils.BindAndValidateQuery(c, &filters, ctrl.validate) {
 		return
 	}
 
@@ -277,9 +276,7 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 // @Failure      404 {object} utils.Response
 // @Router       /products/bulk [delete]
 func (ctrl *ProductController) BulkDelete(c *gin.Context) {
-	var req struct {
-		ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
-	}
+	var req services.BulkDeleteProductsRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}

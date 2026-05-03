@@ -148,12 +148,12 @@ func (ctrl *AuthController) Logout(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		RefreshToken string `json:"refresh_token,omitempty"`
+	var req services.LogoutRequest
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
+		return
 	}
-	_ = c.ShouldBindJSON(&req)
 
-	if err := ctrl.authService.Logout(userID, req.RefreshToken); err != nil {
+	if err := ctrl.authService.Logout(userID, req); err != nil {
 		utils.InternalServerErrorResponse(c, err, "logout failed")
 		return
 	}

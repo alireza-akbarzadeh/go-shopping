@@ -11,11 +11,15 @@ import (
 	"gorm.io/gorm"
 )
 
+type LogoutRequest struct {
+	RefreshToken string `json:"refresh_token,omitempty"`
+}
+
 type AuthServiceInterface interface {
 	Register(req RegisterRequest) (accessToken, refreshToken string, user *models.User, err error)
 	Login(req LoginRequest) (accessToken, refreshToken string, user *models.User, err error)
-	RefreshTokens(refreshToken string) (newAccessToken, newRefreshToken string, err error) // changed name & returns
-	Logout(userID uint, refreshToken string) error
+	RefreshTokens(refreshToken string) (newAccessToken, newRefreshToken string, err error)
+	Logout(userID uint, req LogoutRequest) error
 }
 type AuthService struct {
 	db  *gorm.DB
@@ -182,11 +186,11 @@ func (s *AuthService) RefreshTokens(refreshToken string) (newAccessToken, newRef
 }
 
 // Logout revokes all refresh tokens for a user (or a specific one).
-func (s *AuthService) Logout(userID uint, refreshToken string) error {
-	if refreshToken != "" {
+func (s *AuthService) Logout(userID uint, req LogoutRequest) error {
+	if req.RefreshToken != "" {
 		var token models.RefreshToken
 		if err := s.db.Where("user_id = ? AND revoked = ?", userID, false).First(&token).Error; err == nil {
-			if utils.CheckPasswordHash(refreshToken, token.Token) {
+			if utils.CheckPasswordHash(req.RefreshToken, token.Token) {
 				token.Revoked = true
 				return s.db.Save(&token).Error
 			}

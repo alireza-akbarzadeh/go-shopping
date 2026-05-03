@@ -77,11 +77,7 @@ func (pc *ProfileController) GetProfile(c *gin.Context) {
 // @Failure      500 {object} utils.Response
 // @Router       /profile [put]
 func (pc *ProfileController) UpdateProfile(c *gin.Context) {
-	var req struct {
-		FirstName string `json:"first_name" validate:"required,min=1,max=100"`
-		LastName  string `json:"last_name" validate:"required,min=1,max=100"`
-		Phone     string `json:"phone" validate:"omitempty,e164"`
-	}
+	var req services.UpdateProfileRequest
 	if !utils.BindAndValidate(c, &req, pc.validate) {
 		return
 	}
@@ -92,7 +88,7 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	user, err := pc.profileService.UpdateUserProfile(userID, req.FirstName, req.LastName, req.Phone)
+	user, err := pc.profileService.UpdateUserProfile(userID, req)
 	if err != nil {
 		utils.HandleAppError(c, err, constants.ErrInternalServer.Error())
 		return

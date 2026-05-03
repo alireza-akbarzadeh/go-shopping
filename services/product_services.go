@@ -63,6 +63,10 @@ type UpdateProductRequest struct {
 	MetaDescription   *string   `json:"meta_description,omitempty"`
 }
 
+type BulkDeleteProductsRequest struct {
+	ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
+}
+
 type productService struct {
 	db *gorm.DB
 }

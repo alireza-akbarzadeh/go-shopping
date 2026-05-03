@@ -9,10 +9,19 @@ import (
 	"gorm.io/gorm"
 )
 
+type AddItemRequest struct {
+	ProductID uint `json:"product_id" validate:"required,gt=0"`
+	Quantity  int  `json:"quantity" validate:"required,gt=0"`
+}
+
+type UpdateCartItemRequest struct {
+	Quantity int `json:"quantity" validate:"required,gt=0"`
+}
+
 type CartServiceInterface interface {
 	GetOrCreateCart(userID uint) (*models.Cart, error)
-	AddItem(userID uint, productID uint, quantity int) (*models.CartItem, error)
-	UpdateItemQuantity(userID uint, cartItemID uint, quantity int) error
+	AddItem(userID uint, req AddItemRequest) (*models.CartItem, error)
+	UpdateItemQuantity(userID uint, cartItemID uint, req UpdateCartItemRequest) error
 	RemoveItem(userID uint, cartItemID uint) error
 	GetCart(userID uint) (*models.Cart, error)
 	ClearCart(userID uint) error
@@ -53,14 +62,14 @@ func (s *cartService) GetOrCreateCart(userID uint) (*models.Cart, error) {
 }
 
 // AddItem adds a product to the cart.
-func (s *cartService) AddItem(userID uint, productID uint, quantity int) (*models.CartItem, error) {
-	if quantity <= 0 {
+func (s *cartService) AddItem(userID uint, req AddItemRequest) (*models.CartItem, error) {
+	if req.Quantity <= 0 {
 		return nil, utils.ErrBadRequest("quantity must be positive")
 	}
 
 	// Get product and check stock
 	var product models.Product
-	if err := s.db.First(&product, productID).Error; err != nil {
+	if err := s.db.First(&product, req.ProductID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, utils.ErrNotFound("product not found")
 		}
@@ -69,7 +78,7 @@ func (s *cartService) AddItem(userID uint, productID uint, quantity int) (*model
 	if product.Status != "active" {
 		return nil, utils.ErrBadRequest("product is not available")
 	}
-	if product.Stock < quantity {
+	if product.Stock < req.Quantity {
 		return nil, utils.ErrBadRequest("insufficient stock")
 	}
 
@@ -81,10 +90,10 @@ func (s *cartService) AddItem(userID uint, productID uint, quantity int) (*model
 
 	// Check if item already exists
 	var cartItem models.CartItem
-	err = s.db.Where("cart_id = ? AND product_id = ?", cart.ID, productID).First(&cartItem).Error
+	err = s.db.Where("cart_id = ? AND product_id = ?", cart.ID, req.ProductID).First(&cartItem).Error
 	if err == nil {
 		// Update quantity
-		newQty := cartItem.Quantity + quantity
+		newQty := cartItem.Quantity + req.Quantity
 		if product.Stock < newQty {
 			return nil, utils.ErrBadRequest("insufficient stock for updated quantity")
 		}
@@ -101,8 +110,8 @@ func (s *cartService) AddItem(userID uint, productID uint, quantity int) (*model
 	// Create new cart item with price snapshot
 	cartItem = models.CartItem{
 		CartID:    cart.ID,
-		ProductID: productID,
-		Quantity:  quantity,
+		ProductID: req.ProductID,
+		Quantity:  req.Quantity,
 		Price:     product.Price,
 	}
 	if err := s.db.Create(&cartItem).Error; err != nil {
@@ -112,8 +121,8 @@ func (s *cartService) AddItem(userID uint, productID uint, quantity int) (*model
 }
 
 // UpdateItemQuantity modifies existing cart item quantity.
-func (s *cartService) UpdateItemQuantity(userID uint, cartItemID uint, quantity int) error {
-	if quantity <= 0 {
+func (s *cartService) UpdateItemQuantity(userID uint, cartItemID uint, req UpdateCartItemRequest) error {
+	if req.Quantity <= 0 {
 		return utils.ErrBadRequest("quantity must be positive")
 	}
 
@@ -132,11 +141,11 @@ func (s *cartService) UpdateItemQuantity(userID uint, cartItemID uint, quantity 
 	if err := s.db.First(&product, cartItem.ProductID).Error; err != nil {
 		return utils.ErrInternal(err)
 	}
-	if product.Stock < quantity {
+	if product.Stock < req.Quantity {
 		return utils.ErrBadRequest("insufficient stock")
 	}
 
-	cartItem.Quantity = quantity
+	cartItem.Quantity = req.Quantity
 	if err := s.db.Save(&cartItem).Error; err != nil {
 		return utils.ErrInternal(err)
 	}
