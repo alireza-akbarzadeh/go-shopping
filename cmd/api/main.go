@@ -5,8 +5,10 @@ import (
 
 	"github.com/alireza-akbarzadeh/shopping-platform/config"
 	"github.com/alireza-akbarzadeh/shopping-platform/controllers"
+	"github.com/alireza-akbarzadeh/shopping-platform/jobs"
 	"github.com/alireza-akbarzadeh/shopping-platform/routes"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
+	"github.com/alireza-akbarzadeh/shopping-platform/tasks"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -48,11 +50,21 @@ func main() {
 	db := connectDatabase(cfg)
 	defer closeDatabase(db)
 
-	// 5. Initialize services
-	services := services.NewServices(db, cfg)
+	// 1. Start the Worker Pool (for async tasks)
+	workerPool := tasks.NewWorkerPool(5, 100)
+	workerPool.Start()
+	defer workerPool.Stop()
+
+	// 5. Initialize newServices
+	newServices := services.NewServices(db, cfg, workerPool)
+
+	// 2. Start the Cron Service (for scheduled tasks)
+	cronService := jobs.NewCronJobs(workerPool, newServices)
+	cronService.Start()
+	defer cronService.Stop()
 
 	// 6. Initialize controllers
-	ctrl := controllers.NewContainer(db, cfg, services)
+	ctrl := controllers.NewContainer(db, cfg, newServices)
 	// 7. Setup Gin engine and routes
 	engine := setupGin()
 	router := routes.NewRouter(engine, ctrl, cfg)

@@ -18,6 +18,7 @@ type ProductServiceInterface interface {
 	Update(productID uint, req UpdateProductRequest) (*models.Product, error)
 	Delete(id uint) error
 	BulkDelete(productIDs []uint) error
+	CheckLowStockAndAlert() error
 }
 
 type BulkStockUpdate struct {
@@ -70,7 +71,7 @@ func NewProductService(db *gorm.DB) ProductServiceInterface {
 	return &productService{db: db}
 }
 
-// ensureUniqueSlug checks and modifies slug to be unique.
+// UniqSlug ensureUniqueSlug checks and modifies slug to be unique.
 func (s *productService) UniqSlug(baseSlug string, excludeID uint) string {
 	slug := baseSlug
 	counter := 1
@@ -125,7 +126,7 @@ func (s *productService) Create(req CreateProductRequest) (*models.Product, erro
 	return &product, nil
 }
 
-// Retrive product by id
+// GetByID Retrieve product by id
 func (s *productService) GetByID(id uint) (*models.Product, error) {
 	var product models.Product
 	if err := s.db.Preload("Category").First(&product, id).Error; err != nil {
@@ -137,7 +138,7 @@ func (s *productService) GetByID(id uint) (*models.Product, error) {
 	return &product, nil
 }
 
-// Retrive product by slug
+// GetBySlug Retrieve product by slug
 func (s *productService) GetBySlug(slug string) (*models.Product, error) {
 	var product models.Product
 	if err := s.db.Preload("Category").Where("slug = ?", slug).First(&product).Error; err != nil {
@@ -345,5 +346,32 @@ func (s *productService) BulkDelete(productIDs []uint) error {
 	if rest.RowsAffected == 0 {
 		return utils.ErrNotFound("products not found")
 	}
+	return nil
+}
+
+// CheckLowStockAndAlert scans for products with stock <= low_stock_threshold
+// and logs a warning for each. Returns an error if the database query fails.
+func (s *productService) CheckLowStockAndAlert() error {
+	var products []models.Product
+	err := s.db.Where("stock <= low_stock_threshold AND status = ?", "active").
+		Find(&products).Error
+	if err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	if len(products) == 0 {
+		utils.Log.Info("Low stock check: no products below threshold")
+		return nil
+	}
+
+	// Log each low‑stock product (you can replace with email or notification)
+	for _, p := range products {
+		utils.Log.Warnf("LOW STOCK ALERT: Product ID=%d, Name=%s, Stock=%d, Threshold=%d",
+			p.ID, p.Name, p.Stock, p.LowStockThreshold)
+	}
+
+	// Optional: also send a summary email to the admin
+	// s.sendLowStockEmail(products)
+
 	return nil
 }

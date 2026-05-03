@@ -16,6 +16,7 @@ type CartServiceInterface interface {
 	RemoveItem(userID uint, cartItemID uint) error
 	GetCart(userID uint) (*models.Cart, error)
 	ClearCart(userID uint) error
+	CleanAbandonedCarts() error
 }
 
 type cartService struct {
@@ -177,4 +178,18 @@ func (s *cartService) ClearCart(userID uint) error {
 	err := s.db.Where("cart_id IN (SELECT id FROM carts WHERE user_id = ? AND status = ?)", userID, "active").
 		Delete(&models.CartItem{}).Error
 	return err
+}
+
+func (s *cartService) CleanAbandonedCarts() error {
+	// Find carts with status 'active' and older than 7 days
+	var carts []models.Cart
+	cutoff := time.Now().Add(-7 * 24 * time.Hour)
+	if err := s.db.Where("status = ? AND updated_at < ?", "active", cutoff).Find(&carts).Error; err != nil {
+		return err
+	}
+	for _, cart := range carts {
+		// Delete cart items or mark cart as abandoned
+		s.db.Model(&cart).Update("status", "abandoned")
+	}
+	return nil
 }

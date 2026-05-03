@@ -15,6 +15,7 @@ type OrderServiceInterface interface {
 	GetUserOrders(filter OrderFilters, userID uint, limit, offset int) ([]models.Order, int64, error)
 	GetOrderByID(orderID uint, userID uint) (*models.Order, error)
 	GetAllOrders(filters AdminOrderFilters, limit, offset int) ([]models.Order, int64, error)
+	UpdateOverdueOrders() error
 }
 
 type orderService struct {
@@ -210,4 +211,34 @@ func (s *orderService) GetAllOrders(filters AdminOrderFilters, limit, offset int
 	}
 
 	return orders, total, nil
+}
+
+// UpdateOverdueOrders marks orders as 'delayed' if they have been 'paid' for more than 7 days.
+func (s *orderService) UpdateOverdueOrders() error {
+	cutoff := time.Now().Add(-7 * 24 * time.Hour)
+
+	// Find paid orders older than cutoff that are not yet delivered or cancelled
+	var orders []models.Order
+	err := s.db.Where("status = ? AND updated_at < ?", "paid", cutoff).
+		Not("status IN (?)", []string{"delivered", "cancelled", "refunded"}).
+		Find(&orders).Error
+	if err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	if len(orders) == 0 {
+		utils.Log.Info("No overdue orders found")
+		return nil
+	}
+
+	// Mark them as 'delayed'
+	for _, order := range orders {
+		order.Status = "delayed"
+		if err := s.db.Save(&order).Error; err != nil {
+			utils.Log.WithError(err).Errorf("Failed to update order %d to delayed", order.ID)
+		} else {
+			utils.Log.Infof("Order %d marked as delayed", order.ID)
+		}
+	}
+	return nil
 }

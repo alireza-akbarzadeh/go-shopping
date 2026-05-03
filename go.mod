@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-playground/validator/v10 v10.30.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/files v1.0.1
@@ -25,7 +26,6 @@ require (
 	github.com/bytedance/sonic v1.15.1 // indirect
 	github.com/bytedance/sonic/loader v0.5.1 // indirect
 	github.com/cloudwego/base64x v0.1.7 // indirect
-	github.com/evdokimovn/gocron v0.0.0-20170212115821-27f9f2557d57 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gin-contrib/sse v1.1.1 // indirect
