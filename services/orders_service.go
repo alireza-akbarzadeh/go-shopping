@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"gorm.io/gorm"
@@ -12,7 +13,7 @@ import (
 
 type OrderServiceInterface interface {
 	Checkout(userID uint) (*models.Order, error)
-	GetUserOrders(filter OrderFilters, userID uint, limit, offset int) ([]models.Order, int64, error)
+	GetUserOrders(userID uint, filters OrderListFilters) ([]models.Order, int64, error)
 	GetOrderByID(orderID uint, userID uint) (*models.Order, error)
 	GetAllOrders(filters AdminOrderFilters, limit, offset int) ([]models.Order, int64, error)
 	UpdateOverdueOrders() error
@@ -59,7 +60,7 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 		order = &models.Order{
 			UserID:      userID,
 			OrderNumber: generateOrderNumber(userID),
-			Status:      "pending",
+			Status:      constants.OrderStatusPending,
 			TotalAmount: totalAmount,
 			Currency:    "USD",
 		}
@@ -108,28 +109,46 @@ type OrderFilters struct {
 	MaxAmount *float64
 }
 
+type OrderListFilters struct {
+	Limit     int        `form:"limit" validate:"omitempty,min=1,max=100"`
+	Offset    int        `form:"offset" validate:"omitempty,min=0"`
+	Status    string     `form:"status" validate:"omitempty,oneof=pending paid shipped delivered cancelled refunded"`
+	FromDate  *time.Time `form:"from_date"`
+	ToDate    *time.Time `form:"to_date"`
+	MinAmount *float64   `form:"min_amount" validate:"omitempty,gt=0"`
+	MaxAmount *float64   `form:"max_amount" validate:"omitempty,gt=0"`
+}
+
 // GetUserOrders returns all orders for a user (paginated).
-func (s *orderService) GetUserOrders(filter OrderFilters, userID uint, limit, offset int) ([]models.Order, int64, error) {
+func (s *orderService) GetUserOrders(userID uint, filters OrderListFilters) ([]models.Order, int64, error) {
 	var orders []models.Order
 	var total int64
+
+	// Set defaults
+	if filters.Limit == 0 {
+		filters.Limit = 20
+	}
+	if filters.Limit > 100 {
+		filters.Limit = 100
+	}
 
 	query := s.db.Model(&models.Order{}).Where("user_id = ?", userID)
 
 	// Apply filters
-	if filter.Status != "" {
-		query = query.Where("status = ?", filter.Status)
+	if filters.Status != "" {
+		query = query.Where("status = ?", filters.Status)
 	}
-	if filter.FromDate != nil {
-		query = query.Where("created_at >= ?", filter.FromDate)
+	if filters.FromDate != nil {
+		query = query.Where("created_at >= ?", filters.FromDate)
 	}
-	if filter.ToDate != nil {
-		query = query.Where("created_at <= ?", filter.ToDate)
+	if filters.ToDate != nil {
+		query = query.Where("created_at <= ?", filters.ToDate)
 	}
-	if filter.MinAmount != nil {
-		query = query.Where("total_amount >= ?", *filter.MinAmount)
+	if filters.MinAmount != nil {
+		query = query.Where("total_amount >= ?", *filters.MinAmount)
 	}
-	if filter.MaxAmount != nil {
-		query = query.Where("total_amount <= ?", *filter.MaxAmount)
+	if filters.MaxAmount != nil {
+		query = query.Where("total_amount <= ?", *filters.MaxAmount)
 	}
 
 	// Count total matching records (efficient)
@@ -138,7 +157,7 @@ func (s *orderService) GetUserOrders(filter OrderFilters, userID uint, limit, of
 	}
 
 	// Pagination with ordering – uses indexes
-	if err := query.Limit(limit).Offset(offset).
+	if err := query.Limit(filters.Limit).Offset(filters.Offset).
 		Preload("Items.Product").
 		Order("created_at DESC").
 		Find(&orders).Error; err != nil {
@@ -219,8 +238,8 @@ func (s *orderService) UpdateOverdueOrders() error {
 
 	// Find paid orders older than cutoff that are not yet delivered or cancelled
 	var orders []models.Order
-	err := s.db.Where("status = ? AND updated_at < ?", "paid", cutoff).
-		Not("status IN (?)", []string{"delivered", "cancelled", "refunded"}).
+	err := s.db.Where("status = ? AND updated_at < ?", constants.OrderStatusPaid, cutoff).
+		Not("status IN (?)", []string{constants.OrderStatusDelivered, constants.OrderStatusCancelled, constants.OrderStatusRefunded}).
 		Find(&orders).Error
 	if err != nil {
 		return utils.ErrInternal(err)

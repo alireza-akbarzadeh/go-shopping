@@ -9,14 +9,19 @@ import (
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type OrderController struct {
 	orderService services.OrderServiceInterface
+	validate     *validator.Validate
 }
 
 func NewOrderController(orderService services.OrderServiceInterface) *OrderController {
-	return &OrderController{orderService: orderService}
+	return &OrderController{
+		orderService: orderService,
+		validate:     validator.New(),
+	}
 }
 
 // Checkout creates an order from the current cart.
@@ -67,59 +72,24 @@ func (ctrl *OrderController) GetUserOrders(c *gin.Context) {
 		return
 	}
 
-	// Pagination
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-	if limit < 1 {
-		limit = 20
-	}
-	if limit > 100 {
-		limit = 100
-	}
-	if offset < 0 {
-		offset = 0
+	var req services.OrderListFilters
+	if !utils.BindAndValidateQuery(c, &req, ctrl.validate) {
+		return
 	}
 
-	// Filters
-	filters := services.OrderFilters{}
-	if status := c.Query("status"); status != "" {
-		filters.Status = status
-	}
-	if fromDate := c.Query("from_date"); fromDate != "" {
-		if t, err := time.Parse(time.RFC3339, fromDate); err == nil {
-			filters.FromDate = &t
-		}
-	}
-	if toDate := c.Query("to_date"); toDate != "" {
-		if t, err := time.Parse(time.RFC3339, toDate); err == nil {
-			filters.ToDate = &t
-		}
-	}
-	if minAmount := c.Query("min_amount"); minAmount != "" {
-		if amt, err := strconv.ParseFloat(minAmount, 64); err == nil {
-			filters.MinAmount = &amt
-		}
-	}
-	if maxAmount := c.Query("max_amount"); maxAmount != "" {
-		if amt, err := strconv.ParseFloat(maxAmount, 64); err == nil {
-			filters.MaxAmount = &amt
-		}
-	}
-
-	orders, total, err := ctrl.orderService.GetUserOrders(filters, userID, limit, offset)
+	orders, total, err := ctrl.orderService.GetUserOrders(userID, req)
 	if err != nil {
-		utils.InternalServerErrorResponse(c, err, "failed to fetch orders")
+		utils.HandleAppError(c, err, "failed to get orders")
 		return
 	}
 
 	data := gin.H{
-		"orders":  orders,
-		"total":   total,
-		"limit":   limit,
-		"offset":  offset,
-		"filters": filters,
+		"orders": orders,
+		"total":  total,
+		"limit":  req.Limit,
+		"offset": req.Offset,
 	}
-	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
+	utils.SuccessResponse(c, "orders retrieved successfully", data)
 }
 
 // GetOrder returns a specific order by ID.

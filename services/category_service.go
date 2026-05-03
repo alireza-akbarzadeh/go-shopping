@@ -15,13 +15,20 @@ type CategoryServiceInterface interface {
 	GetBySlug(slug string) (*models.Category, error)
 	Update(id uint, req UpdateCategoryRequest) (*models.Category, error)
 	Delete(id uint) error
-	List(limit, offset int, filters map[string]interface{}) ([]models.Category, int64, error)
+	List(filters CategoryListFilters) ([]models.Category, int64, error)
 	BulkCreate(categories []CreateCategoryRequest) ([]*models.Category, error)
 	BulkDelete(ids []uint) error
 }
 
 type BulkDeleteCategoryRequest struct {
 	IDs []uint `json:"ids" validate:"required,min=1"`
+}
+
+type CategoryListFilters struct {
+	Limit    int   `form:"limit" validate:"omitempty,min=1,max=100"`
+	Offset   int   `form:"offset" validate:"omitempty,min=0"`
+	IsActive *bool `form:"is_active"`
+	ParentID *uint `form:"parent_id" validate:"omitempty,gt=0"`
 }
 
 type categoryService struct {
@@ -189,22 +196,30 @@ func (s *categoryService) Delete(id uint) error {
 }
 
 // List retrieve list for categories
-func (s *categoryService) List(limit, offset int, filters map[string]interface{}) ([]models.Category, int64, error) {
+func (s *categoryService) List(filters CategoryListFilters) ([]models.Category, int64, error) {
 	var categories []models.Category
 	var total int64
 
+	// Set defaults
+	if filters.Limit == 0 {
+		filters.Limit = 20
+	}
+	if filters.Limit > 100 {
+		filters.Limit = 100
+	}
+
 	query := s.db.Model(&models.Category{})
 
-	if isActive, ok := filters["is_active"]; ok && isActive != nil {
-		query = query.Where("is_active = ?", isActive)
+	if filters.IsActive != nil {
+		query = query.Where("is_active = ?", *filters.IsActive)
 	}
-	if parentID, ok := filters["parent_id"]; ok && parentID != nil {
-		query = query.Where("parent_id = ?", parentID)
+	if filters.ParentID != nil {
+		query = query.Where("parent_id = ?", *filters.ParentID)
 	}
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, utils.ErrInternal(err)
 	}
-	if err := query.Limit(limit).Offset(offset).Preload("Parent").Preload("Children").Find(&categories).Error; err != nil {
+	if err := query.Limit(filters.Limit).Offset(filters.Offset).Preload("Parent").Preload("Children").Find(&categories).Error; err != nil {
 		return nil, 0, utils.ErrInternal(err)
 	}
 	return categories, total, nil

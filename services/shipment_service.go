@@ -56,7 +56,7 @@ func (s *shipmentService) CreateShipment(req CreateShipmentRequest) (*models.Shi
 		UserID:         order.UserID,
 		Carrier:        req.Carrier,
 		TrackingNumber: req.TrackingNumber,
-		Status:         "pending",
+		Status:         constants.ShipmentStatusPending,
 		AddressLine1:   req.AddressLine1,
 		AddressLine2:   req.AddressLine2,
 		City:           req.City,

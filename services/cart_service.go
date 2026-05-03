@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"gorm.io/gorm"
@@ -39,7 +40,7 @@ func NewCartService(db *gorm.DB) CartServiceInterface {
 // GetOrCreateCart returns existing active cart or creates a new one.
 func (s *cartService) GetOrCreateCart(userID uint) (*models.Cart, error) {
 	var cart models.Cart
-	err := s.db.Where("user_id = ? AND status = ?", userID, "active").
+	err := s.db.Where("user_id = ? AND status = ?", userID, constants.CartStatusActive).
 		Preload("Items.Product"). // optional: preload for view
 		First(&cart).Error
 	if err == nil {
@@ -52,7 +53,7 @@ func (s *cartService) GetOrCreateCart(userID uint) (*models.Cart, error) {
 	// Create new cart
 	cart = models.Cart{
 		UserID:    userID,
-		Status:    "active",
+		Status:    constants.CartStatusActive,
 		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 	}
 	if err := s.db.Create(&cart).Error; err != nil {
@@ -75,7 +76,7 @@ func (s *cartService) AddItem(userID uint, req AddItemRequest) (*models.CartItem
 		}
 		return nil, utils.ErrInternal(err)
 	}
-	if product.Status != "active" {
+	if product.Status != constants.ProductStatusActive {
 		return nil, utils.ErrBadRequest("product is not available")
 	}
 	if product.Stock < req.Quantity {
@@ -128,7 +129,7 @@ func (s *cartService) UpdateItemQuantity(userID uint, cartItemID uint, req Updat
 
 	var cartItem models.CartItem
 	if err := s.db.Joins("JOIN carts ON carts.id = cart_items.cart_id").
-		Where("cart_items.id = ? AND carts.user_id = ? AND carts.status = ?", cartItemID, userID, "active").
+		Where("cart_items.id = ? AND carts.user_id = ? AND carts.status = ?", cartItemID, userID, constants.CartStatusActive).
 		First(&cartItem).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrNotFound("cart item not found")

@@ -135,3 +135,39 @@ const (
 	Month = 30 * Day
 	Year  = 365 * Day
 )
+
+// ==================== Domain statuses ====================
+const (
+	// Cart statuses
+	CartStatusActive    = "active"
+	CartStatusAbandoned = "abandoned"
+	CartStatusConverted = "converted"
+
+	// Order statuses
+	OrderStatusPending   = "pending"
+	OrderStatusPaid      = "paid"
+	OrderStatusShipped   = "shipped"
+	OrderStatusDelivered = "delivered"
+	OrderStatusCancelled = "cancelled"
+	OrderStatusRefunded  = "refunded"
+
+	// Payment statuses
+	PaymentStatusPending   = "pending"
+	PaymentStatusCompleted = "completed"
+	PaymentStatusFailed    = "failed"
+
+	// Shipment statuses
+	ShipmentStatusPending   = "pending"
+	ShipmentStatusShipped   = "shipped"
+	ShipmentStatusDelivered = "delivered"
+
+	// User roles
+	RoleUser  = "user"
+	RoleAdmin = "admin"
+
+	// Product statuses
+	ProductStatusDraft    = "draft"
+	ProductStatusActive   = "active"
+	ProductStatusInactive = "inactive"
+	ProductStatusArchived = "archived"
+)

@@ -65,7 +65,7 @@ func (s *AuthService) Register(req RegisterRequest) (string, string, *models.Use
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
 		Phone:        req.Phone,
-		Role:         "user",
+		Role:         constants.RoleUser,
 		IsActive:     true,
 	}
 

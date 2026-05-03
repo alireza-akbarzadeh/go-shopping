@@ -160,38 +160,21 @@ func (ctrl *CategoryController) GetOne(c *gin.Context) {
 // @Failure      500         {object}  utils.Response
 // @Router       /categories [get]
 func (ctrl *CategoryController) List(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-	if limit < 1 {
-		limit = 20
-	}
-	if limit > 100 {
-		limit = 100
-	}
-	if offset < 0 {
-		offset = 0
+	var req services.CategoryListFilters
+	if !utils.BindAndValidateQuery(c, &req, ctrl.validate) {
+		return
 	}
 
-	filters := make(map[string]interface{})
-	if isActive := c.Query("is_active"); isActive != "" {
-		filters["is_active"] = isActive == "true"
-	}
-	if parentID := c.Query("parent_id"); parentID != "" {
-		if pid, err := strconv.ParseUint(parentID, 10, 64); err == nil {
-			filters["parent_id"] = uint(pid)
-		}
-	}
-
-	categories, total, err := ctrl.categoryService.List(limit, offset, filters)
+	categories, total, err := ctrl.categoryService.List(req)
 	if err != nil {
-		utils.InternalServerErrorResponse(c, err, "failed to list categories")
+		utils.HandleAppError(c, err, "failed to list categories")
 		return
 	}
 	data := gin.H{
 		"categories": categories,
 		"total":      total,
-		"limit":      limit,
-		"offset":     offset,
+		"limit":      req.Limit,
+		"offset":     req.Offset,
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }
