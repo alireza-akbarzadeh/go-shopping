@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/controllers"
 	"github.com/gin-gonic/gin"
 )
@@ -8,13 +9,13 @@ import (
 // SetupAuthRoutes registers all authentication routes (public + protected)
 func SetupAuthRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Container) {
 	// 1. Public auth endpoints (no auth required)
-	authGroup := public.Group("/auth")
+	authGroup := public.Group(constants.RouteAuth)
 	{
-		authGroup.POST("/register", ctrl.Auth.Register)
-		authGroup.POST("/login", ctrl.Auth.Login)
+		authGroup.POST(constants.RouteAuthRegister, ctrl.Auth.Register)
+		authGroup.POST(constants.RouteAuthLogin, ctrl.Auth.Login)
 	}
-	public.POST("/auth/refresh", ctrl.Auth.Refresh)
+	public.POST(constants.RouteAuth+constants.RouteAuthRefresh, ctrl.Auth.Refresh)
 
 	// 2. Protected auth endpoints (require a valid JWT token)
-	protected.POST("/auth/logout", ctrl.Auth.Logout)
+	protected.POST(constants.RouteAuth+constants.RouteAuthLogout, ctrl.Auth.Logout)
 }

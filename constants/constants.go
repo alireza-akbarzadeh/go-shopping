@@ -201,3 +201,36 @@ const (
 	ProductStatusInactive = "inactive"
 	ProductStatusArchived = "archived"
 )
+
+// ==================== API routes ====================
+const (
+	// API versions
+	APIVersionV1 = "/api/v1"
+
+	// Route groups
+	RouteAuth       = "/auth"
+	RouteProducts   = "/products"
+	RouteCategories = "/categories"
+	RouteUsers      = "/users"
+	RouteCart       = "/cart"
+	RouteOrders     = "/orders"
+	RouteHealth     = "/health"
+	RouteStatic     = "/static"
+	RouteSwagger    = "/swagger/*any"
+	RouteRoot       = "/"
+
+	// Auth endpoints
+	RouteAuthRegister = "/register"
+	RouteAuthLogin    = "/login"
+	RouteAuthRefresh  = "/refresh"
+	RouteAuthLogout   = "/logout"
+
+	// Product endpoints
+	RouteProductBulk = "/bulk"
+
+	// Cart endpoints
+	RouteCartItems = "/items"
+
+	// Order endpoints
+	RouteOrdersMy = "/my"
+)
