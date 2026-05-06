@@ -26,7 +26,7 @@ func NewProfileController(profileService services.ProfileServiceInterface) *Prof
 // GetProfile returns the authenticated user's profile.
 // @Summary      Get user profile
 // @Description  Returns the profile of the currently authenticated user
-// @Tags         Profile
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -65,7 +65,7 @@ func (pc *ProfileController) GetProfile(c *gin.Context) {
 // UpdateProfile updates the authenticated user's profile.
 // @Summary      Update user profile
 // @Description  Updates the first name, last name, and phone number of the authenticated user
-// @Tags         Profile
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -107,7 +107,7 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 // GetAllUsers returns a paginated list of users (admin only).
 // @Summary      Get all users
 // @Description  Returns a paginated list of all users. Requires admin role.
-// @Tags         Admin
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth

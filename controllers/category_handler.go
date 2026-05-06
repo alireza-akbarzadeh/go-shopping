@@ -26,7 +26,7 @@ func NewCategoryController(categoryService services.CategoryServiceInterface) *C
 // Create creates a new category (admin only).
 // @Summary      Create a new category
 // @Description  Creates a new product category. Only accessible by users with the "admin" role.
-// @Tags         Admin Categories
+// @Tags         Categories
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -48,13 +48,12 @@ func (ctrl *CategoryController) Create(c *gin.Context) {
 		return
 	}
 	utils.CreatedResponse(c, constants.MsgCreateSuccess, category)
-
 }
 
 // Update updates an existing category (admin only).
 // @Summary      Update a category
 // @Description  Updates an existing category by ID. Only accessible by users with the "admin" role.
-// @Tags         Admin Categories
+// @Tags         Categories
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -91,7 +90,7 @@ func (ctrl *CategoryController) Update(c *gin.Context) {
 // @Summary      Delete a category
 // @Description  Deletes a category by ID. Only accessible by users with the "admin" role.
 // @Description  Categories with child categories cannot be deleted – delete children first.
-// @Tags         Admin Categories
+// @Tags         Categories
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -182,7 +181,7 @@ func (ctrl *CategoryController) List(c *gin.Context) {
 // BulkCreate creates multiple categories in one request (admin only).
 // @Summary      Bulk create categories
 // @Description  Creates multiple categories at once. Only accessible by users with the "admin" role.
-// @Tags         Admin Categories
+// @Tags         Categories
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -214,7 +213,7 @@ func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
 // @Summary      Bulk delete categories
 // @Description  Deletes multiple categories by their IDs. Only accessible by users with the "admin" role.
 // @Description  Cannot delete categories that have child categories – delete children first.
-// @Tags         Admin Categories
+// @Tags         Categories
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth

@@ -234,7 +234,7 @@ func (ctrl *ProductController) List(c *gin.Context) {
 //
 // @Summary      Bulk create products
 // @Description  Create multiple products in a single request (admin only)
-// @Tags         Admin Products
+// @Tags         Products
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -264,7 +264,7 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 // BulkDelete removes multiple products at once (admin only).
 // @Summary      Bulk delete products
 // @Description  Soft delete multiple products by their IDs (admin only)
-// @Tags         Admin Products
+// @Tags         Products
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth

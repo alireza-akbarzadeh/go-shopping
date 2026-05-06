@@ -129,7 +129,7 @@ func (ctrl *OrderController) GetOrder(c *gin.Context) {
 // ListAllOrders returns all orders with advanced filters (admin only).
 // @Summary      List all orders (admin)
 // @Description  Returns paginated list of all orders with filtering by status, date, amount, and user ID.
-// @Tags         Admin Orders
+// @Tags         Orders
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth

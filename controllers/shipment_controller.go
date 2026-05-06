@@ -27,7 +27,7 @@ func NewShipmentController(shipmentService services.ShipmentServiceInterface) *S
 // CreateShipment creates a new shipment (admin only) and enqueues background processing.
 // @Summary      Create a shipment
 // @Description  Creates a shipment record and triggers a background job to process it (e.g., call carrier API).
-// @Tags         Admin Shipments
+// @Tags         Shipments
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -110,6 +110,10 @@ func (ctrl *ShipmentController) GetShipment(c *gin.Context) {
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, shipment)
 }
 
+type GetShipmentsByOrderRequest struct {
+	OrderID uint `form:"order_id" validate:"required,gt=0"`
+}
+
 // GetShipmentsByOrder lists all shipments for a given order (user must own the order).
 // @Summary      Get shipments for an order
 // @Description  Returns all shipments belonging to an order (user must own the order).
@@ -124,10 +128,6 @@ func (ctrl *ShipmentController) GetShipment(c *gin.Context) {
 // @Failure      403       {object} utils.Response
 // @Failure      404       {object} utils.Response
 // @Router       /shipments [get]
-type GetShipmentsByOrderRequest struct {
-	OrderID uint `form:"order_id" validate:"required,gt=0"`
-}
-
 func (ctrl *ShipmentController) GetShipmentsByOrder(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
