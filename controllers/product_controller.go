@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -38,7 +39,7 @@ func NewProductController(productServices services.ProductServiceInterface) *Pro
 // @Failure      500 {object} utils.Response
 // @Router       /products [post]
 func (ctrl *ProductController) Create(c *gin.Context) {
-	var req services.CreateProductRequest
+	var req dto.CreateProductRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
@@ -70,7 +71,7 @@ func (ctrl *ProductController) Create(c *gin.Context) {
 // @Router       /products/{id} [put]
 func (ctrl *ProductController) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	var req services.UpdateProductRequest
+	var req dto.UpdateProductRequest
 	if err != nil {
 		utils.ErrorResponse(c, 400, "invalid product id")
 		return
@@ -245,7 +246,7 @@ func (ctrl *ProductController) List(c *gin.Context) {
 // @Failure      403 {object} utils.Response
 // @Router       /products/bulk [post]
 func (ctrl *ProductController) BulkCreate(c *gin.Context) {
-	var reqs []services.CreateProductRequest
+	var reqs []dto.CreateProductRequest
 	if !utils.BindAndValidate(c, &reqs, ctrl.validate) {
 		return
 	}
@@ -276,7 +277,7 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 // @Failure      404 {object} utils.Response
 // @Router       /products/bulk [delete]
 func (ctrl *ProductController) BulkDelete(c *gin.Context) {
-	var req services.BulkDeleteProductsRequest
+	var req dto.BulkDeleteProductsRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}

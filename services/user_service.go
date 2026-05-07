@@ -22,6 +22,7 @@ type UserServiceInterface interface {
 	UpdateUserProfile(userID uint, req UpdateProfileRequest) (*models.User, error)
 	DeleteUser(userID uint) error
 }
+
 type UserService struct {
 	db  *gorm.DB
 	cfg *config.Config

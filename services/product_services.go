@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"gorm.io/gorm"
@@ -13,58 +14,12 @@ type ProductServiceInterface interface {
 	List(limit, offset int, filters map[string]interface{}) ([]models.Product, int64, error)
 	GetByID(id uint) (*models.Product, error)
 	GetBySlug(slug string) (*models.Product, error)
-	Create(req CreateProductRequest) (*models.Product, error)
-	BulkCreate(products []CreateProductRequest) ([]*models.Product, error)
-	Update(productID uint, req UpdateProductRequest) (*models.Product, error)
+	Create(req dto.CreateProductRequest) (*models.Product, error)
+	BulkCreate(products []dto.CreateProductRequest) ([]*models.Product, error)
+	Update(productID uint, req dto.UpdateProductRequest) (*models.Product, error)
 	Delete(id uint) error
 	BulkDelete(productIDs []uint) error
 	CheckLowStockAndAlert() error
-}
-
-type BulkStockUpdate struct {
-	ProductID uint `json:"product_id" validate:"required,gt=0"`
-	Stock     int  `json:"stock" validate:"gte=0"`
-}
-
-type CreateProductRequest struct {
-	Name              string   `json:"name" validate:"required,min=3,max=255"`
-	Description       string   `json:"description,omitempty"`
-	Price             float64  `json:"price" validate:"required,gte=0"`
-	CompareAtPrice    *float64 `json:"compare_at_price,omitempty" validate:"omitempty,gte=0"`
-	Cost              *float64 `json:"cost,omitempty" validate:"omitempty,gte=0"`
-	SKU               string   `json:"sku" validate:"required,min=3,max=50"`
-	Barcode           string   `json:"barcode,omitempty"`
-	Stock             int      `json:"stock" validate:"gte=0"`
-	LowStockThreshold int      `json:"low_stock_threshold,omitempty"`
-	Weight            *float64 `json:"weight,omitempty" validate:"omitempty,gte=0"`
-	IsDigital         bool     `json:"is_digital"`
-	CategoryID        *uint    `json:"category_id,omitempty"`
-	Images            []string `json:"images,omitempty"`
-	Status            string   `json:"status" validate:"oneof=draft active inactive archived"`
-	MetaTitle         string   `json:"meta_title,omitempty"`
-	MetaDescription   string   `json:"meta_description,omitempty"`
-}
-type UpdateProductRequest struct {
-	Name              *string   `json:"name,omitempty" validate:"omitempty,min=3,max=255"`
-	Description       *string   `json:"description,omitempty"`
-	Price             *float64  `json:"price,omitempty" validate:"omitempty,gte=0"`
-	CompareAtPrice    *float64  `json:"compare_at_price,omitempty" validate:"omitempty,gte=0"`
-	Cost              *float64  `json:"cost,omitempty" validate:"omitempty,gte=0"`
-	SKU               *string   `json:"sku,omitempty" validate:"omitempty,min=3,max=50"`
-	Barcode           *string   `json:"barcode,omitempty"`
-	Stock             *int      `json:"stock,omitempty" validate:"omitempty,gte=0"`
-	LowStockThreshold *int      `json:"low_stock_threshold,omitempty"`
-	Weight            *float64  `json:"weight,omitempty" validate:"omitempty,gte=0"`
-	IsDigital         *bool     `json:"is_digital,omitempty"`
-	CategoryID        *uint     `json:"category_id,omitempty"`
-	Images            *[]string `json:"images,omitempty"`
-	Status            *string   `json:"status,omitempty" validate:"omitempty,oneof=draft active inactive archived"`
-	MetaTitle         *string   `json:"meta_title,omitempty"`
-	MetaDescription   *string   `json:"meta_description,omitempty"`
-}
-
-type BulkDeleteProductsRequest struct {
-	ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
 }
 
 type productService struct {
@@ -95,7 +50,7 @@ func (s *productService) UniqSlug(baseSlug string, excludeID uint) string {
 	return slug
 }
 
-func (s *productService) Create(req CreateProductRequest) (*models.Product, error) {
+func (s *productService) Create(req dto.CreateProductRequest) (*models.Product, error) {
 	baseSlug := generateSlug(req.Name)
 	slug := s.UniqSlug(baseSlug, 0)
 	product := models.Product{
@@ -156,7 +111,7 @@ func (s *productService) GetBySlug(slug string) (*models.Product, error) {
 
 // Update product
 
-func (s *productService) Update(id uint, req UpdateProductRequest) (*models.Product, error) {
+func (s *productService) Update(id uint, req dto.UpdateProductRequest) (*models.Product, error) {
 	product, err := s.GetByID(id)
 	if err != nil {
 		return nil, err
@@ -289,7 +244,7 @@ func (s *productService) List(limit, offset int, filters map[string]interface{})
 }
 
 // BulkCreate create multiple product
-func (s *productService) BulkCreate(products []CreateProductRequest) ([]*models.Product, error) {
+func (s *productService) BulkCreate(products []dto.CreateProductRequest) ([]*models.Product, error) {
 	if len(products) == 0 {
 		return nil, utils.ErrBadRequest("no products provided")
 	}

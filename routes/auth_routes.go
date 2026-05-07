@@ -15,7 +15,12 @@ func SetupAuthRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Conta
 		authGroup.POST(constants.RouteAuthLogin, ctrl.Auth.Login)
 	}
 	public.POST(constants.RouteAuth+constants.RouteAuthRefresh, ctrl.Auth.Refresh)
+	public.POST("/forgot-password", ctrl.Auth.ForgotPassword)
+	public.POST("/reset-password", ctrl.Auth.ResetPassword)
 
+	public.GET("/verify-email", ctrl.Auth.VerifyEmail)
+	public.GET("/send-verify-email", ctrl.Auth.SendVerificationEmail)
 	// 2. Protected auth endpoints (require a valid JWT token)
 	protected.POST(constants.RouteAuth+constants.RouteAuthLogout, ctrl.Auth.Logout)
+	protected.POST("/change-password", ctrl.Auth.ChangePassword)
 }

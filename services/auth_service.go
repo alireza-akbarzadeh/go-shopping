@@ -6,6 +6,7 @@ import (
 
 	"github.com/alireza-akbarzadeh/shopping-platform/config"
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"gorm.io/gorm"
@@ -16,10 +17,15 @@ type LogoutRequest struct {
 }
 
 type AuthServiceInterface interface {
-	Register(req RegisterRequest) (accessToken, refreshToken string, user *models.User, err error)
-	Login(req LoginRequest) (accessToken, refreshToken string, user *models.User, err error)
+	Register(req dto.RegisterRequest) (accessToken, refreshToken string, user *models.User, err error)
+	Login(req dto.LoginRequest) (accessToken, refreshToken string, user *models.User, err error)
 	RefreshTokens(refreshToken string) (newAccessToken, newRefreshToken string, err error)
 	Logout(userID uint, req LogoutRequest) error
+	VerifyEmail(token string) error
+	ChangePassword(userID uint, req dto.ChangePasswordRequest) error
+	ResetPassword(token string, newPassword string) error
+	ForgotPassword(email string) error
+	SendVerificationEmail(userID uint) error
 }
 type AuthService struct {
 	db  *gorm.DB
@@ -30,23 +36,8 @@ func NewAuthServices(db *gorm.DB, cfg *config.Config) *AuthService {
 	return &AuthService{db: db, cfg: cfg}
 }
 
-// RegisterRequest defines input for registration.
-type RegisterRequest struct {
-	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"password" validate:"required,min=8"`
-	FirstName string `json:"first_name" validate:"required,min=1,max=100"`
-	LastName  string `json:"last_name" validate:"required,min=1,max=100"`
-	Phone     string `json:"phone,omitempty" validate:"omitempty,e164"`
-}
-
-// LoginRequest defines input for login.
-type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-}
-
 // Register creates a new user and returns token pair.
-func (s *AuthService) Register(req RegisterRequest) (string, string, *models.User, error) {
+func (s *AuthService) Register(req dto.RegisterRequest) (string, string, *models.User, error) {
 	var existingUser models.User
 	if err := s.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
 		return "", "", nil, utils.ErrConflict(constants.ErrEmailAlreadyExists)
@@ -82,7 +73,7 @@ func (s *AuthService) Register(req RegisterRequest) (string, string, *models.Use
 }
 
 // Login authenticates a user and returns token pair.
-func (s *AuthService) Login(req LoginRequest) (string, string, *models.User, error) {
+func (s *AuthService) Login(req dto.LoginRequest) (string, string, *models.User, error) {
 	var user models.User
 	if err := s.db.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -197,4 +188,155 @@ func (s *AuthService) Logout(userID uint, req LogoutRequest) error {
 		}
 	}
 	return s.db.Model(&models.RefreshToken{}).Where("user_id = ?", userID).Update("revoked", true).Error
+}
+
+// ChangePassword use can change password with this services
+func (s *AuthService) ChangePassword(userID uint, req dto.ChangePasswordRequest) error {
+	var user models.User
+	if err := s.db.Select("id", "password_hash").First(&user, userID).Error; err != nil {
+		return utils.ErrNotFound("user not found")
+	}
+
+	if !utils.CheckPasswordHash(req.CurrentPassword, user.PasswordHash) {
+		return utils.ErrUnauthorized("current password is incorrect")
+	}
+
+	hashed, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		return utils.ErrInternal(err)
+	}
+	user.PasswordHash = hashed
+	if err := s.db.Save(&user).Error; err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	return nil
+}
+
+// ForgotPassword generates a reset token and sends email.
+func (s *AuthService) ForgotPassword(email string) error {
+	var user models.User
+	// Find user by email
+	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
+		// Don't reveal if user exists – return nil (silent)
+		return nil
+	}
+
+	// Delete any previous unused tokens for this user
+	s.db.Where("user_id = ? AND used_at IS NULL", user.ID).Delete(&models.PasswordResetToken{})
+
+	// Generate a secure random token
+	token, err := utils.GenerateRandomToken()
+	if err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	expiresAt := time.Now().Add(1 * time.Hour)
+	resetToken := models.PasswordResetToken{
+		UserID:    user.ID,
+		Token:     token,
+		ExpiresAt: expiresAt,
+	}
+	if err := s.db.Create(&resetToken).Error; err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	// Send email asynchronously
+	go utils.SendPasswordResetEmail(user.Email, token)
+	return nil
+}
+
+// SendVerificationEmail creates a token and sends verification link.
+func (s *AuthService) SendVerificationEmail(userID uint) error {
+	var user models.User
+	if err := s.db.First(&user, userID).Error; err != nil {
+		return utils.ErrNotFound("user not found")
+	}
+	if user.EmailVerifiedAt != nil {
+		return utils.ErrBadRequest("email already verified")
+	}
+
+	// Invalidate previous tokens
+	s.db.Where("user_id = ? AND used_at IS NULL", userID).Delete(&models.EmailVerificationToken{})
+
+	token, err := utils.GenerateRandomToken()
+	if err != nil {
+		return utils.ErrInternal(err)
+	}
+	expiresAt := time.Now().Add(24 * time.Hour)
+	vt := models.EmailVerificationToken{
+		UserID:    userID,
+		Token:     token,
+		ExpiresAt: expiresAt,
+	}
+	if err := s.db.Create(&vt).Error; err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	go utils.SendVerificationEmail(user.Email, token) // you'll implement this
+	return nil
+}
+
+// VerifyEmail marks email as verified.
+func (s *AuthService) VerifyEmail(token string) error {
+	var vt models.EmailVerificationToken
+	err := s.db.Where("token = ? AND used_at IS NULL AND expires_at > ?", token, time.Now()).
+		First(&vt).Error
+	if err != nil {
+		return utils.ErrBadRequest("invalid or expired verification token")
+	}
+
+	var user models.User
+	if err := s.db.First(&user, vt.UserID).Error; err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	now := time.Now()
+	user.EmailVerifiedAt = &now
+	if err := s.db.Save(&user).Error; err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	vt.UsedAt = &now
+	s.db.Save(&vt)
+	return nil
+}
+
+// ResetPassword uses a valid reset token to set a new password.
+func (s *AuthService) ResetPassword(token string, newPassword string) error {
+	var resetToken models.PasswordResetToken
+	now := time.Now()
+
+	err := s.db.Where("token = ? AND used_at IS NULL AND expires_at > ?", token, now).
+		First(&resetToken).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return utils.ErrBadRequest("invalid or expired reset token")
+		}
+		return utils.ErrInternal(err)
+	}
+
+	var user models.User
+	if err := s.db.First(&user, resetToken.UserID).Error; err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	hashed, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	user.PasswordHash = hashed
+	if err := s.db.Save(&user).Error; err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	resetToken.UsedAt = &now
+	if err := s.db.Save(&resetToken).Error; err != nil {
+		utils.Log.WithError(err).Warn("failed to mark reset token as used")
+	}
+
+	s.db.Model(&models.RefreshToken{}).Where("user_id = ?", user.ID).Update("revoked", true)
+
+	return nil
 }

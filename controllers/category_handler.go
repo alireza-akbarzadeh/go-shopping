@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -38,7 +39,7 @@ func NewCategoryController(categoryService services.CategoryServiceInterface) *C
 // @Failure      500 {object} utils.Response
 // @Router       /categories [post]
 func (ctrl *CategoryController) Create(c *gin.Context) {
-	var req services.CreateCategoryRequest
+	var req dto.CreateCategoryRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
@@ -73,7 +74,7 @@ func (ctrl *CategoryController) Update(c *gin.Context) {
 		return
 	}
 
-	var req services.UpdateCategoryRequest
+	var req dto.UpdateCategoryRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
@@ -159,7 +160,7 @@ func (ctrl *CategoryController) GetOne(c *gin.Context) {
 // @Failure      500         {object}  utils.Response
 // @Router       /categories [get]
 func (ctrl *CategoryController) List(c *gin.Context) {
-	var req services.CategoryListFilters
+	var req dto.CategoryListFilters
 	if !utils.BindAndValidateQuery(c, &req, ctrl.validate) {
 		return
 	}
@@ -193,7 +194,7 @@ func (ctrl *CategoryController) List(c *gin.Context) {
 // @Failure      500 {object} utils.Response
 // @Router       /categories/bulk [post]
 func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
-	var reqs []services.CreateCategoryRequest
+	var reqs []dto.CreateCategoryRequest
 	if !utils.BindAndValidate(c, &reqs, ctrl.validate) {
 		return
 	}

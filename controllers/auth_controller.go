@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -33,7 +34,7 @@ func NewAuthController(authService services.AuthServiceInterface) *AuthControlle
 // @Failure      409 {object} utils.Response
 // @Router       /auth/register [post]
 func (ctrl *AuthController) Register(c *gin.Context) {
-	var req services.RegisterRequest
+	var req dto.RegisterRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
@@ -70,7 +71,7 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 // @Failure      401 {object} utils.Response
 // @Router       /auth/login [post]
 func (ctrl *AuthController) Login(c *gin.Context) {
-	var req services.LoginRequest
+	var req dto.LoginRequest
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
@@ -159,4 +160,122 @@ func (ctrl *AuthController) Logout(c *gin.Context) {
 	}
 
 	utils.SuccessResponse(c, constants.MsgLogoutSuccess, nil)
+}
+
+// ChangePassword handles password update for authenticated user.
+// @Summary      Change password
+// @Description  Change current user's password.
+// @Tags         Profile
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body dto.ChangePasswordRequest true "Password change request"
+// @Success      200 {object} utils.Response{message=string}
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      500 {object} utils.Response
+// @Router       /profile/change-password [post]
+func (ctrl *AuthController) ChangePassword(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
+	}
+	var req dto.ChangePasswordRequest
+	if !utils.BindAndValidate(c, req, ctrl.validate) {
+		return
+	}
+	err := ctrl.authService.ChangePassword(userID, req)
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to change password")
+		return
+	}
+
+	utils.SuccessResponse(c, "password changed successfully", nil)
+}
+
+func (ctrl *AuthController) ForgotPassword(c *gin.Context) {
+	var req dto.ForgotPasswordRequest
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
+		return
+	}
+
+	_ = ctrl.authService.ForgotPassword(req.Email)
+	utils.SuccessResponse(c, "if the email exists, you will receive a reset link", nil)
+}
+
+// ResetPassword handles password reset using token.
+// @Summary      Reset password
+// @Description  Resets password using a valid token received by email.
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.ResetPasswordRequest true "Reset token and new password"
+// @Success      200 {object} utils.Response{message=string}
+// @Failure      400 {object} utils.Response
+// @Router       /auth/reset-password [post]
+func (ctrl *AuthController) ResetPassword(c *gin.Context) {
+	var req dto.ResetPasswordRequest
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
+		return
+	}
+
+	err := ctrl.authService.ResetPassword(req.Token, req.NewPassword)
+	if err != nil {
+		utils.HandleAppError(c, err, "reset password failed")
+		return
+	}
+
+	utils.SuccessResponse(c, "password reset successfully", nil)
+}
+
+// VerifyEmail verifies user's email address with a token.
+// @Summary      Verify email
+// @Description  Verifies email address using a token sent via email.
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        token query string true "Verification token"
+// @Success      200 {object} utils.Response{message=string}
+// @Failure      400 {object} utils.Response
+// @Router       /auth/verify-email [get]
+func (ctrl *AuthController) VerifyEmail(c *gin.Context) {
+	token := c.Query("token")
+	if token == "" {
+		utils.ErrBadRequest("token is required")
+		return
+	}
+
+	err := ctrl.authService.VerifyEmail(token)
+	if err != nil {
+		utils.HandleAppError(c, err, "email verification failed")
+		return
+	}
+
+	utils.SuccessResponse(c, "email verified successfully", nil)
+}
+
+// SendVerificationEmail sends a verification email to the authenticated user.
+// @Summary      Send verification email
+// @Description  Sends an email verification link to the authenticated user's email.
+// @Tags         Auth
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} utils.Response{message=string}
+// @Failure      401 {object} utils.Response
+// @Failure      500 {object} utils.Response
+// @Router       /auth/send-verification [post]
+func (ctrl *AuthController) SendVerificationEmail(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		utils.UnauthorizedResponse(c, "user not authenticated")
+		return
+	}
+
+	err := ctrl.authService.SendVerificationEmail(userID)
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to send verification email")
+		return
+	}
+	utils.SuccessResponse(c, "verification email sent", nil)
 }

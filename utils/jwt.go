@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -64,4 +65,23 @@ func GenerateRefreshToken() (string, error) {
 		return "", fmt.Errorf("failed to generate refresh token: %w", err)
 	}
 	return base64.URLEncoding.EncodeToString(bytes), nil
+}
+
+// GenerateRandomToken returns a secure random hex string of length 32 bytes (64 chars).
+func GenerateRandomToken() (string, error) {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
+
+func SendPasswordResetEmail(to, token string) {
+	// Example: build reset link https://yourapp.com/reset?token=...
+	// and send via SMTP
+}
+
+func SendVerificationEmail(to, token string) {
+	// Build verification link:
+	// https://yourapp.com/verify?token=...
 }
