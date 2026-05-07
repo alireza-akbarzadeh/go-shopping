@@ -75,13 +75,3 @@ func GenerateRandomToken() (string, error) {
 	}
 	return hex.EncodeToString(bytes), nil
 }
-
-func SendPasswordResetEmail(to, token string) {
-	// Example: build reset link https://yourapp.com/reset?token=...
-	// and send via SMTP
-}
-
-func SendVerificationEmail(to, token string) {
-	// Build verification link:
-	// https://yourapp.com/verify?token=...
-}

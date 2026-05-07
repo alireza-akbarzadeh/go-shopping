@@ -13,8 +13,16 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	Log      LogConfig
+	Email    Email
 }
-
+type Email struct {
+	Host        string
+	Port        int
+	Username    string
+	Password    string
+	From        string
+	FrontendURL string
+}
 type ServerConfig struct {
 	Port string
 	Mode string
@@ -34,6 +42,8 @@ type JWTConfig struct {
 type LogConfig struct {
 	Level string
 }
+
+var AppConfig *Config
 
 func Load() (*Config, error) {
 	viper.SetConfigName(".env")
@@ -58,6 +68,13 @@ func Load() (*Config, error) {
 	viper.SetDefault("JWT_SECRET", "dev_secret_do_not_use_in_production")
 	viper.SetDefault("LOG_LEVEL", "info")
 
+	viper.SetDefault("EMAIL_HOST", "smtp.gmail.com")
+	viper.SetDefault("EMAIL_PORT", 587)
+	viper.SetDefault("EMAIL_USERNAME", "")
+	viper.SetDefault("EMAIL_PASSWORD", "")
+	viper.SetDefault("EMAIL_FROM", "noreply@yourapp.com")
+	viper.SetDefault("FRONTEND_URL", "http://localhost:3000")
+
 	cfg := &Config{
 		Server: ServerConfig{
 			Port: viper.GetString("SERVER_PORT"),
@@ -78,6 +95,7 @@ func Load() (*Config, error) {
 			Level: viper.GetString("LOG_LEVEL"),
 		},
 	}
+	AppConfig = cfg
 
 	// Validate required fields
 	if cfg.JWT.Secret == "" {
