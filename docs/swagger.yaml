@@ -7,6 +7,201 @@ definitions:
     required:
     - refresh_token
     type: object
+  dto.ChangePasswordRequest:
+    properties:
+      current_password:
+        minLength: 6
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+    required:
+    - current_password
+    - new_password
+    type: object
+  dto.CreateCategoryRequest:
+    properties:
+      description:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      parent_id:
+        type: integer
+      slug:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  dto.CreateProductRequest:
+    properties:
+      barcode:
+        type: string
+      category_id:
+        type: integer
+      compare_at_price:
+        minimum: 0
+        type: number
+      cost:
+        minimum: 0
+        type: number
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      is_digital:
+        type: boolean
+      low_stock_threshold:
+        type: integer
+      meta_description:
+        type: string
+      meta_title:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 50
+        minLength: 3
+        type: string
+      status:
+        enum:
+        - draft
+        - active
+        - inactive
+        - archived
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    required:
+    - name
+    - price
+    - sku
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      last_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+  dto.ResetPasswordRequest:
+    properties:
+      new_password:
+        minLength: 6
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  dto.UpdateCategoryRequest:
+    properties:
+      description:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      parent_id:
+        type: integer
+      slug:
+        type: string
+    type: object
+  dto.UpdateProductRequest:
+    properties:
+      barcode:
+        type: string
+      category_id:
+        type: integer
+      compare_at_price:
+        minimum: 0
+        type: number
+      cost:
+        minimum: 0
+        type: number
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      is_digital:
+        type: boolean
+      low_stock_threshold:
+        type: integer
+      meta_description:
+        type: string
+      meta_title:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 50
+        minLength: 3
+        type: string
+      status:
+        enum:
+        - draft
+        - active
+        - inactive
+        - archived
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -265,178 +460,6 @@ definitions:
       user_id:
         type: integer
     type: object
-  services.CreateCategoryRequest:
-    properties:
-      description:
-        type: string
-      is_active:
-        type: boolean
-      name:
-        maxLength: 100
-        minLength: 2
-        type: string
-      parent_id:
-        type: integer
-      slug:
-        type: string
-    required:
-    - name
-    - slug
-    type: object
-  services.CreateProductRequest:
-    properties:
-      barcode:
-        type: string
-      category_id:
-        type: integer
-      compare_at_price:
-        minimum: 0
-        type: number
-      cost:
-        minimum: 0
-        type: number
-      description:
-        type: string
-      images:
-        items:
-          type: string
-        type: array
-      is_digital:
-        type: boolean
-      low_stock_threshold:
-        type: integer
-      meta_description:
-        type: string
-      meta_title:
-        type: string
-      name:
-        maxLength: 255
-        minLength: 3
-        type: string
-      price:
-        minimum: 0
-        type: number
-      sku:
-        maxLength: 50
-        minLength: 3
-        type: string
-      status:
-        enum:
-        - draft
-        - active
-        - inactive
-        - archived
-        type: string
-      stock:
-        minimum: 0
-        type: integer
-      weight:
-        minimum: 0
-        type: number
-    required:
-    - name
-    - price
-    - sku
-    type: object
-  services.LoginRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  services.RegisterRequest:
-    properties:
-      email:
-        type: string
-      first_name:
-        maxLength: 100
-        minLength: 1
-        type: string
-      last_name:
-        maxLength: 100
-        minLength: 1
-        type: string
-      password:
-        minLength: 8
-        type: string
-      phone:
-        type: string
-    required:
-    - email
-    - first_name
-    - last_name
-    - password
-    type: object
-  services.UpdateCategoryRequest:
-    properties:
-      description:
-        type: string
-      is_active:
-        type: boolean
-      name:
-        maxLength: 100
-        minLength: 2
-        type: string
-      parent_id:
-        type: integer
-      slug:
-        type: string
-    type: object
-  services.UpdateProductRequest:
-    properties:
-      barcode:
-        type: string
-      category_id:
-        type: integer
-      compare_at_price:
-        minimum: 0
-        type: number
-      cost:
-        minimum: 0
-        type: number
-      description:
-        type: string
-      images:
-        items:
-          type: string
-        type: array
-      is_digital:
-        type: boolean
-      low_stock_threshold:
-        type: integer
-      meta_description:
-        type: string
-      meta_title:
-        type: string
-      name:
-        maxLength: 255
-        minLength: 3
-        type: string
-      price:
-        minimum: 0
-        type: number
-      sku:
-        maxLength: 50
-        minLength: 3
-        type: string
-      status:
-        enum:
-        - draft
-        - active
-        - inactive
-        - archived
-        type: string
-      stock:
-        minimum: 0
-        type: integer
-      weight:
-        minimum: 0
-        type: number
-    type: object
   utils.Response:
     properties:
       data: {}
@@ -522,7 +545,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.LoginRequest'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
@@ -621,7 +644,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.RegisterRequest'
+          $ref: '#/definitions/dto.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -661,6 +684,97 @@ paths:
           schema:
             $ref: '#/definitions/utils.Response'
       summary: Register a new user
+      tags:
+      - Authentication
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Resets password using a valid token received by email.
+      parameters:
+      - description: Reset token and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Reset password
+      tags:
+      - Authentication
+  /auth/send-verification:
+    post:
+      consumes:
+      - application/json
+      description: Sends an email verification link to the authenticated user's email.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Send verification email
+      tags:
+      - Authentication
+  /auth/verify-email:
+    get:
+      consumes:
+      - application/json
+      description: Verifies email address using a token sent via email.
+      parameters:
+      - description: Verification token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Verify email
       tags:
       - Authentication
   /cart:
@@ -908,7 +1022,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.CreateCategoryRequest'
+          $ref: '#/definitions/dto.CreateCategoryRequest'
       produces:
       - application/json
       responses:
@@ -1003,7 +1117,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.UpdateCategoryRequest'
+          $ref: '#/definitions/dto.UpdateCategoryRequest'
       produces:
       - application/json
       responses:
@@ -1138,7 +1252,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/services.CreateCategoryRequest'
+            $ref: '#/definitions/dto.CreateCategoryRequest'
           type: array
       produces:
       - application/json
@@ -1497,7 +1611,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.CreateProductRequest'
+          $ref: '#/definitions/dto.CreateProductRequest'
       produces:
       - application/json
       responses:
@@ -1610,7 +1724,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.UpdateProductRequest'
+          $ref: '#/definitions/dto.UpdateProductRequest'
       produces:
       - application/json
       responses:
@@ -1762,7 +1876,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/services.CreateProductRequest'
+            $ref: '#/definitions/dto.CreateProductRequest'
           type: array
       produces:
       - application/json
@@ -1902,6 +2016,47 @@ paths:
       summary: Update user profile
       tags:
       - User
+  /profile/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change current user's password.
+      parameters:
+      - description: Password change request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - Authentication
   /shipments:
     get:
       consumes:

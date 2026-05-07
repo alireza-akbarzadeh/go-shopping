@@ -28,7 +28,7 @@ func NewAuthController(authService services.AuthServiceInterface) *AuthControlle
 // @Tags         Authentication
 // @Accept       json
 // @Produce      json
-// @Param        request body services.RegisterRequest true "Registration data"
+// @Param        request body dto.RegisterRequest true "Registration data"
 // @Success      201 {object} utils.Response{data=object{access_token=string,refresh_token=string,user=object{id=uint,email=string,first_name=string,last_name=string,role=string}}}
 // @Failure      400 {object} utils.Response
 // @Failure      409 {object} utils.Response
@@ -65,7 +65,7 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 // @Tags         Authentication
 // @Accept       json
 // @Produce      json
-// @Param        request body services.LoginRequest true "Login credentials"
+// @Param        request body dto.LoginRequest true "Login credentials"
 // @Success      200 {object} utils.Response
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
@@ -165,7 +165,7 @@ func (ctrl *AuthController) Logout(c *gin.Context) {
 // ChangePassword handles password update for authenticated user.
 // @Summary      Change password
 // @Description  Change current user's password.
-// @Tags         Profile
+// @Tags         Authentication
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -206,7 +206,7 @@ func (ctrl *AuthController) ForgotPassword(c *gin.Context) {
 // ResetPassword handles password reset using token.
 // @Summary      Reset password
 // @Description  Resets password using a valid token received by email.
-// @Tags         Auth
+// @Tags         Authentication
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.ResetPasswordRequest true "Reset token and new password"
@@ -231,7 +231,7 @@ func (ctrl *AuthController) ResetPassword(c *gin.Context) {
 // VerifyEmail verifies user's email address with a token.
 // @Summary      Verify email
 // @Description  Verifies email address using a token sent via email.
-// @Tags         Auth
+// @Tags         Authentication
 // @Accept       json
 // @Produce      json
 // @Param        token query string true "Verification token"
@@ -257,7 +257,7 @@ func (ctrl *AuthController) VerifyEmail(c *gin.Context) {
 // SendVerificationEmail sends a verification email to the authenticated user.
 // @Summary      Send verification email
 // @Description  Sends an email verification link to the authenticated user's email.
-// @Tags         Auth
+// @Tags         Authentication
 // @Security     BearerAuth
 // @Accept       json
 // @Produce      json

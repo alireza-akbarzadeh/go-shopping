@@ -31,7 +31,7 @@ func NewCategoryController(categoryService services.CategoryServiceInterface) *C
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body services.CreateCategoryRequest true "Category creation data"
+// @Param        request body dto.CreateCategoryRequest true "Category creation data"
 // @Success      201 {object} utils.Response{data=models.Category}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
@@ -59,7 +59,7 @@ func (ctrl *CategoryController) Create(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id      path      int                           true  "Category ID"
-// @Param        request body      services.UpdateCategoryRequest true  "Category update data"
+// @Param        request body      dto.UpdateCategoryRequest true  "Category update data"
 // @Success      200     {object}  utils.Response{data=models.Category}
 // @Failure      400     {object}  utils.Response
 // @Failure      401     {object}  utils.Response
@@ -186,7 +186,7 @@ func (ctrl *CategoryController) List(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body []services.CreateCategoryRequest true "Array of categories to create"
+// @Param        request body []dto.CreateCategoryRequest true "Array of categories to create"
 // @Success      201 {object} utils.Response{data=[]models.Category}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
