@@ -2479,7 +2479,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns a paginated list of all users. Requires admin role.",
+                "description": "Returns a paginated list of all users. Supports advanced filtering.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2507,6 +2507,47 @@ const docTemplate = `{
                         "description": "Offset (skip number of items)",
                         "name": "offset",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "is_active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Partial match on email",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Partial match on phone",
+                        "name": "phone",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Partial match on first name",
+                        "name": "first_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Partial match on last name",
+                        "name": "last_name",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "user",
+                            "admin",
+                            "moderator"
+                        ],
+                        "type": "string",
+                        "description": "Exact match on role",
+                        "name": "role",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2523,14 +2564,15 @@ const docTemplate = `{
                                         "data": {
                                             "type": "object",
                                             "properties": {
-                                                "count": {
-                                                    "type": "integer"
-                                                },
                                                 "limit": {
                                                     "type": "integer"
                                                 },
                                                 "offset": {
                                                     "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "format": "int64"
                                                 },
                                                 "users": {
                                                     "type": "array",
@@ -2579,6 +2621,73 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft‑deletes a user by ID. Only accessible by users with the \"admin\" role.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Delete a user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }

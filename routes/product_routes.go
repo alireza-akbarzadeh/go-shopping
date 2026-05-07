@@ -28,6 +28,6 @@ func SetupProductRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Co
 	adminUsers := protected.Group("/users")
 	adminUsers.Use(middleware.RequireRole("admin"))
 	{
-		adminUsers.GET("/", ctrl.Profile.GetAllUsers)
+		adminUsers.GET("/", ctrl.User.GetAllUsers)
 	}
 }

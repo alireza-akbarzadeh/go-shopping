@@ -1994,7 +1994,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns a paginated list of all users. Requires admin role.
+      description: Returns a paginated list of all users. Supports advanced filtering.
       parameters:
       - default: 20
         description: Items per page
@@ -2009,6 +2009,34 @@ paths:
         minimum: 0
         name: offset
         type: integer
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      - description: Partial match on email
+        in: query
+        name: email
+        type: string
+      - description: Partial match on phone
+        in: query
+        name: phone
+        type: string
+      - description: Partial match on first name
+        in: query
+        name: first_name
+        type: string
+      - description: Partial match on last name
+        in: query
+        name: last_name
+        type: string
+      - description: Exact match on role
+        enum:
+        - user
+        - admin
+        - moderator
+        in: query
+        name: role
+        type: string
       produces:
       - application/json
       responses:
@@ -2020,11 +2048,12 @@ paths:
             - properties:
                 data:
                   properties:
-                    count:
-                      type: integer
                     limit:
                       type: integer
                     offset:
+                      type: integer
+                    total:
+                      format: int64
                       type: integer
                     users:
                       items:
@@ -2064,6 +2093,50 @@ paths:
       security:
       - BearerAuth: []
       summary: Get all users
+      tags:
+      - User
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft‑deletes a user by ID. Only accessible by users with the "admin"
+        role.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a user
       tags:
       - User
 securityDefinitions:

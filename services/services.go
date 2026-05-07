@@ -9,7 +9,7 @@ import (
 
 type Services struct {
 	Auth     AuthServiceInterface
-	Profile  ProfileServiceInterface
+	User     UserServiceInterface
 	Cart     CartServiceInterface
 	Product  ProductServiceInterface
 	Category CategoryServiceInterface
@@ -20,7 +20,7 @@ type Services struct {
 func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) *Services {
 	return &Services{
 		Auth:     NewAuthServices(db, cfg),
-		Profile:  NewProfileService(db, cfg),
+		User:     NewUserService(db, cfg),
 		Cart:     NewCartService(db),
 		Product:  NewProductService(db),
 		Category: NewCategoryService(db),

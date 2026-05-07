@@ -10,7 +10,7 @@ import (
 type Container struct {
 	Health   *HealthController
 	Auth     *AuthController
-	Profile  *ProfileController
+	User     *ProfileController
 	Page     *PageController
 	Cart     *CartController
 	Product  *ProductController
@@ -24,7 +24,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, svc *services.Services) *Cont
 	return &Container{
 		Health:   NewHealthController(db),
 		Auth:     NewAuthController(svc.Auth),
-		Profile:  NewProfileController(svc.Profile),
+		User:     NewProfileController(svc.User),
 		Cart:     NewCartController(svc.Cart),
 		Product:  NewProductController(svc.Product),
 		Category: NewCategoryController(svc.Category),
