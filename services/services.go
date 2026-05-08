@@ -15,16 +15,18 @@ type Services struct {
 	Category CategoryServiceInterface
 	Order    OrderServiceInterface
 	Shipment ShipmentServiceInterface
+	Hub      *Hub
 }
 
-func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) *Services {
+func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool, hub *Hub) *Services {
 	return &Services{
 		Auth:     NewAuthServices(db, cfg),
 		User:     NewUserService(db, cfg),
 		Cart:     NewCartService(db),
 		Product:  NewProductService(db),
 		Category: NewCategoryService(db),
-		Order:    NewOrderService(db),
+		Order:    NewOrderService(db, hub),
 		Shipment: NewShipmentService(db, workerPool),
+		Hub:      hub,
 	}
 }

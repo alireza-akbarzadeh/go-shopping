@@ -21,10 +21,11 @@ type OrderServiceInterface interface {
 }
 
 type orderService struct {
-	db *gorm.DB
+	db  *gorm.DB
+	hub *Hub
 }
 
-func NewOrderService(db *gorm.DB) OrderServiceInterface {
+func NewOrderService(db *gorm.DB, hub *Hub) OrderServiceInterface {
 	return &orderService{db: db}
 }
 
@@ -241,5 +242,27 @@ func (s *orderService) UpdateOverdueOrders() error {
 			utils.Log.Infof("Order %d marked as delayed", order.ID)
 		}
 	}
+	return nil
+}
+
+func (s *orderService) UpdateOrderStatus(orderID uint, newStatus string) error {
+	var order models.Order
+	if err := s.db.First(&order, orderID).Error; err != nil {
+		return err
+	}
+	order.Status = newStatus
+	if err := s.db.Save(&order).Error; err != nil {
+		return err
+	}
+
+	// Notify the user via WebSocket
+	notification := map[string]interface{}{
+		"type":      "order_status",
+		"order_id":  order.ID,
+		"status":    newStatus,
+		"timestamp": time.Now(),
+	}
+	s.hub.SendToUser(order.UserID, notification)
+
 	return nil
 }

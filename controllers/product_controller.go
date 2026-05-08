@@ -31,8 +31,8 @@ func NewProductController(productServices services.ProductServiceInterface) *Pro
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body dto.CreateProductRequest true "Product details" SchemaExample({"name":"Laptop","price":999.99,"description":"High performance laptop","stock":10})
-// @Success      201 {object} utils.Response{data=object{product=object{id=uint,name=string,price=float64,description=string,stock=int,created_at=string,updated_at=string}}}
+// @Param        request body dto.CreateProductRequest true "Product details"
+// @Success      201 {object} utils.Response{data=models.Product}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      409 {object} utils.Response
@@ -61,8 +61,8 @@ func (ctrl *ProductController) Create(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path int true "Product ID"
-// @Param        request body dto.UpdateProductRequest true "Product update data" SchemaExample({"name":"Updated Laptop","price":1099.99,"description":"Even better performance","stock":5})
-// @Success      200 {object} utils.Response{data=object{product=object{id=uint,name=string,price=float64,description=string,stock=int,updated_at=string}}}
+// @Param        request body dto.UpdateProductRequest true "Product update data"
+// @Success      200 {object} utils.Response{data=models.Product}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      404 {object} utils.Response
@@ -94,8 +94,8 @@ func (ctrl *ProductController) Update(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id path int true "Product ID" Example(123)
-// @Success      200 {object} utils.Response{data=object{}} "Successfully deleted (no data returned)"
+// @Param        id path int true "Product ID"
+// @Success      200 {object} utils.Response
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      404 {object} utils.Response
@@ -123,7 +123,7 @@ func (ctrl *ProductController) Delete(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        identifier path string true "Product identifier (ID or slug)" Example(123) or Example("my-product-slug")
+// @Param        identifier path string true "Product identifier (ID or slug)"
 // @Success      200 {object} utils.Response{data=models.Product}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
@@ -231,8 +231,7 @@ func (ctrl *ProductController) List(c *gin.Context) {
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }
 
-//	BulkCreate creates multiple products at once (admin only).
-//
+// BulkCreate creates multiple products at once (admin only).
 // @Summary      Bulk create products
 // @Description  Create multiple products in a single request (admin only)
 // @Tags         Products
@@ -269,7 +268,7 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body object true "Product IDs to delete" SchemaExample({"product_ids":[1,2,3]})
+// @Param        request body dto.BulkDeleteProductsRequest true "Product IDs to delete"
 // @Success      200 {object} utils.Response
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response

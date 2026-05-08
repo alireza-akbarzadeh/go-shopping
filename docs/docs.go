@@ -1850,36 +1850,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "object",
-                                            "properties": {
-                                                "product": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "created_at": {
-                                                            "type": "string"
-                                                        },
-                                                        "description": {
-                                                            "type": "string"
-                                                        },
-                                                        "id": {
-                                                            "type": "integer"
-                                                        },
-                                                        "name": {
-                                                            "type": "string"
-                                                        },
-                                                        "price": {
-                                                            "type": "number",
-                                                            "format": "float64"
-                                                        },
-                                                        "stock": {
-                                                            "type": "integer"
-                                                        },
-                                                        "updated_at": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            "$ref": "#/definitions/models.Product"
                                         }
                                     }
                                 }
@@ -2011,7 +1982,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/dto.BulkDeleteProductsRequest"
                         }
                     }
                 ],
@@ -2070,7 +2041,6 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "example": "123",
                         "description": "Product identifier (ID or slug)",
                         "name": "identifier",
                         "in": "path",
@@ -2171,33 +2141,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "object",
-                                            "properties": {
-                                                "product": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "description": {
-                                                            "type": "string"
-                                                        },
-                                                        "id": {
-                                                            "type": "integer"
-                                                        },
-                                                        "name": {
-                                                            "type": "string"
-                                                        },
-                                                        "price": {
-                                                            "type": "number",
-                                                            "format": "float64"
-                                                        },
-                                                        "stock": {
-                                                            "type": "integer"
-                                                        },
-                                                        "updated_at": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            "$ref": "#/definitions/models.Product"
                                         }
                                     }
                                 }
@@ -2256,7 +2200,6 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "example": 123,
                         "description": "Product ID",
                         "name": "id",
                         "in": "path",
@@ -2265,21 +2208,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully deleted (no data returned)",
+                        "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/utils.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "400": {
@@ -2934,6 +2865,21 @@ const docTemplate = `{
             "properties": {
                 "refresh_token": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.BulkDeleteProductsRequest": {
+            "type": "object",
+            "required": [
+                "product_ids"
+            ],
+            "properties": {
+                "product_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },

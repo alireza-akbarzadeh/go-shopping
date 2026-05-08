@@ -56,8 +56,11 @@ func main() {
 	workerPool.Start()
 	defer workerPool.Stop()
 
+	hub := services.NewHub()
+	go hub.Run()
+
 	// 5. Initialize newServices
-	newServices := services.NewServices(db, cfg, workerPool)
+	newServices := services.NewServices(db, cfg, workerPool, hub)
 
 	// 2. Start the Cron Service (for scheduled tasks)
 	cronService := jobs.NewCronJobs(workerPool, newServices)
