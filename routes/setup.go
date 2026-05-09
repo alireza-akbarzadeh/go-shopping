@@ -1,8 +1,11 @@
 package routes
 
 import (
+	"os"
+
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
+	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -14,7 +17,14 @@ func (r *Router) Setup() {
 	r.engine.GET(constants.RouteRoot, r.controllers.Page.LandingPage)
 	r.engine.Static(constants.RouteStatic, "./views/static")
 	r.engine.GET(constants.RouteSwagger, ginSwagger.WrapHandler(swaggerFiles.Handler))
-
+	r.engine.GET("/openapi.json", func(c *gin.Context) {
+		data, err := os.ReadFile("docs/swagger.json")
+		if err != nil {
+			c.JSON(500, gin.H{"error": "failed to read spec"})
+			return
+		}
+		c.Data(200, "application/json", data)
+	})
 	// API v1 group
 	v1 := r.engine.Group(constants.APIVersionV1)
 	{
@@ -36,7 +46,5 @@ func (r *Router) Setup() {
 		SetupCartRoutes(protected, r.controllers)
 		SetupOrderRoutes(protected, r.controllers)
 		SetupShipmentRoutes(protected, r.controllers)
-		SetupWebSocketRoutes(r.engine, r.controllers.WebSocket, r.cfg)
-
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ import (
 
 type OrderServiceInterface interface {
 	Checkout(userID uint) (*models.Order, error)
-	GetUserOrders(userID uint, filters OrderListFilters) ([]models.Order, int64, error)
+	GetUserOrders(userID uint, filters dto.OrderListFilters) ([]models.Order, int64, error)
 	GetOrderByID(orderID uint, userID uint) (*models.Order, error)
 	GetAllOrders(filters AdminOrderFilters, limit, offset int) ([]models.Order, int64, error)
 	UpdateOverdueOrders() error
@@ -97,7 +98,6 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -124,26 +124,8 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 	return order, nil
 }
 
-type OrderFilters struct {
-	Status    string
-	FromDate  *time.Time
-	ToDate    *time.Time
-	MinAmount *float64
-	MaxAmount *float64
-}
-
-type OrderListFilters struct {
-	Limit     int        `form:"limit" validate:"omitempty,min=1,max=100"`
-	Offset    int        `form:"offset" validate:"omitempty,min=0"`
-	Status    string     `form:"status" validate:"omitempty,oneof=pending paid shipped delivered cancelled refunded"`
-	FromDate  *time.Time `form:"from_date"`
-	ToDate    *time.Time `form:"to_date"`
-	MinAmount *float64   `form:"min_amount" validate:"omitempty,gt=0"`
-	MaxAmount *float64   `form:"max_amount" validate:"omitempty,gt=0"`
-}
-
 // GetUserOrders returns all orders for a user (paginated).
-func (s *orderService) GetUserOrders(userID uint, filters OrderListFilters) ([]models.Order, int64, error) {
+func (s *orderService) GetUserOrders(userID uint, filters dto.OrderListFilters) ([]models.Order, int64, error) {
 	var orders []models.Order
 	var total int64
 
@@ -263,7 +245,7 @@ func (s *orderService) GetOrderByID(orderID uint, userID uint) (*models.Order, e
 
 // AdminOrderFilters adds user_id filter
 type AdminOrderFilters struct {
-	OrderFilters
+	dto.OrderFilters
 	UserID *uint `json:"user_id,omitempty"`
 }
 

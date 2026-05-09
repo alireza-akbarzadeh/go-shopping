@@ -4,51 +4,28 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
 	"gorm.io/gorm"
 )
 
 type CategoryServiceInterface interface {
-	Create(req CreateCategoryRequest) (*models.Category, error)
+	Create(req dto.CreateCategoryRequest) (*models.Category, error)
 	GetByID(id uint) (*models.Category, error)
 	GetBySlug(slug string) (*models.Category, error)
-	Update(id uint, req UpdateCategoryRequest) (*models.Category, error)
+	Update(id uint, req dto.UpdateCategoryRequest) (*models.Category, error)
 	Delete(id uint) error
-	List(filters CategoryListFilters) ([]models.Category, int64, error)
-	BulkCreate(categories []CreateCategoryRequest) ([]*models.Category, error)
+	List(filters dto.CategoryListFilters) ([]models.Category, int64, error)
+	BulkCreate(categories []dto.CreateCategoryRequest) ([]*models.Category, error)
 	BulkDelete(ids []uint) error
-}
-
-type BulkDeleteCategoryRequest struct {
-	IDs []uint `json:"ids" validate:"required,min=1"`
-}
-
-type CategoryListFilters struct {
-	Limit    int   `form:"limit" validate:"omitempty,min=1,max=100"`
-	Offset   int   `form:"offset" validate:"omitempty,min=0"`
-	IsActive *bool `form:"is_active"`
-	ParentID *uint `form:"parent_id" validate:"omitempty,gt=0"`
 }
 
 type categoryService struct {
 	db *gorm.DB
 }
-
-type CreateCategoryRequest struct {
-	Name        string `json:"name" validate:"required,min=2,max=100"`
-	Slug        string `json:"slug" validate:"required,slug"`
-	Description string `json:"description,omitempty"`
-	ParentID    *uint  `json:"parent_id,omitempty"`
-	IsActive    bool   `json:"is_active"`
-}
-
-type UpdateCategoryRequest struct {
-	Name        *string `json:"name,omitempty" validate:"omitempty,min=2,max=100"`
-	Slug        *string `json:"slug,omitempty" validate:"omitempty,slug"`
-	Description *string `json:"description,omitempty"`
-	ParentID    *uint   `json:"parent_id,omitempty"`
-	IsActive    *bool   `json:"is_active,omitempty"`
+type BulkDeleteCategoryRequest struct {
+	IDs []uint `json:"ids" validate:"required,min=1"`
 }
 
 func NewCategoryService(db *gorm.DB) CategoryServiceInterface {
@@ -92,11 +69,10 @@ func (s *categoryService) updateLevelAndPath(category *models.Category) error {
 		category.Path = fmt.Sprintf("%s.%d", parent.Path, parent.ID)
 	}
 	return nil
-
 }
 
 // Create categories
-func (s *categoryService) Create(req CreateCategoryRequest) (*models.Category, error) {
+func (s *categoryService) Create(req dto.CreateCategoryRequest) (*models.Category, error) {
 	slug := req.Slug
 	if slug == "" {
 		slug = generateSlug(req.Name)
@@ -144,7 +120,7 @@ func (s *categoryService) GetBySlug(slug string) (*models.Category, error) {
 }
 
 // Update update categories
-func (s *categoryService) Update(id uint, req UpdateCategoryRequest) (*models.Category, error) {
+func (s *categoryService) Update(id uint, req dto.UpdateCategoryRequest) (*models.Category, error) {
 	category, err := s.GetByID(id)
 	if err != nil {
 		return nil, err
@@ -196,7 +172,7 @@ func (s *categoryService) Delete(id uint) error {
 }
 
 // List retrieve list for categories
-func (s *categoryService) List(filters CategoryListFilters) ([]models.Category, int64, error) {
+func (s *categoryService) List(filters dto.CategoryListFilters) ([]models.Category, int64, error) {
 	var categories []models.Category
 	var total int64
 
@@ -225,9 +201,8 @@ func (s *categoryService) List(filters CategoryListFilters) ([]models.Category, 
 	return categories, total, nil
 }
 
-//BulkCreate
-
-func (s *categoryService) BulkCreate(categories []CreateCategoryRequest) ([]*models.Category, error) {
+// BulkCreate
+func (s *categoryService) BulkCreate(categories []dto.CreateCategoryRequest) ([]*models.Category, error) {
 	if len(categories) == 0 {
 		return nil, utils.ErrBadRequest("no categories provided")
 	}

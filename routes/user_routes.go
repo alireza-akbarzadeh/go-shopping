@@ -10,13 +10,13 @@ import (
 // and admin user management endpoints (admin only).
 func SetupUserRoutes(protected *gin.RouterGroup, ctrl *controllers.Container) {
 	// Profile endpoints for authenticated users
-	protected.GET("/profile", ctrl.Profile.GetProfile)
-	protected.PUT("/profile", ctrl.Profile.UpdateProfile)
+	protected.GET("/profile", ctrl.User.GetProfile)
+	protected.PUT("/profile", ctrl.User.UpdateProfile)
 
 	// Admin user management (no "/admin" prefix – apply role middleware directly)
 	adminUsers := protected.Group("/users")
 	adminUsers.Use(middleware.RequireRole("admin"))
 	{
-		adminUsers.GET("/", ctrl.Profile.GetAllUsers)
+		adminUsers.GET("/users", ctrl.User.GetAllUsers)
 	}
 }

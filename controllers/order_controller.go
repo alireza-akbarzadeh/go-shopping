@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -72,7 +73,7 @@ func (ctrl *OrderController) GetUserOrders(c *gin.Context) {
 		return
 	}
 
-	var req services.OrderListFilters
+	var req dto.OrderListFilters
 	if !utils.BindAndValidateQuery(c, &req, ctrl.validate) {
 		return
 	}

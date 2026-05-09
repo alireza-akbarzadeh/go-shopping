@@ -31,3 +31,21 @@ type User struct {
 	// Audit
 	LastLoginAt *time.Time `json:"last_login_at,omitempty"`
 }
+
+type PasswordResetToken struct {
+	ID        uint      `gorm:"primaryKey"`
+	UserID    uint      `gorm:"not null;index"`
+	Token     string    `gorm:"uniqueIndex;not null;size:64"`
+	ExpiresAt time.Time `gorm:"not null"`
+	UsedAt    *time.Time
+	CreatedAt time.Time
+}
+
+type EmailVerificationToken struct {
+	ID        uint      `gorm:"primaryKey"`
+	UserID    uint      `gorm:"not null;index"`
+	Token     string    `gorm:"uniqueIndex;not null;size:64"`
+	ExpiresAt time.Time `gorm:"not null"`
+	UsedAt    *time.Time
+	CreatedAt time.Time
+}

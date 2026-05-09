@@ -7,6 +7,211 @@ definitions:
     required:
     - refresh_token
     type: object
+  dto.BulkDeleteProductsRequest:
+    properties:
+      product_ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - product_ids
+    type: object
+  dto.ChangePasswordRequest:
+    properties:
+      current_password:
+        minLength: 6
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+    required:
+    - current_password
+    - new_password
+    type: object
+  dto.CreateCategoryRequest:
+    properties:
+      description:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      parent_id:
+        type: integer
+      slug:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  dto.CreateProductRequest:
+    properties:
+      barcode:
+        type: string
+      category_id:
+        type: integer
+      compare_at_price:
+        minimum: 0
+        type: number
+      cost:
+        minimum: 0
+        type: number
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      is_digital:
+        type: boolean
+      low_stock_threshold:
+        type: integer
+      meta_description:
+        type: string
+      meta_title:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 50
+        minLength: 3
+        type: string
+      status:
+        enum:
+        - draft
+        - active
+        - inactive
+        - archived
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    required:
+    - name
+    - price
+    - sku
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      last_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+  dto.ResetPasswordRequest:
+    properties:
+      new_password:
+        minLength: 6
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  dto.UpdateCategoryRequest:
+    properties:
+      description:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      parent_id:
+        type: integer
+      slug:
+        type: string
+    type: object
+  dto.UpdateProductRequest:
+    properties:
+      barcode:
+        type: string
+      category_id:
+        type: integer
+      compare_at_price:
+        minimum: 0
+        type: number
+      cost:
+        minimum: 0
+        type: number
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      is_digital:
+        type: boolean
+      low_stock_threshold:
+        type: integer
+      meta_description:
+        type: string
+      meta_title:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 50
+        minLength: 3
+        type: string
+      status:
+        enum:
+        - draft
+        - active
+        - inactive
+        - archived
+        type: string
+      stock:
+        minimum: 0
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -56,6 +261,99 @@ definitions:
     required:
     - name
     - slug
+    type: object
+  models.Order:
+    properties:
+      billing_address_id:
+        description: Address IDs (separate addresses table could be added later)
+        type: integer
+      created_at:
+        type: string
+      currency:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/models.OrderItem'
+        type: array
+      notes:
+        type: string
+      order_number:
+        type: string
+      payment:
+        $ref: '#/definitions/models.Payment'
+      payment_id:
+        type: integer
+      shipment:
+        $ref: '#/definitions/models.Shipment'
+      shipment_id:
+        type: integer
+      shipping_address_id:
+        type: integer
+      status:
+        type: string
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.OrderItem:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      order_id:
+        type: integer
+      price:
+        type: number
+      product:
+        $ref: '#/definitions/models.Product'
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      total:
+        description: read-only
+        type: number
+      updated_at:
+        type: string
+    type: object
+  models.Payment:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      currency:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      gateway_response:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      method:
+        type: string
+      order_id:
+        type: integer
+      status:
+        type: string
+      transaction_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
     type: object
   models.Product:
     properties:
@@ -132,144 +430,45 @@ definitions:
     - sku
     - slug
     type: object
-  services.CreateProductRequest:
+  models.Shipment:
     properties:
-      barcode:
+      address_line1:
+        description: Shipping address
         type: string
-      category_id:
+      address_line2:
+        type: string
+      carrier:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      delivered_at:
+        type: string
+      estimated_delivery:
+        type: string
+      id:
         type: integer
-      compare_at_price:
-        minimum: 0
-        type: number
-      cost:
-        minimum: 0
-        type: number
-      description:
-        type: string
-      images:
-        items:
-          type: string
-        type: array
-      is_digital:
-        type: boolean
-      low_stock_threshold:
+      order_id:
         type: integer
-      meta_description:
+      postal_code:
         type: string
-      meta_title:
+      shipped_at:
         type: string
-      name:
-        maxLength: 255
-        minLength: 3
-        type: string
-      price:
-        minimum: 0
-        type: number
-      sku:
-        maxLength: 50
-        minLength: 3
+      state:
         type: string
       status:
-        enum:
-        - draft
-        - active
-        - inactive
-        - archived
         type: string
-      stock:
-        minimum: 0
+      tracking_number:
+        type: string
+      updated_at:
+        type: string
+      user_id:
         type: integer
-      weight:
-        minimum: 0
-        type: number
-    required:
-    - name
-    - price
-    - sku
-    type: object
-  services.LoginRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  services.RegisterRequest:
-    properties:
-      email:
-        type: string
-      first_name:
-        maxLength: 100
-        minLength: 1
-        type: string
-      last_name:
-        maxLength: 100
-        minLength: 1
-        type: string
-      password:
-        minLength: 8
-        type: string
-      phone:
-        type: string
-    required:
-    - email
-    - first_name
-    - last_name
-    - password
-    type: object
-  services.UpdateProductRequest:
-    properties:
-      barcode:
-        type: string
-      category_id:
-        type: integer
-      compare_at_price:
-        minimum: 0
-        type: number
-      cost:
-        minimum: 0
-        type: number
-      description:
-        type: string
-      images:
-        items:
-          type: string
-        type: array
-      is_digital:
-        type: boolean
-      low_stock_threshold:
-        type: integer
-      meta_description:
-        type: string
-      meta_title:
-        type: string
-      name:
-        maxLength: 255
-        minLength: 3
-        type: string
-      price:
-        minimum: 0
-        type: number
-      sku:
-        maxLength: 50
-        minLength: 3
-        type: string
-      status:
-        enum:
-        - draft
-        - active
-        - inactive
-        - archived
-        type: string
-      stock:
-        minimum: 0
-        type: integer
-      weight:
-        minimum: 0
-        type: number
     type: object
   utils.Response:
     properties:
@@ -295,65 +494,35 @@ info:
   title: Shopping Platform API
   version: "1.0"
 paths:
-  /admin/users:
-    get:
+  /admin/shipments:
+    post:
       consumes:
       - application/json
-      description: Returns a paginated list of all users. Requires admin role.
+      description: Creates a shipment record and triggers a background job to process
+        it (e.g., call carrier API).
       parameters:
-      - default: 20
-        description: Items per page
-        in: query
-        maximum: 100
-        minimum: 1
-        name: limit
-        type: integer
-      - default: 0
-        description: Offset (skip number of items)
-        in: query
-        minimum: 0
-        name: offset
-        type: integer
+      - description: Shipment data
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             allOf:
             - $ref: '#/definitions/utils.Response'
             - properties:
                 data:
-                  properties:
-                    count:
-                      type: integer
-                    limit:
-                      type: integer
-                    offset:
-                      type: integer
-                    users:
-                      items:
-                        properties:
-                          created_at:
-                            type: string
-                          email:
-                            type: string
-                          first_name:
-                            type: string
-                          id:
-                            type: integer
-                          is_active:
-                            type: boolean
-                          last_name:
-                            type: string
-                          phone:
-                            type: string
-                          role:
-                            type: string
-                        type: object
-                      type: array
-                  type: object
+                  $ref: '#/definitions/models.Shipment'
               type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
         "401":
           description: Unauthorized
           schema:
@@ -362,15 +531,19 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
       security:
       - BearerAuth: []
-      summary: Get all users
+      summary: Create a shipment
       tags:
-      - Admin
+      - Shipments
   /auth/login:
     post:
       consumes:
@@ -382,7 +555,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.LoginRequest'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
@@ -481,7 +654,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.RegisterRequest'
+          $ref: '#/definitions/dto.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -521,6 +694,97 @@ paths:
           schema:
             $ref: '#/definitions/utils.Response'
       summary: Register a new user
+      tags:
+      - Authentication
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Resets password using a valid token received by email.
+      parameters:
+      - description: Reset token and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Reset password
+      tags:
+      - Authentication
+  /auth/send-verification:
+    post:
+      consumes:
+      - application/json
+      description: Sends an email verification link to the authenticated user's email.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Send verification email
+      tags:
+      - Authentication
+  /auth/verify-email:
+    get:
+      consumes:
+      - application/json
+      description: Verifies email address using a token sent via email.
+      parameters:
+      - description: Verification token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Verify email
       tags:
       - Authentication
   /cart:
@@ -696,6 +960,345 @@ paths:
       summary: Update cart item quantity
       tags:
       - Cart
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of categories with optional filtering.
+      parameters:
+      - default: 20
+        description: Items per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset (skip number of items)
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - description: Filter by active status (true/false)
+        in: query
+        name: is_active
+        type: boolean
+      - description: Filter by parent category ID
+        in: query
+        name: parent_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    categories:
+                      items:
+                        $ref: '#/definitions/models.Category'
+                      type: array
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+                    total:
+                      type: integer
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List categories
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: Creates a new product category. Only accessible by users with the
+        "admin" role.
+      parameters:
+      - description: Category creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new category
+      tags:
+      - Categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: |-
+        Deletes a category by ID. Only accessible by users with the "admin" role.
+        Categories with child categories cannot be deleted – delete children first.
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a category
+      tags:
+      - Categories
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing category by ID. Only accessible by users with
+        the "admin" role.
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Category update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Update a category
+      tags:
+      - Categories
+  /categories/{identifier}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a single category. Accepts either a numeric ID or a URL
+        slug.
+      parameters:
+      - description: Category ID (numeric) or slug (string)
+        in: path
+        name: identifier
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get a category by ID or slug
+      tags:
+      - Categories
+  /categories/bulk:
+    delete:
+      consumes:
+      - application/json
+      description: |-
+        Deletes multiple categories by their IDs. Only accessible by users with the "admin" role.
+        Cannot delete categories that have child categories – delete children first.
+      parameters:
+      - description: Category IDs to delete
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Bulk delete categories
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: Creates multiple categories at once. Only accessible by users with
+        the "admin" role.
+      parameters:
+      - description: Array of categories to create
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/dto.CreateCategoryRequest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Category'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Bulk create categories
+      tags:
+      - Categories
   /health:
     get:
       description: Returns the health status of the API and database
@@ -715,6 +1318,212 @@ paths:
       summary: Health check
       tags:
       - health
+  /orders:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated list of all orders with filtering by status,
+        date, amount, and user ID.
+      parameters:
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Order status
+        in: query
+        name: status
+        type: string
+      - description: Start date (RFC3339)
+        in: query
+        name: from_date
+        type: string
+      - description: End date (RFC3339)
+        in: query
+        name: to_date
+        type: string
+      - description: Minimum amount
+        in: query
+        name: min_amount
+        type: number
+      - description: Maximum amount
+        in: query
+        name: max_amount
+        type: number
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+                    orders:
+                      items:
+                        $ref: '#/definitions/models.Order'
+                      type: array
+                    total:
+                      type: integer
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List all orders (admin)
+      tags:
+      - Orders
+    post:
+      consumes:
+      - application/json
+      description: Converts the authenticated user's cart into an order.
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Order'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Checkout
+      tags:
+      - Orders
+  /orders/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a single order for the authenticated user.
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Order'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get order by ID
+      tags:
+      - Orders
+  /orders/my:
+    get:
+      consumes:
+      - application/json
+      description: Returns all orders for the authenticated user (paginated).
+      parameters:
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset (begin)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+                    orders:
+                      items:
+                        $ref: '#/definitions/models.Order'
+                      type: array
+                    total:
+                      type: integer
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user's orders
+      tags:
+      - Orders
   /products:
     get:
       consumes:
@@ -812,7 +1621,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.CreateProductRequest'
+          $ref: '#/definitions/dto.CreateProductRequest'
       produces:
       - application/json
       responses:
@@ -823,26 +1632,7 @@ paths:
             - $ref: '#/definitions/utils.Response'
             - properties:
                 data:
-                  properties:
-                    product:
-                      properties:
-                        created_at:
-                          type: string
-                        description:
-                          type: string
-                        id:
-                          type: integer
-                        name:
-                          type: string
-                        price:
-                          format: float64
-                          type: number
-                        stock:
-                          type: integer
-                        updated_at:
-                          type: string
-                      type: object
-                  type: object
+                  $ref: '#/definitions/models.Product'
               type: object
         "400":
           description: Bad Request
@@ -872,7 +1662,6 @@ paths:
       description: Delete an existing product permanently from the catalog
       parameters:
       - description: Product ID
-        example: 123
         in: path
         name: id
         required: true
@@ -881,14 +1670,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Successfully deleted (no data returned)
+          description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  type: object
-              type: object
+            $ref: '#/definitions/utils.Response'
         "400":
           description: Bad Request
           schema:
@@ -925,7 +1709,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.UpdateProductRequest'
+          $ref: '#/definitions/dto.UpdateProductRequest'
       produces:
       - application/json
       responses:
@@ -936,24 +1720,7 @@ paths:
             - $ref: '#/definitions/utils.Response'
             - properties:
                 data:
-                  properties:
-                    product:
-                      properties:
-                        description:
-                          type: string
-                        id:
-                          type: integer
-                        name:
-                          type: string
-                        price:
-                          format: float64
-                          type: number
-                        stock:
-                          type: integer
-                        updated_at:
-                          type: string
-                      type: object
-                  type: object
+                  $ref: '#/definitions/models.Product'
               type: object
         "400":
           description: Bad Request
@@ -988,7 +1755,6 @@ paths:
         name)
       parameters:
       - description: Product identifier (ID or slug)
-        example: "123"
         in: path
         name: identifier
         required: true
@@ -1024,6 +1790,90 @@ paths:
       security:
       - BearerAuth: []
       summary: Get product by ID or slug
+      tags:
+      - Products
+  /products/bulk:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete multiple products by their IDs (admin only)
+      parameters:
+      - description: Product IDs to delete
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BulkDeleteProductsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Bulk delete products
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Create multiple products in a single request (admin only)
+      parameters:
+      - description: Array of products
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/dto.CreateProductRequest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Product'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Bulk create products
       tags:
       - Products
   /profile:
@@ -1076,7 +1926,7 @@ paths:
       - BearerAuth: []
       summary: Get user profile
       tags:
-      - Profile
+      - User
     put:
       consumes:
       - application/json
@@ -1132,7 +1982,285 @@ paths:
       - BearerAuth: []
       summary: Update user profile
       tags:
-      - Profile
+      - User
+  /profile/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change current user's password.
+      parameters:
+      - description: Password change request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - Authentication
+  /shipments:
+    get:
+      consumes:
+      - application/json
+      description: Returns all shipments belonging to an order (user must own the
+        order).
+      parameters:
+      - description: Order ID
+        in: query
+        name: order_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Shipment'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get shipments for an order
+      tags:
+      - Shipments
+  /shipments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a shipment. Admin can see any; users see only shipments
+        belonging to their orders.
+      parameters:
+      - description: Shipment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Shipment'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get shipment by ID
+      tags:
+      - Shipments
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of all users. Supports advanced filtering.
+      parameters:
+      - default: 20
+        description: Items per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset (skip number of items)
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      - description: Partial match on email
+        in: query
+        name: email
+        type: string
+      - description: Partial match on phone
+        in: query
+        name: phone
+        type: string
+      - description: Partial match on first name
+        in: query
+        name: first_name
+        type: string
+      - description: Partial match on last name
+        in: query
+        name: last_name
+        type: string
+      - description: Exact match on role
+        enum:
+        - user
+        - admin
+        - moderator
+        in: query
+        name: role
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+                    total:
+                      format: int64
+                      type: integer
+                    users:
+                      items:
+                        properties:
+                          created_at:
+                            type: string
+                          email:
+                            type: string
+                          first_name:
+                            type: string
+                          id:
+                            type: integer
+                          is_active:
+                            type: boolean
+                          last_name:
+                            type: string
+                          phone:
+                            type: string
+                          role:
+                            type: string
+                        type: object
+                      type: array
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - User
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft‑deletes a user by ID. Only accessible by users with the "admin"
+        role.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - User
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and the JWT token.

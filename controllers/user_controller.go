@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -11,22 +12,22 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type ProfileController struct {
-	profileService services.ProfileServiceInterface
-	validate       *validator.Validate
+type UserController struct {
+	userService services.UserServiceInterface
+	validate    *validator.Validate
 }
 
-func NewProfileController(profileService services.ProfileServiceInterface) *ProfileController {
-	return &ProfileController{
-		profileService: profileService,
-		validate:       validator.New(),
+func NewUserController(userService services.UserServiceInterface) *UserController {
+	return &UserController{
+		userService: userService,
+		validate:    validator.New(),
 	}
 }
 
 // GetProfile returns the authenticated user's profile.
 // @Summary      Get user profile
 // @Description  Returns the profile of the currently authenticated user
-// @Tags         Profile
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -35,14 +36,14 @@ func NewProfileController(profileService services.ProfileServiceInterface) *Prof
 // @Failure      404 {object} utils.Response
 // @Failure      500 {object} utils.Response
 // @Router       /profile [get]
-func (pc *ProfileController) GetProfile(c *gin.Context) {
+func (pc *UserController) GetProfile(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
 		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
 		return
 	}
 
-	user, err := pc.profileService.GetUserByID(userID)
+	user, err := pc.userService.GetUserByID(userID)
 	if err != nil {
 		utils.HandleAppError(c, err, constants.ErrInternalServer.Error())
 		return
@@ -65,7 +66,7 @@ func (pc *ProfileController) GetProfile(c *gin.Context) {
 // UpdateProfile updates the authenticated user's profile.
 // @Summary      Update user profile
 // @Description  Updates the first name, last name, and phone number of the authenticated user
-// @Tags         Profile
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -76,7 +77,7 @@ func (pc *ProfileController) GetProfile(c *gin.Context) {
 // @Failure      404 {object} utils.Response
 // @Failure      500 {object} utils.Response
 // @Router       /profile [put]
-func (pc *ProfileController) UpdateProfile(c *gin.Context) {
+func (pc *UserController) UpdateProfile(c *gin.Context) {
 	var req services.UpdateProfileRequest
 	if !utils.BindAndValidate(c, &req, pc.validate) {
 		return
@@ -88,7 +89,7 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	user, err := pc.profileService.UpdateUserProfile(userID, req)
+	user, err := pc.userService.UpdateUserProfile(userID, req)
 	if err != nil {
 		utils.HandleAppError(c, err, constants.ErrInternalServer.Error())
 		return
@@ -100,44 +101,44 @@ func (pc *ProfileController) UpdateProfile(c *gin.Context) {
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
 		"phone":      user.Phone,
+		"role":       user.Role,
 	}
 	utils.SuccessResponse(c, constants.MsgUpdateSuccess, data)
 }
 
 // GetAllUsers returns a paginated list of users (admin only).
 // @Summary      Get all users
-// @Description  Returns a paginated list of all users. Requires admin role.
-// @Tags         Admin
+// @Description  Returns a paginated list of all users. Supports advanced filtering.
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        limit  query  int  false  "Items per page"  default(20)  minimum(1)  maximum(100)
-// @Param        offset query  int  false  "Offset (skip number of items)"  default(0)  minimum(0)
-// @Success      200 {object} utils.Response{data=object{users=[]object{id=uint,email=string,first_name=string,last_name=string,phone=string,role=string,is_active=bool,created_at=string},limit=int,offset=int,count=int}}
+// @Param        limit       query  int     false  "Items per page"                       default(20)  minimum(1)  maximum(100)
+// @Param        offset      query  int     false  "Offset (skip number of items)"        default(0)   minimum(0)
+// @Param        is_active   query  bool    false  "Filter by active status"
+// @Param        email       query  string  false  "Partial match on email"
+// @Param        phone       query  string  false  "Partial match on phone"
+// @Param        first_name  query  string  false  "Partial match on first name"
+// @Param        last_name   query  string  false  "Partial match on last name"
+// @Param        role        query  string  false  "Exact match on role"                  Enums(user, admin, moderator)
+// @Success      200 {object} utils.Response{data=object{users=[]object{id=uint,email=string,first_name=string,last_name=string,phone=string,role=string,is_active=bool,created_at=string},limit=int,offset=int,total=int64}}
 // @Failure      401 {object} utils.Response
 // @Failure      403 {object} utils.Response
 // @Failure      500 {object} utils.Response
 // @Router       /users [get]
-func (pc *ProfileController) GetAllUsers(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-
-	if limit < 1 {
-		limit = 20
-	}
-	if limit > 100 {
-		limit = 100
-	}
-	if offset < 0 {
-		offset = 0
-	}
-
-	users, err := pc.profileService.GetUsers(limit, offset)
-	if err != nil {
-		utils.InternalServerErrorResponse(c, err, "failed to fetch users")
+func (pc *UserController) GetAllUsers(c *gin.Context) {
+	var filter services.UserFilter
+	if !utils.BindAndValidateQuery(c, &filter, pc.validate) {
 		return
 	}
 
+	users, total, err := pc.userService.GetUsers(filter)
+	if err != nil {
+		utils.HandleAppError(c, err, constants.ErrUserNotFound)
+		return
+	}
+
+	// Map to safe response objects (exclude sensitive fields)
 	safeUsers := make([]gin.H, len(users))
 	for i, u := range users {
 		safeUsers[i] = gin.H{
@@ -154,9 +155,40 @@ func (pc *ProfileController) GetAllUsers(c *gin.Context) {
 
 	data := gin.H{
 		"users":  safeUsers,
-		"limit":  limit,
-		"offset": offset,
-		"count":  len(users),
+		"limit":  filter.Limit,
+		"offset": filter.Offset,
+		"total":  total, // total records matching filters (for pagination UI)
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
+}
+
+// DeleteUser deletes a user by ID (admin only).
+// @Summary      Delete a user
+// @Description  Soft‑deletes a user by ID. Only accessible by users with the "admin" role.
+// @Tags         User
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int  true  "User ID"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/{id} [delete]
+func (pc *UserController) DeleteUser(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "invalid user id")
+		return
+	}
+
+	err = pc.userService.DeleteUser(uint(id))
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to delete user")
+		return
+	}
+
+	utils.SuccessResponse(c, constants.MsgDeleteSuccess, nil)
 }

@@ -18,6 +18,7 @@ const (
 	ErrPasswordResetFailed  = "password reset failed"
 	ErrOldPasswordIncorrect = "current password is incorrect"
 	ErrWeakPassword         = "password is too weak – use at least 8 chars with mix"
+	ErrIncorrectPassword    = "incorrect password"
 )
 
 // ==================== USER PROFILE ====================
