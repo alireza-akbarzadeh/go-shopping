@@ -28,12 +28,7 @@ type ServerConfig struct {
 	Mode string
 }
 type DatabaseConfig struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
+	Host     string // Can be a full connection string
 }
 
 type JWTConfig struct {
@@ -80,14 +75,9 @@ func Load() (*Config, error) {
 			Port: viper.GetString("SERVER_PORT"),
 			Mode: viper.GetString("GIN_MODE"),
 		},
-		Database: DatabaseConfig{
-			Host:     viper.GetString("DB_HOST"),
-			Port:     viper.GetString("DB_PORT"),
-			User:     viper.GetString("DB_USER"),
-			Password: viper.GetString("DB_PASSWORD"),
-			DBName:   viper.GetString("DB_NAME"),
-			SSLMode:  viper.GetString("DB_SSLMODE"),
-		},
+		   Database: DatabaseConfig{
+			   Host:     viper.GetString("DB_HOST"),
+		   },
 		JWT: JWTConfig{
 			Secret: viper.GetString("JWT_SECRET"),
 		},
@@ -106,12 +96,10 @@ func Load() (*Config, error) {
 
 // DSN returns the PostgreSQL connection string
 func (c *Config) DSN() string {
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		c.Database.Host,
-		c.Database.User,
-		c.Database.Password,
-		c.Database.DBName,
-		c.Database.Port,
-		c.Database.SSLMode,
-	)
+	       // If Host looks like a URL, return as is (for Neon or cloud DBs)
+	       if strings.HasPrefix(c.Database.Host, "postgresql://") || strings.HasPrefix(c.Database.Host, "postgres://") {
+		       return c.Database.Host
+	       }
+	       // Fallback to legacy style
+	       return fmt.Sprintf("host=%s", c.Database.Host)
 }
