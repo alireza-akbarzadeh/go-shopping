@@ -205,3 +205,43 @@ func (ctrl *OrderController) ListAllOrders(c *gin.Context) {
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }
+
+// UpdateOrderStatus updates an order's status (admin only).
+// @Summary      Update order status (admin)
+// @Description  Updates the status of an order and sends real-time notifications.
+// @Tags         Admin Orders
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path    int     true  "Order ID"
+// @Param        request body    object  true  "Status update request"
+// @Success      200     {object} utils.Response
+// @Failure      400     {object} utils.Response
+// @Failure      401     {object} utils.Response
+// @Failure      403     {object} utils.Response
+// @Failure      404     {object} utils.Response
+// @Failure      500     {object} utils.Response
+// @Router       /orders/{id}/status [put]
+func (ctrl *OrderController) UpdateOrderStatus(c *gin.Context) {
+	orderID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.ErrorResponse(c, 400, "invalid order id")
+		return
+	}
+
+	var req struct {
+		Status string `json:"status" validate:"required,oneof=pending paid shipped delivered cancelled refunded"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, 400, err.Error())
+		return
+	}
+
+	if err := ctrl.orderService.UpdateOrderStatus(uint(orderID), req.Status); err != nil {
+		utils.HandleAppError(c, err, "failed to update order status")
+		return
+	}
+
+	utils.SuccessResponse(c, "order status updated successfully", nil)
+}

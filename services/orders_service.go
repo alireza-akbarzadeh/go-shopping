@@ -17,14 +17,19 @@ type OrderServiceInterface interface {
 	GetOrderByID(orderID uint, userID uint) (*models.Order, error)
 	GetAllOrders(filters AdminOrderFilters, limit, offset int) ([]models.Order, int64, error)
 	UpdateOverdueOrders() error
+	UpdateOrderStatus(orderID uint, status string) error
 }
 
 type orderService struct {
-	db *gorm.DB
+	db                  *gorm.DB
+	notificationService NotificationServiceInterface
 }
 
-func NewOrderService(db *gorm.DB) OrderServiceInterface {
-	return &orderService{db: db}
+func NewOrderService(db *gorm.DB, notificationService NotificationServiceInterface) OrderServiceInterface {
+	return &orderService{
+		db:                  db,
+		notificationService: notificationService,
+	}
 }
 
 // Checkout converts the user's active cart into an order.
@@ -98,6 +103,24 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 	}
 
 	s.db.Preload("Items.Product").Preload("User").First(order, order.ID)
+
+	// Send real-time notification for new order
+	go func() {
+		_ = s.notificationService.CreateNotification(
+			userID,
+			"order_created",
+			"Order Placed Successfully",
+			fmt.Sprintf("Your order #%s has been placed and is being processed.", order.OrderNumber),
+			map[string]interface{}{
+				"order_id":     order.ID,
+				"order_number": order.OrderNumber,
+				"status":       order.Status,
+				"total_amount": order.TotalAmount,
+				"currency":     order.Currency,
+			},
+		)
+	}()
+
 	return order, nil
 }
 
@@ -165,6 +188,62 @@ func (s *orderService) GetUserOrders(userID uint, filters OrderListFilters) ([]m
 	}
 
 	return orders, total, nil
+}
+
+// UpdateOrderStatus updates an order's status and sends real-time notification
+func (s *orderService) UpdateOrderStatus(orderID uint, status string) error {
+	var order models.Order
+	if err := s.db.Preload("User").First(&order, orderID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return utils.ErrNotFound("order not found")
+		}
+		return utils.ErrInternal(err)
+	}
+
+	oldStatus := order.Status
+	order.Status = status
+
+	if err := s.db.Save(&order).Error; err != nil {
+		return utils.ErrInternal(err)
+	}
+
+	// Send real-time notification for status change
+	go func() {
+		title, message := s.getOrderStatusNotificationMessage(status, order.OrderNumber)
+		_ = s.notificationService.CreateNotification(
+			order.UserID,
+			"order_status_update",
+			title,
+			message,
+			map[string]interface{}{
+				"order_id":     order.ID,
+				"order_number": order.OrderNumber,
+				"old_status":   oldStatus,
+				"new_status":   status,
+				"updated_at":   order.UpdatedAt,
+			},
+		)
+	}()
+
+	return nil
+}
+
+// getOrderStatusNotificationMessage returns appropriate title and message for order status
+func (s *orderService) getOrderStatusNotificationMessage(status, orderNumber string) (string, string) {
+	switch status {
+	case constants.OrderStatusPaid:
+		return "Payment Confirmed", fmt.Sprintf("Payment for order #%s has been confirmed.", orderNumber)
+	case constants.OrderStatusShipped:
+		return "Order Shipped", fmt.Sprintf("Your order #%s has been shipped and is on its way!", orderNumber)
+	case constants.OrderStatusDelivered:
+		return "Order Delivered", fmt.Sprintf("Your order #%s has been delivered successfully.", orderNumber)
+	case constants.OrderStatusCancelled:
+		return "Order Cancelled", fmt.Sprintf("Your order #%s has been cancelled.", orderNumber)
+	case constants.OrderStatusRefunded:
+		return "Order Refunded", fmt.Sprintf("Your order #%s has been refunded.", orderNumber)
+	default:
+		return "Order Update", fmt.Sprintf("Your order #%s status has been updated to %s.", orderNumber, status)
+	}
 }
 
 // GetOrderByID returns a single order by ID, verifying ownership.
@@ -252,11 +331,29 @@ func (s *orderService) UpdateOverdueOrders() error {
 
 	// Mark them as 'delayed'
 	for _, order := range orders {
+		oldStatus := order.Status
 		order.Status = "delayed"
 		if err := s.db.Save(&order).Error; err != nil {
 			utils.Log.WithError(err).Errorf("Failed to update order %d to delayed", order.ID)
 		} else {
 			utils.Log.Infof("Order %d marked as delayed", order.ID)
+
+			// Send real-time notification for delayed order
+			go func(order models.Order) {
+				_ = s.notificationService.CreateNotification(
+					order.UserID,
+					"order_delayed",
+					"Order Delayed",
+					fmt.Sprintf("Your order #%s is experiencing a delay. We apologize for the inconvenience.", order.OrderNumber),
+					map[string]interface{}{
+						"order_id":     order.ID,
+						"order_number": order.OrderNumber,
+						"old_status":   oldStatus,
+						"new_status":   "delayed",
+						"updated_at":   order.UpdatedAt,
+					},
+				)
+			}(order)
 		}
 	}
 	return nil

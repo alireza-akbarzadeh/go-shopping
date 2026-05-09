@@ -160,3 +160,43 @@ func (ctrl *ShipmentController) GetShipmentsByOrder(c *gin.Context) {
 
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, userShipments)
 }
+
+// UpdateShipmentStatus updates a shipment's status (admin only).
+// @Summary      Update shipment status (admin)
+// @Description  Updates the status of a shipment and sends real-time notifications.
+// @Tags         Admin Shipments
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path    int     true  "Shipment ID"
+// @Param        request body    object  true  "Status update request"
+// @Success      200     {object} utils.Response
+// @Failure      400     {object} utils.Response
+// @Failure      401     {object} utils.Response
+// @Failure      403     {object} utils.Response
+// @Failure      404     {object} utils.Response
+// @Failure      500     {object} utils.Response
+// @Router       /admin/shipments/{id}/status [put]
+func (ctrl *ShipmentController) UpdateShipmentStatus(c *gin.Context) {
+	shipmentID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.ErrorResponse(c, 400, "invalid shipment id")
+		return
+	}
+
+	var req struct {
+		Status string `json:"status" validate:"required,oneof=pending processing shipped delivered"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, 400, err.Error())
+		return
+	}
+
+	if err := ctrl.shipmentService.UpdateShipmentStatus(uint(shipmentID), req.Status); err != nil {
+		utils.HandleAppError(c, err, "failed to update shipment status")
+		return
+	}
+
+	utils.SuccessResponse(c, "shipment status updated successfully", nil)
+}

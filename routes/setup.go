@@ -35,6 +35,8 @@ func (r *Router) Setup() {
 		SetupUserRoutes(protected, r.controllers)
 		SetupCartRoutes(protected, r.controllers)
 		SetupOrderRoutes(protected, r.controllers)
+		SetupShipmentRoutes(protected, r.controllers)
+		SetupWebSocketRoutes(r.engine, r.controllers.WebSocket, r.cfg)
 
 	}
 }

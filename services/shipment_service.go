@@ -32,12 +32,17 @@ type ShipmentServiceInterface interface {
 }
 
 type shipmentService struct {
-	db         *gorm.DB
-	workerPool *tasks.WorkerPool
+	db                  *gorm.DB
+	workerPool          *tasks.WorkerPool
+	notificationService NotificationServiceInterface
 }
 
-func NewShipmentService(db *gorm.DB, workerPool *tasks.WorkerPool) ShipmentServiceInterface {
-	return &shipmentService{db: db, workerPool: workerPool}
+func NewShipmentService(db *gorm.DB, workerPool *tasks.WorkerPool, notificationService NotificationServiceInterface) ShipmentServiceInterface {
+	return &shipmentService{
+		db:                  db,
+		workerPool:          workerPool,
+		notificationService: notificationService,
+	}
 }
 
 // CreateShipment creates a shipment record and enqueues a background job.
@@ -77,6 +82,23 @@ func (s *shipmentService) CreateShipment(req CreateShipmentRequest) (*models.Shi
 	}
 	s.workerPool.Enqueue(job)
 
+	// Send real-time notification for shipment creation
+	go func() {
+		_ = s.notificationService.CreateNotification(
+			shipment.UserID,
+			"shipment_created",
+			"Shipment Created",
+			fmt.Sprintf("Your order shipment has been created and is being prepared for delivery."),
+			map[string]interface{}{
+				"shipment_id":     shipment.ID,
+				"order_id":        shipment.OrderID,
+				"carrier":         shipment.Carrier,
+				"tracking_number": shipment.TrackingNumber,
+				"status":          shipment.Status,
+			},
+		)
+	}()
+
 	return shipment, nil
 }
 
@@ -90,6 +112,14 @@ func (s *shipmentService) processShipment(payload interface{}) error {
 	// Simulate external carrier API call (label generation, tracking update)
 	time.Sleep(2 * time.Second)
 
+	// Get shipment before update
+	var shipment models.Shipment
+	if err := s.db.First(&shipment, shipmentID).Error; err != nil {
+		return err
+	}
+
+	oldStatus := shipment.Status
+
 	// Update status to 'processing' (or 'shipped' after successful API call)
 	if err := s.db.Model(&models.Shipment{}).Where("id = ?", shipmentID).
 		Update("status", "processing").Error; err != nil {
@@ -97,6 +127,25 @@ func (s *shipmentService) processShipment(payload interface{}) error {
 	}
 
 	utils.Log.Infof("Shipment %d processed in background", shipmentID)
+
+	// Send real-time notification for status change
+	go func() {
+		_ = s.notificationService.CreateNotification(
+			shipment.UserID,
+			"shipment_status_update",
+			"Shipment Processing",
+			fmt.Sprintf("Your shipment is now being processed and prepared for delivery."),
+			map[string]interface{}{
+				"shipment_id":     shipment.ID,
+				"order_id":        shipment.OrderID,
+				"carrier":         shipment.Carrier,
+				"tracking_number": shipment.TrackingNumber,
+				"old_status":      oldStatus,
+				"new_status":      "processing",
+			},
+		)
+	}()
+
 	return nil
 }
 
@@ -123,6 +172,17 @@ func (s *shipmentService) GetShipmentsByOrderID(orderID uint) ([]models.Shipment
 
 // UpdateShipmentStatus manually updates a shipment's status (admin only).
 func (s *shipmentService) UpdateShipmentStatus(id uint, status string) error {
+	var shipment models.Shipment
+	if err := s.db.First(&shipment, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return utils.ErrNotFound(constants.ErrShipmentNotFound)
+		}
+		return utils.ErrInternal(err)
+	}
+
+	oldStatus := shipment.Status
+	shipment.Status = status
+
 	result := s.db.Model(&models.Shipment{}).Where("id = ?", id).Update("status", status)
 	if result.Error != nil {
 		return utils.ErrInternal(result.Error)
@@ -130,5 +190,40 @@ func (s *shipmentService) UpdateShipmentStatus(id uint, status string) error {
 	if result.RowsAffected == 0 {
 		return utils.ErrNotFound(constants.ErrShipmentNotFound)
 	}
+
+	// Send real-time notification for status change
+	go func() {
+		title, message := s.getShipmentStatusNotificationMessage(status, shipment.TrackingNumber)
+		_ = s.notificationService.CreateNotification(
+			shipment.UserID,
+			"shipment_status_update",
+			title,
+			message,
+			map[string]interface{}{
+				"shipment_id":     shipment.ID,
+				"order_id":        shipment.OrderID,
+				"carrier":         shipment.Carrier,
+				"tracking_number": shipment.TrackingNumber,
+				"old_status":      oldStatus,
+				"new_status":      status,
+			},
+		)
+	}()
+
 	return nil
+}
+
+// getShipmentStatusNotificationMessage returns appropriate title and message for shipment status
+func (s *shipmentService) getShipmentStatusNotificationMessage(status, trackingNumber string) (string, string) {
+	switch status {
+	case constants.ShipmentStatusShipped:
+		if trackingNumber != "" {
+			return "Package Shipped", fmt.Sprintf("Your package has been shipped! Track it with: %s", trackingNumber)
+		}
+		return "Package Shipped", "Your package has been shipped and is on its way!"
+	case constants.ShipmentStatusDelivered:
+		return "Package Delivered", "Your package has been delivered successfully!"
+	default:
+		return "Shipment Update", fmt.Sprintf("Your shipment status has been updated to: %s", status)
+	}
 }
