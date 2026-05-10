@@ -30,3 +30,26 @@ type ResetPasswordRequest struct {
 	Token       string `json:"token" binding:"required"`
 	NewPassword string `json:"new_password" binding:"required,min=6"`
 }
+
+type LoginResponseData struct {
+	User         UserResponse `json:"user"`
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token"`
+}
+
+type RegisterResponseData struct {
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token"`
+	User         UserResponse `json:"user"`
+}
+
+// RefreshResponseData defines the shape of token refresh response.
+type RefreshResponseData struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+// MessageResponse is a generic response with only a message.
+type MessageResponse struct {
+	Message string `json:"message"`
+}
