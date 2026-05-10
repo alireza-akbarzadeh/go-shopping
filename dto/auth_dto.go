@@ -51,5 +51,24 @@ type RefreshResponseData struct {
 
 // MessageResponse is a generic response with only a message.
 type MessageResponse struct {
+	Success bool   `json:"success"`
 	Message string `json:"message"`
+}
+
+type RegisterResponse struct {
+	Success bool                 `json:"success"`
+	Message string               `json:"message"`
+	Data    RegisterResponseData `json:"data"`
+}
+
+type LoginResponse struct {
+	Success bool              `json:"success"`
+	Message string            `json:"message"`
+	Data    LoginResponseData `json:"data"`
+}
+
+type RefreshResponse struct {
+	Success bool                `json:"success"`
+	Message string              `json:"message"`
+	Data    RefreshResponseData `json:"data"`
 }

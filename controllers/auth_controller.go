@@ -31,9 +31,9 @@ func NewAuthController(authService services.AuthServiceInterface) *AuthControlle
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.RegisterRequest true "Registration data"
-// @Success      201 {object} utils.Response{data=dto.RegisterResponseData}
-// @Failure      400 {object} utils.Response "Validation error"
-// @Failure      409 {object} utils.Response "Invalid credentials"
+// @Success      201 {object} dto.RegisterResponse
+// @Failure      400 {object} dto.MessageResponse
+// @Failure      409 {object} dto.MessageResponse
 // @Router       /auth/register [post]
 func (ctrl *AuthController) Register(c *gin.Context) {
 	var req dto.RegisterRequest
@@ -47,19 +47,23 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 		return
 	}
 
-	responseData := dto.RegisterResponseData{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		User: dto.UserResponse{
-			ID:        user.ID,
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			Role:      user.Role,
-			Phone:     user.Phone,
+	resp := dto.RegisterResponse{
+		Success: true,
+		Message: constants.MsgRegistrationSuccess,
+		Data: dto.RegisterResponseData{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			User: dto.UserResponse{
+				ID:        user.ID,
+				Email:     user.Email,
+				FirstName: user.FirstName,
+				LastName:  user.LastName,
+				Role:      user.Role,
+				Phone:     user.Phone,
+			},
 		},
 	}
-	utils.CreatedResponse(c, constants.MsgRegistrationSuccess, responseData)
+	c.JSON(http.StatusCreated, resp)
 }
 
 // Login godoc
@@ -69,9 +73,9 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.LoginRequest true "Login credentials"
-// @Success      200 {object} utils.Response{data=dto.LoginResponseData}
-// @Failure      400 {object} utils.Response "Validation error"
-// @Failure      401 {object} utils.Response "Invalid credentials"
+// @Success      200 {object} dto.LoginResponse
+// @Failure      400 {object} dto.MessageResponse
+// @Failure      401 {object} dto.MessageResponse
 // @Router       /auth/login [post]
 func (ctrl *AuthController) Login(c *gin.Context) {
 	var req dto.LoginRequest
@@ -85,20 +89,23 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	responseData := dto.LoginResponseData{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		User: dto.UserResponse{
-			ID:        user.ID,
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			Role:      user.Role,
-			Phone:     user.Phone,
+	resp := dto.LoginResponse{
+		Success: true,
+		Message: constants.MsgLoginSuccess,
+		Data: dto.LoginResponseData{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			User: dto.UserResponse{
+				ID:        user.ID,
+				Email:     user.Email,
+				FirstName: user.FirstName,
+				LastName:  user.LastName,
+				Role:      user.Role,
+				Phone:     user.Phone,
+			},
 		},
 	}
-
-	utils.SuccessResponse(c, constants.MsgLoginSuccess, responseData)
+	c.JSON(http.StatusOK, resp)
 }
 
 // RefreshRequest represents the body for token refresh.
@@ -114,9 +121,9 @@ type RefreshRequest struct {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body RefreshRequest true "Refresh token"
-// @Success      200 {object} utils.Response{data=dto.RefreshResponseData}
-// @Failure      400 {object} utils.Response "Validation error"
-// @Failure      401 {object} utils.Response "Invalid credentials"
+// @Success      200 {object} dto.RefreshResponse
+// @Failure      400 {object} dto.MessageResponse
+// @Failure      401 {object} dto.MessageResponse
 // @Router       /auth/refresh [post]
 func (ctrl *AuthController) Refresh(c *gin.Context) {
 	var req RefreshRequest
@@ -130,11 +137,15 @@ func (ctrl *AuthController) Refresh(c *gin.Context) {
 		return
 	}
 
-	responseData := dto.RefreshResponseData{
-		AccessToken:  newAccessToken,
-		RefreshToken: newRefreshToken,
+	resp := dto.RefreshResponse{
+		Success: true,
+		Message: constants.MsgRefreshSuccess,
+		Data: dto.RefreshResponseData{
+			AccessToken:  newAccessToken,
+			RefreshToken: newRefreshToken,
+		},
 	}
-	utils.SuccessResponse(c, constants.MsgRefreshSuccess, responseData)
+	c.JSON(http.StatusOK, resp)
 }
 
 // Logout revokes the user's refresh token(s).
@@ -145,8 +156,8 @@ func (ctrl *AuthController) Refresh(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body object false "Optional {refresh_token}"
-// @Success      200 {object} utils.Response{data=object}
-// @Failure      401 {object} utils.Response "Validation error"
+// @Success      200 {object} dto.MessageResponse
+// @Failure      401 {object} dto.MessageResponse
 // @Router       /auth/logout [post]
 func (ctrl *AuthController) Logout(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -165,7 +176,11 @@ func (ctrl *AuthController) Logout(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, constants.MsgLogoutSuccess, nil)
+	resp := dto.MessageResponse{
+		Success: true,
+		Message: constants.MsgLogoutSuccess,
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // ChangePassword handles password update for authenticated user.
@@ -176,18 +191,20 @@ func (ctrl *AuthController) Logout(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body dto.ChangePasswordRequest true "Password change request"
-// @Success      200 {object} utils.Response{data=object}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      200 {object} dto.MessageResponse
+// @Failure      400 {object} dto.MessageResponse
+// @Failure      401 {object} dto.MessageResponse
+// @Failure      500 {object} dto.MessageResponse
 // @Router       /profile/change-password [post]
 func (ctrl *AuthController) ChangePassword(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
 		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
+		return
 	}
 	var req dto.ChangePasswordRequest
-	if !utils.BindAndValidate(c, req, ctrl.validate) {
+	// Fixed: pass &req (was req)
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 	err := ctrl.authService.ChangePassword(userID, req)
@@ -195,8 +212,11 @@ func (ctrl *AuthController) ChangePassword(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to change password")
 		return
 	}
-
-	utils.SuccessResponse(c, "password changed successfully", nil)
+	resp := dto.MessageResponse{
+		Success: true,
+		Message: "password changed successfully",
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // ResetPassword handles password reset using token.
@@ -206,8 +226,8 @@ func (ctrl *AuthController) ChangePassword(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.ResetPasswordRequest true "Reset token and new password"
-// @Success      200 {object} utils.Response{data=object}
-// @Failure      400 {object} utils.Response
+// @Success      200 {object} dto.MessageResponse
+// @Failure      400 {object} dto.MessageResponse
 // @Router       /auth/reset-password [post]
 func (ctrl *AuthController) ResetPassword(c *gin.Context) {
 	var req dto.ResetPasswordRequest
@@ -219,7 +239,11 @@ func (ctrl *AuthController) ResetPassword(c *gin.Context) {
 		utils.HandleAppError(c, err, "reset password failed")
 		return
 	}
-	utils.SuccessResponse(c, "password reset successfully", nil)
+	resp := dto.MessageResponse{
+		Success: true,
+		Message: "password reset successfully",
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // ForgotPassword sends reset link.
@@ -229,8 +253,8 @@ func (ctrl *AuthController) ResetPassword(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.ForgotPasswordRequest true "Email address"
-// @Success      200 {object} utils.Response{data=object}
-// @Failure      400 {object} utils.Response
+// @Success      200 {object} dto.MessageResponse
+// @Failure      400 {object} dto.MessageResponse
 // @Router       /auth/forgot-password [post]
 func (ctrl *AuthController) ForgotPassword(c *gin.Context) {
 	var req dto.ForgotPasswordRequest
@@ -239,7 +263,11 @@ func (ctrl *AuthController) ForgotPassword(c *gin.Context) {
 	}
 	_ = ctrl.authService.ForgotPassword(req.Email)
 	// Always return success to avoid email enumeration
-	utils.SuccessResponse(c, "if the email exists, you will receive a reset link", nil)
+	resp := dto.MessageResponse{
+		Success: true,
+		Message: "if the email exists, you will receive a reset link",
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // VerifyEmail verifies user's email address with a token.
@@ -249,13 +277,12 @@ func (ctrl *AuthController) ForgotPassword(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        token query string true "Verification token"
-// @Success      200 {object} utils.Response{data=object}
-// @Failure      400 {object} utils.Response
+// @Success      200 {object} dto.MessageResponse
+// @Failure      400 {object} dto.MessageResponse
 // @Router       /auth/verify-email [get]
 func (ctrl *AuthController) VerifyEmail(c *gin.Context) {
 	token := c.Query("token")
 	if token == "" {
-		// FIXED: use proper error response
 		utils.ErrorResponse(c, http.StatusBadRequest, "token is required")
 		return
 	}
@@ -264,7 +291,11 @@ func (ctrl *AuthController) VerifyEmail(c *gin.Context) {
 		utils.HandleAppError(c, err, "email verification failed")
 		return
 	}
-	utils.SuccessResponse(c, "email verified successfully", nil)
+	resp := dto.MessageResponse{
+		Success: true,
+		Message: "email verified successfully",
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // SendVerificationEmail sends a verification email to the authenticated user.
@@ -274,9 +305,9 @@ func (ctrl *AuthController) VerifyEmail(c *gin.Context) {
 // @Security     BearerAuth
 // @Accept       json
 // @Produce      json
-// @Success      200 {object} utils.Response{data=object}
-// @Failure      401 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      200 {object} dto.MessageResponse
+// @Failure      401 {object} dto.MessageResponse
+// @Failure      500 {object} dto.MessageResponse
 // @Router       /auth/send-verification [post]
 func (ctrl *AuthController) SendVerificationEmail(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -289,5 +320,9 @@ func (ctrl *AuthController) SendVerificationEmail(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to send verification email")
 		return
 	}
-	utils.SuccessResponse(c, "verification email sent", nil)
+	resp := dto.MessageResponse{
+		Success: true,
+		Message: "verification email sent",
+	}
+	c.JSON(http.StatusOK, resp)
 }
