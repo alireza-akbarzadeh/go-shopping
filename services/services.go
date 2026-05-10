@@ -20,6 +20,7 @@ type Services struct {
 	Notification NotificationServiceInterface
 	WebSocketHub *websocket.Hub
 	Coupon       CouponServiceInterface
+	Address      AddressServiceInterface
 }
 
 func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) *Services {
@@ -44,6 +45,7 @@ func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) 
 		Cart:         NewCartService(db),
 		Product:      NewProductService(db),
 		Category:     NewCategoryService(db),
+		Address:      NewAddressService(db),
 		Order:        orderSvc,
 		Shipment:     NewShipmentService(db, workerPool, notificationSvc),
 		Coupon:       couponSvc,

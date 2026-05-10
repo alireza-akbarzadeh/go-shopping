@@ -18,6 +18,7 @@ type Container struct {
 	Order    *OrderController
 	Shipment *ShipmentController
 	Coupon   *CouponController
+	Address  *AddressController
 }
 
 // NewContainer initializes all controllers with their dependencies.
@@ -33,5 +34,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, svc *services.Services) *Cont
 		Shipment: NewShipmentController(svc.Shipment),
 		Page:     NewPageController(),
 		Coupon:   NewCouponController(svc.Coupon),
+		Address:  NewAddressController(svc.Address),
 	}
 }
