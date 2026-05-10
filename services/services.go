@@ -1,4 +1,4 @@
-// Package services defines the core business logic of the shopping platform. It includes service interfaces and their implementations for authentication, user profiles, shopping carts, products, categories, orders, shipments, and real-time notifications. The Services struct aggregates all individual services for easy dependency injection into controllers and other components.
+// Package services defines the core business logic of the shopping platform.
 package services
 
 import (
@@ -19,16 +19,24 @@ type Services struct {
 	Shipment     ShipmentServiceInterface
 	Notification NotificationServiceInterface
 	WebSocketHub *websocket.Hub
+	Coupon       CouponServiceInterface
 }
 
 func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) *Services {
-	// Initialize WebSocket hub
+	// 1. WebSocket hub
 	wsHub := websocket.NewHub()
 	go wsHub.Run()
 
-	// Initialize notification service
+	// 2. Notification service (depends on db + hub)
 	notificationSvc := NewNotificationService(db, wsHub)
 
+	// 3. Coupon service (only depends on db)
+	couponSvc := NewCouponService(db)
+
+	// 4. Order service (depends on db, notificationSvc, couponSvc)
+	orderSvc := NewOrderService(db, notificationSvc, couponSvc)
+
+	// 5. Assemble all services
 	return &Services{
 		DB:           db,
 		Auth:         NewAuthServices(db, cfg),
@@ -36,8 +44,9 @@ func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) 
 		Cart:         NewCartService(db),
 		Product:      NewProductService(db),
 		Category:     NewCategoryService(db),
-		Order:        NewOrderService(db, notificationSvc),
+		Order:        orderSvc,
 		Shipment:     NewShipmentService(db, workerPool, notificationSvc),
+		Coupon:       couponSvc,
 		Notification: notificationSvc,
 		WebSocketHub: wsHub,
 	}

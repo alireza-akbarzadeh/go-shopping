@@ -25,13 +25,14 @@ func NewOrderController(orderService services.OrderServiceInterface) *OrderContr
 	}
 }
 
-// Checkout creates an order from the current cart.
+// Checkout creates an order from the current cart, optionally applying a coupon.
 // @Summary      Checkout
-// @Description  Converts the authenticated user's cart into an order.
+// @Description  Converts the authenticated user's cart into an order. Optionally applies a coupon code.
 // @Tags         Orders
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
+// @Param        request body object false "Checkout request (optional coupon_code)" SchemaExample({"coupon_code":"SAVE10"})
 // @Success      201 {object} utils.Response{data=models.Order}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
@@ -44,7 +45,13 @@ func (ctrl *OrderController) Checkout(c *gin.Context) {
 		return
 	}
 
-	order, err := ctrl.orderService.Checkout(userID)
+	var req struct {
+		CouponCode string `json:"coupon_code,omitempty"`
+	}
+	// Bind JSON (optional, no error if body empty)
+	_ = c.ShouldBindJSON(&req)
+
+	order, err := ctrl.orderService.Checkout(userID, req.CouponCode)
 	if err != nil {
 		utils.HandleAppError(c, err, "failed to create order")
 		return
@@ -52,6 +59,7 @@ func (ctrl *OrderController) Checkout(c *gin.Context) {
 
 	utils.CreatedResponse(c, "order created successfully", order)
 }
+
 
 // GetUserOrders returns paginated orders for the authenticated user.
 // @Summary      Get user's orders

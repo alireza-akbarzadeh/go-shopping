@@ -13,7 +13,7 @@ import (
 )
 
 type OrderServiceInterface interface {
-	Checkout(userID uint) (*models.Order, error)
+	Checkout(userID uint, couponCode string) (*models.Order, error)
 	GetUserOrders(userID uint, filters dto.OrderListFilters) ([]models.Order, int64, error)
 	GetOrderByID(orderID uint, userID uint) (*models.Order, error)
 	GetAllOrders(filters AdminOrderFilters, limit, offset int) ([]models.Order, int64, error)
@@ -24,18 +24,20 @@ type OrderServiceInterface interface {
 type orderService struct {
 	db                  *gorm.DB
 	notificationService NotificationServiceInterface
+	couponService       CouponServiceInterface
 }
 
-func NewOrderService(db *gorm.DB, notificationService NotificationServiceInterface) OrderServiceInterface {
+func NewOrderService(db *gorm.DB, notificationSvc NotificationServiceInterface, couponSvc CouponServiceInterface) OrderServiceInterface {
 	return &orderService{
 		db:                  db,
-		notificationService: notificationService,
+		notificationService: notificationSvc,
+		couponService:       couponSvc,
 	}
 }
 
 // Checkout converts the user's active cart into an order.
-func (s *orderService) Checkout(userID uint) (*models.Order, error) {
-	// 1. Get user's active cart with items (preload product)
+func (s *orderService) Checkout(userID uint, couponCode string) (*models.Order, error) {
+	// 1. Get active cart (same as before)
 	var cart models.Cart
 	err := s.db.Where("user_id = ? AND status = ?", userID, "active").
 		Preload("Items.Product").
@@ -53,16 +55,33 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 	// 2. Start transaction
 	var order *models.Order
 	err = s.db.Transaction(func(tx *gorm.DB) error {
-		// 2.1 Calculate total amount and validate stock
-		var totalAmount float64
+		// 2.1 Calculate subtotal and validate stock
+		var subtotal float64
 		for _, item := range cart.Items {
 			if item.Product.Stock < item.Quantity {
 				return utils.ErrBadRequest(fmt.Sprintf("insufficient stock for product: %s", item.Product.Name))
 			}
-			totalAmount += item.Price * float64(item.Quantity)
+			subtotal += item.Price * float64(item.Quantity)
 		}
 
-		// 2.2 Create order
+		// 2.2 Apply coupon if provided
+		var discount float64
+		var couponID *uint
+		if couponCode != "" {
+			coupon, disc, err := s.couponService.ValidateCoupon(couponCode, userID, subtotal)
+			if err != nil {
+				return err // returns AppError already
+			}
+			discount = disc
+			couponID = &coupon.ID
+		}
+
+		totalAmount := subtotal - discount
+		if totalAmount < 0 {
+			totalAmount = 0
+		}
+
+		// 2.3 Create order
 		order = &models.Order{
 			UserID:      userID,
 			OrderNumber: generateOrderNumber(userID),
@@ -71,10 +90,10 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 			Currency:    "USD",
 		}
 		if err := tx.Create(order).Error; err != nil {
-			return err
+			return utils.ErrInternal(err)
 		}
 
-		// 2.3 Create order items and update product stock
+		// 2.4 Create order items and update stock
 		for _, item := range cart.Items {
 			orderItem := &models.OrderItem{
 				OrderID:   order.ID,
@@ -83,17 +102,24 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 				Price:     item.Price,
 			}
 			if err := tx.Create(orderItem).Error; err != nil {
-				return err
+				return utils.ErrInternal(err)
 			}
-			// Decrement stock
 			if err := tx.Model(&models.Product{}).Where("id = ?", item.ProductID).
 				UpdateColumn("stock", gorm.Expr("stock - ?", item.Quantity)).Error; err != nil {
-				return err
+				return utils.ErrInternal(err)
 			}
 		}
 
+		// 2.5 Mark cart as converted
 		if err := tx.Model(&cart).Update("status", "converted").Error; err != nil {
-			return err
+			return utils.ErrInternal(err)
+		}
+
+		// 2.6 Apply coupon usage (creates coupon_usage entry and updates used_count)
+		if couponCode != "" && couponID != nil {
+			if err := s.couponService.ApplyCoupon(userID, order.ID, couponCode, subtotal); err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -102,9 +128,10 @@ func (s *orderService) Checkout(userID uint) (*models.Order, error) {
 		return nil, err
 	}
 
+	// Reload order with preloads
 	s.db.Preload("Items.Product").Preload("User").First(order, order.ID)
 
-	// Send real-time notification for new order
+	// Send notification (async)
 	go func() {
 		_ = s.notificationService.CreateNotification(
 			userID,
