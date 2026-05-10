@@ -29,6 +29,43 @@ definitions:
     - current_password
     - new_password
     type: object
+  dto.CreateAddressRequest:
+    properties:
+      address_line1:
+        type: string
+      address_line2:
+        type: string
+      address_type:
+        enum:
+        - shipping
+        - billing
+        - both
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      instructions:
+        type: string
+      is_default:
+        type: boolean
+      phone:
+        type: string
+      postal_code:
+        type: string
+      recipient_name:
+        type: string
+      state:
+        type: string
+    required:
+    - address_line1
+    - address_type
+    - city
+    - country
+    - phone
+    - postal_code
+    - recipient_name
+    type: object
   dto.CreateCategoryRequest:
     properties:
       description:
@@ -46,6 +83,38 @@ definitions:
     required:
     - name
     - slug
+    type: object
+  dto.CreateCouponRequest:
+    properties:
+      code:
+        maxLength: 50
+        minLength: 3
+        type: string
+      description:
+        type: string
+      discount_type:
+        enum:
+        - percentage
+        - fixed
+        type: string
+      discount_value:
+        type: number
+      end_date:
+        type: string
+      max_discount_amount:
+        type: number
+      minimum_order_amount:
+        type: number
+      start_date:
+        type: string
+      usage_limit:
+        type: integer
+    required:
+    - code
+    - discount_type
+    - discount_value
+    - end_date
+    - start_date
     type: object
   dto.CreateProductRequest:
     properties:
@@ -212,6 +281,41 @@ definitions:
     - new_password
     - token
     type: object
+  dto.UpdateAddressRequest:
+    properties:
+      address_line1:
+        type: string
+      address_line2:
+        type: string
+      address_type:
+        enum:
+        - shipping
+        - billing
+        - both
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      instructions:
+        type: string
+      is_default:
+        type: boolean
+      phone:
+        type: string
+      postal_code:
+        type: string
+      recipient_name:
+        type: string
+      state:
+        type: string
+    required:
+    - address_line1
+    - city
+    - country
+    - postal_code
+    - recipient_name
+    type: object
   dto.UpdateCategoryRequest:
     properties:
       description:
@@ -226,6 +330,29 @@ definitions:
         type: integer
       slug:
         type: string
+    type: object
+  dto.UpdateCouponRequest:
+    properties:
+      code:
+        type: string
+      description:
+        type: string
+      discount_type:
+        type: string
+      discount_value:
+        type: number
+      end_date:
+        type: string
+      is_active:
+        type: boolean
+      max_discount_amount:
+        type: number
+      minimum_order_amount:
+        type: number
+      start_date:
+        type: string
+      usage_limit:
+        type: integer
     type: object
   dto.UpdateProductRequest:
     properties:
@@ -301,6 +428,52 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
+  models.Address:
+    properties:
+      address_line1:
+        type: string
+      address_line2:
+        type: string
+      address_type:
+        enum:
+        - shipping
+        - billing
+        - both
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      instructions:
+        type: string
+      is_default:
+        type: boolean
+      phone:
+        type: string
+      postal_code:
+        type: string
+      recipient_name:
+        type: string
+      state:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - address_line1
+    - city
+    - country
+    - phone
+    - postal_code
+    - recipient_name
+    type: object
   models.Category:
     properties:
       children:
@@ -342,6 +515,46 @@ definitions:
     required:
     - name
     - slug
+    type: object
+  models.Coupon:
+    properties:
+      code:
+        maxLength: 50
+        minLength: 3
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      discount_type:
+        enum:
+        - percentage
+        - fixed
+        type: string
+      discount_value:
+        type: number
+      end_date:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      max_discount_amount:
+        type: number
+      minimum_order_amount:
+        type: number
+      start_date:
+        type: string
+      updated_at:
+        type: string
+      usage_limit:
+        type: integer
+      used_count:
+        type: integer
+    required:
+    - code
     type: object
   models.Order:
     properties:
@@ -575,6 +788,247 @@ info:
   title: Shopping Platform API
   version: "1.0"
 paths:
+  /addresses:
+    get:
+      consumes:
+      - application/json
+      description: Returns all addresses (shipping/billing) belonging to the current
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Address'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List addresses
+      tags:
+      - Addresses
+    post:
+      consumes:
+      - application/json
+      description: Adds a new shipping or billing address for the current user.
+      parameters:
+      - description: Address data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Address'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Create address
+      tags:
+      - Addresses
+  /addresses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an address by ID (soft delete). Only the owner can delete.
+      parameters:
+      - description: Address ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete address
+      tags:
+      - Addresses
+    put:
+      consumes:
+      - application/json
+      description: Modifies an address by ID. Only the owner can update.
+      parameters:
+      - description: Address ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated address data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Address'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Update address
+      tags:
+      - Addresses
+  /addresses/{id}/default:
+    patch:
+      consumes:
+      - application/json
+      description: Marks a specific address as the default (for its address_type,
+        e.g., shipping or billing). Only one default per type.
+      parameters:
+      - description: Address ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Set default address
+      tags:
+      - Addresses
+  /addresses/default:
+    get:
+      consumes:
+      - application/json
+      description: Returns the default shipping or billing address for the current
+        user.
+      parameters:
+      - default: shipping
+        description: Address type (shipping/billing)
+        enum:
+        - shipping
+        - billing
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Address'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get default address
+      tags:
+      - Addresses
   /admin/shipments:
     post:
       consumes:
@@ -1407,6 +1861,292 @@ paths:
       summary: Bulk create categories
       tags:
       - Categories
+  /coupons:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of coupons with optional filters (admin
+        only)
+      parameters:
+      - default: 20
+        description: Items per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset (skip number of items)
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - description: Filter by coupon code (partial match)
+        in: query
+        name: code
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      - description: Filter by discount type (percentage/fixed)
+        in: query
+        name: discount_type
+        type: string
+      - description: Filter by start date (ISO 8601)
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date (ISO 8601)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    coupons:
+                      items:
+                        $ref: '#/definitions/models.Coupon'
+                      type: array
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+                    total:
+                      type: integer
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List coupons
+      tags:
+      - Admin Coupons
+    post:
+      consumes:
+      - application/json
+      description: Creates a new discount coupon. Only accessible by users with the
+        "admin" role.
+      parameters:
+      - description: Coupon creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCouponRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Coupon'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Create coupon
+      tags:
+      - Admin Coupons
+  /coupons/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes a coupon by ID. Only accessible by users with the
+        "admin" role.
+      parameters:
+      - description: Coupon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete coupon
+      tags:
+      - Admin Coupons
+    put:
+      consumes:
+      - application/json
+      description: Updates a coupon by ID. Only accessible by users with the "admin"
+        role.
+      parameters:
+      - description: Coupon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Coupon update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCouponRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Coupon'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Update coupon
+      tags:
+      - Admin Coupons
+  /coupons/validate:
+    post:
+      consumes:
+      - application/json
+      description: Validates a coupon code for the authenticated user's order total.
+        Returns discount amount and final total if valid.
+      parameters:
+      - description: Coupon validation request
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    coupon:
+                      $ref: '#/definitions/models.Coupon'
+                    discount_amount:
+                      format: float64
+                      type: number
+                    final_total:
+                      format: float64
+                      type: number
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Validate coupon
+      tags:
+      - Coupons
   /health:
     get:
       description: Returns the health status of the API and database
@@ -1510,7 +2250,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Converts the authenticated user's cart into an order.
+      description: Converts the authenticated user's cart into an order. Optionally
+        applies a coupon code.
+      parameters:
+      - description: Checkout request (optional coupon_code)
+        in: body
+        name: request
+        schema:
+          type: object
       produces:
       - application/json
       responses:
