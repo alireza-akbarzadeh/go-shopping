@@ -106,7 +106,7 @@ func (s *AuthService) Login(req dto.LoginRequest) (string, string, *models.User,
 
 // GenerateTokenPair creates both access and refresh tokens.
 func (s *AuthService) GenerateTokenPair(user *models.User) (accessToken, refreshToken string, err error) {
-	accessToken, err = utils.GenerateToken(user.ID, user.Email, user.Role, s.cfg.JWT.Secret, 15*time.Minute)
+	accessToken, err = utils.GenerateToken(user.ID, user.Email, user.Role, user.FirstName, user.LastName, user.Phone, s.cfg.JWT.Secret, 15*time.Minute)
 	if err != nil {
 		return "", "", utils.ErrInternal(err)
 	}
