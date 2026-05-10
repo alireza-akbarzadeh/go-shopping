@@ -119,6 +119,15 @@ definitions:
     - email
     - password
     type: object
+  dto.LoginResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.LoginResponseData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   dto.LoginResponseData:
     properties:
       access_token:
@@ -127,6 +136,22 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.MessageResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.RefreshResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.RefreshResponseData'
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   dto.RefreshResponseData:
     properties:
@@ -157,6 +182,15 @@ definitions:
     - first_name
     - last_name
     - password
+    type: object
+  dto.RegisterResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.RegisterResponseData'
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   dto.RegisterResponseData:
     properties:
@@ -658,16 +692,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.MessageResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       summary: Forgot password
       tags:
       - Authentication
@@ -689,20 +718,15 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.LoginResponseData'
-              type: object
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
-          description: Validation error
+          description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
         "401":
-          description: Invalid credentials
+          description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       summary: Login user
       tags:
       - Authentication
@@ -723,16 +747,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.MessageResponse'
         "401":
-          description: Validation error
+          description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       security:
       - BearerAuth: []
       summary: Logout user
@@ -756,20 +775,15 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.RefreshResponseData'
-              type: object
+            $ref: '#/definitions/dto.RefreshResponse'
         "400":
-          description: Validation error
+          description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
         "401":
-          description: Invalid credentials
+          description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       security:
       - BearerAuth: []
       summary: Refresh access token
@@ -793,20 +807,15 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.RegisterResponseData'
-              type: object
+            $ref: '#/definitions/dto.RegisterResponse'
         "400":
-          description: Validation error
+          description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
         "409":
-          description: Invalid credentials
+          description: Conflict
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       summary: Register a new user
       tags:
       - Authentication
@@ -828,16 +837,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.MessageResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       summary: Reset password
       tags:
       - Authentication
@@ -852,20 +856,15 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.MessageResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       security:
       - BearerAuth: []
       summary: Send verification email
@@ -888,16 +887,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.MessageResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       summary: Verify email
       tags:
       - Authentication
@@ -2164,24 +2158,19 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.MessageResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.MessageResponse'
       security:
       - BearerAuth: []
       summary: Change password
