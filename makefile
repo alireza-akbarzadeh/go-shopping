@@ -8,7 +8,7 @@ MIGRATIONS_DIR=./migrations
 
 # Database DSN – defaults to environment variable, falls back to dev settings
 # Override with: make migrate-up DATABASE_URL="postgres://user:pass@localhost:5432/db?sslmode=disable"
-DATABASE_URL ?= postgres://postgres:postgres@localhost:5433/shopping_platform?sslmode=disable
+DATABASE_URL ?= postgresql://postgres:postgres@localhost:5433/shopping_platform?sslmode=disable
 
 # Goose command (PostgreSQL driver)
 GOOSE_CMD=goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)"
