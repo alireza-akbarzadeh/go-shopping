@@ -9,25 +9,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func extractToken(c *gin.Context) string {
+	if authHeader := c.GetHeader("Authorization"); authHeader != "" {
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) == 2 && strings.ToLower(parts[0]) == "bearer" {
+			// optional: log "token from header"
+			return parts[1]
+		}
+	}
+	if cookie, err := c.Cookie("access_token"); err == nil && cookie != "" {
+		// optional: log "token from cookie"
+		return cookie
+	}
+	return ""
+}
+
 // AuthMiddleware validates the JWT token and stores user info in context.
 func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
+		tokenString := extractToken(c)
+		if tokenString == "" {
 			utils.UnauthorizedResponse(c, constants.ErrorMissingAuthHeader)
 			c.Abort()
 			return
 		}
 
-		// Expected format: "Bearer <token>"
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			utils.UnauthorizedResponse(c, constants.ErrorInvalidAuthFormat)
-			c.Abort()
-			return
-		}
-
-		tokenString := parts[1]
 		claims, err := utils.ValidateToken(tokenString, cfg.JWT.Secret)
 		if err != nil {
 			utils.UnauthorizedResponse(c, constants.ErrorInvalidToken)
@@ -35,7 +41,6 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		// Store user info in Gin context for later handlers
 		c.Set("user_id", claims.UserID)
 		c.Set("user_email", claims.Email)
 		c.Set("user_role", claims.Role)
