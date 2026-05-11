@@ -36,5 +36,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, svc *services.Services) *Cont
 		Page:     NewPageController(),
 		Coupon:   NewCouponController(svc.Coupon),
 		Address:  NewAddressController(svc.Address),
+		Menu:     NewMenuController(svc.Menu),
 	}
 }

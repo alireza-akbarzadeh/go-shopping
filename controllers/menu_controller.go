@@ -160,6 +160,10 @@ func (ctrl *MenuController) DeleteGroup(c *gin.Context) {
 // @Router       /admin/menu/items [get]
 // @Security     BearerAuth
 func (ctrl *MenuController) GetAllItems(c *gin.Context) {
+	if ctrl.menuService == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "menu service not initialized"})
+		return
+	}
 	flat, _ := strconv.ParseBool(c.DefaultQuery("flat", "false"))
 	items, err := ctrl.menuService.GetAllItems(flat)
 	if err != nil {

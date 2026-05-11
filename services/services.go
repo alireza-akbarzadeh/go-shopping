@@ -29,13 +29,8 @@ func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) 
 	wsHub := websocket.NewHub()
 	go wsHub.Run()
 
-	// 2. Notification service (depends on db + hub)
 	notificationSvc := NewNotificationService(db, wsHub)
-
-	// 3. Coupon service (only depends on db)
 	couponSvc := NewCouponService(db)
-
-	// 4. Order service (depends on db, notificationSvc, couponSvc)
 	orderSvc := NewOrderService(db, notificationSvc, couponSvc)
 
 	// 5. Assemble all services
