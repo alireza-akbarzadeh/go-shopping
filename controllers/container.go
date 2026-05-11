@@ -19,6 +19,7 @@ type Container struct {
 	Shipment *ShipmentController
 	Coupon   *CouponController
 	Address  *AddressController
+	Menu     *MenuController
 }
 
 // NewContainer initializes all controllers with their dependencies.

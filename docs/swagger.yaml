@@ -116,6 +116,36 @@ definitions:
     - end_date
     - start_date
     type: object
+  dto.CreateMenuGroupRequest:
+    properties:
+      display_order:
+        type: integer
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateMenuItemRequest:
+    properties:
+      display_order:
+        type: integer
+      group_id:
+        type: integer
+      href:
+        type: string
+      icon:
+        type: string
+      label:
+        type: string
+      parent_id:
+        type: integer
+      permission:
+        type: string
+    required:
+    - group_id
+    - icon
+    - label
+    type: object
   dto.CreateProductRequest:
     properties:
       barcode:
@@ -281,6 +311,28 @@ definitions:
     - new_password
     - token
     type: object
+  dto.SidebarGroup:
+    properties:
+      group:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/dto.SidebarItem'
+        type: array
+    type: object
+  dto.SidebarItem:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/dto.SidebarItem'
+        type: array
+      href:
+        type: string
+      icon:
+        type: string
+      label:
+        type: string
+    type: object
   dto.UpdateAddressRequest:
     properties:
       address_line1:
@@ -353,6 +405,36 @@ definitions:
         type: string
       usage_limit:
         type: integer
+    type: object
+  dto.UpdateMenuGroupRequest:
+    properties:
+      display_order:
+        type: integer
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateMenuItemRequest:
+    properties:
+      display_order:
+        type: integer
+      group_id:
+        type: integer
+      href:
+        type: string
+      icon:
+        type: string
+      label:
+        type: string
+      parent_id:
+        type: integer
+      permission:
+        type: string
+    required:
+    - group_id
+    - icon
+    - label
     type: object
   dto.UpdateProductRequest:
     properties:
@@ -555,6 +637,50 @@ definitions:
         type: integer
     required:
     - code
+    type: object
+  models.MenuGroup:
+    properties:
+      created_at:
+        type: string
+      display_order:
+        type: integer
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/models.MenuItem'
+        type: array
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.MenuItem:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.MenuItem'
+        type: array
+      created_at:
+        type: string
+      display_order:
+        type: integer
+      group_id:
+        type: integer
+      href:
+        type: string
+      icon:
+        type: string
+      id:
+        type: integer
+      label:
+        type: string
+      parent_id:
+        type: integer
+      permission:
+        type: string
+      updated_at:
+        type: string
     type: object
   models.Order:
     properties:
@@ -1029,6 +1155,296 @@ paths:
       summary: Get default address
       tags:
       - Addresses
+  /admin/menu/groups:
+    post:
+      consumes:
+      - application/json
+      description: Creates a menu group (e.g., "Overview", "Users & Access")
+      parameters:
+      - description: Group data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateMenuGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.MenuGroup'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new menu group
+      tags:
+      - Admin Menu Groups
+  /admin/menu/groups/{id}:
+    delete:
+      description: Deletes a group and all its menu items (cascade)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a menu group
+      tags:
+      - Admin Menu Groups
+    get:
+      description: Returns a single menu group by its ID
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MenuGroup'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Get group by ID
+      tags:
+      - Admin Menu Groups
+    put:
+      consumes:
+      - application/json
+      description: Updates group name or display order
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated group data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMenuGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MenuGroup'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an existing menu group
+      tags:
+      - Admin Menu Groups
+  /admin/menu/items:
+    get:
+      description: Returns flat or nested menu items (use ?flat=true for flat list)
+      parameters:
+      - default: false
+        description: Return flat list
+        in: query
+        name: flat
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.MenuItem'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all menu items
+      tags:
+      - Admin Menu Items
+    post:
+      consumes:
+      - application/json
+      description: Adds a new menu item (can be top-level or child of another item)
+      parameters:
+      - description: Menu item data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateMenuItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.MenuItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new menu item
+      tags:
+      - Admin Menu Items
+  /admin/menu/items/{id}:
+    delete:
+      description: Deletes a menu item and all its children (cascade delete due to
+        foreign key constraint)
+      parameters:
+      - description: Menu item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a menu item
+      tags:
+      - Admin Menu Items
+    get:
+      description: Returns a single menu item by its ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MenuItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Get menu item by ID
+      tags:
+      - Admin Menu Items
+    put:
+      consumes:
+      - application/json
+      description: Updates menu item details including group, parent, label, href,
+        etc.
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated item data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMenuItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MenuItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an existing menu item
+      tags:
+      - Admin Menu Items
   /admin/shipments:
     post:
       consumes:
@@ -3011,6 +3427,33 @@ paths:
       summary: Get shipment by ID
       tags:
       - Shipments
+  /user/menu:
+    get:
+      description: Returns the sidebar menu filtered by user's role and optional search
+        term
+      parameters:
+      - description: Search by label or href
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.SidebarGroup'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user sidebar menu
+      tags:
+      - User Menu
   /users:
     get:
       consumes:

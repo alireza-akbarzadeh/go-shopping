@@ -1,0 +1,31 @@
+package routes
+
+import (
+	"github.com/alireza-akbarzadeh/shopping-platform/controllers"
+	"github.com/gin-gonic/gin"
+)
+
+func SetupMenuRoutes(router *gin.RouterGroup, ctrl *controllers.Container) {
+	adminGroup := router.Group("/admin/menu")
+	{
+		// Groups
+		adminGroup.GET("/groups", ctrl.Menu.GetAllGroups)
+		adminGroup.GET("/groups/:id", ctrl.Menu.GetGroupByID)
+		adminGroup.POST("/groups", ctrl.Menu.CreateGroup)
+		adminGroup.PUT("/groups/:id", ctrl.Menu.UpdateGroup)
+		adminGroup.DELETE("/groups/:id", ctrl.Menu.DeleteGroup)
+
+		// Items
+		adminGroup.GET("/items", ctrl.Menu.GetAllItems)
+		adminGroup.GET("/items/:id", ctrl.Menu.GetItemByID)
+		adminGroup.POST("/items", ctrl.Menu.CreateItem)
+		adminGroup.PUT("/items/:id", ctrl.Menu.UpdateItem)
+		adminGroup.DELETE("/items/:id", ctrl.Menu.DeleteItem)
+	}
+
+	// User-facing menu (authenticated users)
+	userGroup := router.Group("/user")
+	{
+		userGroup.GET("/menu", ctrl.Menu.GetUserMenu)
+	}
+}
