@@ -189,43 +189,29 @@ func (s *userMenuService) DeleteItem(id uint) error {
 
 func (s *userMenuService) GetUserMenu(ctx context.Context, userRole string, search string) ([]dto.SidebarGroup, error) {
 	var groups []models.MenuGroup
-	// preload top-level items (parent_id IS NULL) ordered
-	err := s.db.Preload("menu_items", func(db *gorm.DB) *gorm.DB {
-		return db.Where("parent_id IS NULL").Order("display_order ASC")
+	err := s.db.Preload("Items", func(db *gorm.DB) *gorm.DB {
+		return db.Order("display_order ASC")
 	}).Order("display_order ASC").Find(&groups).Error
 	if err != nil {
 		return nil, err
 	}
 
+	var allItems []models.MenuItem
+	for _, g := range groups {
+		allItems = append(allItems, g.Items...)
+	}
+
+	itemMap, roots := s.buildFullTree(allItems)
+
 	var result []dto.SidebarGroup
 	for _, group := range groups {
-		var visibleItems []dto.SidebarItem
-		for _, item := range group.Items {
-			// role filtering
-			if item.Permission != nil && *item.Permission != userRole && userRole != "admin" {
-				continue
+		var groupRoots []models.MenuItem
+		for _, root := range roots {
+			if root.GroupID == group.ID {
+				groupRoots = append(groupRoots, root)
 			}
-			// recursive children loading with filtering
-			children, err := s.getFilteredChildren(item.ID, userRole, search)
-			if err != nil {
-				return nil, err
-			}
-			// search matching on current item (label or href)
-			matchesSearch := search == "" || s.matchesSearch(item.Label, item.Href, search)
-			// if search term provided and this item doesn't match and has no visible children -> skip
-			if search != "" && !matchesSearch && len(children) == 0 {
-				continue
-			}
-			sidebarItem := dto.SidebarItem{
-				Label:    item.Label,
-				Icon:     item.Icon,
-				Children: children,
-			}
-			if item.Href != nil {
-				sidebarItem.Href = *item.Href
-			}
-			visibleItems = append(visibleItems, sidebarItem)
 		}
+		visibleItems := s.filterItems(groupRoots, userRole, search, itemMap)
 		if len(visibleItems) > 0 {
 			result = append(result, dto.SidebarGroup{
 				Group: group.Name,
@@ -236,37 +222,51 @@ func (s *userMenuService) GetUserMenu(ctx context.Context, userRole string, sear
 	return result, nil
 }
 
-// recursive helper to get filtered children
-func (s *userMenuService) getFilteredChildren(parentID uint, userRole, search string) ([]dto.SidebarItem, error) {
-	var children []models.MenuItem
-	err := s.db.Where("parent_id = ?", parentID).Order("display_order ASC").Find(&children).Error
-	if err != nil {
-		return nil, err
-	}
+func (s *userMenuService) filterItems(items []models.MenuItem, userRole, search string, itemMap map[uint]*models.MenuItem) []dto.SidebarItem {
 	var result []dto.SidebarItem
-	for _, child := range children {
-		if child.Permission != nil && *child.Permission != userRole && userRole != "admin" {
+	for _, item := range items {
+		// Role check
+		if item.Permission != nil && *item.Permission != userRole && userRole != "admin" {
 			continue
 		}
-		grandchildren, err := s.getFilteredChildren(child.ID, userRole, search)
-		if err != nil {
-			return nil, err
-		}
-		matchesSearch := search == "" || s.matchesSearch(child.Label, child.Href, search)
-		if search != "" && !matchesSearch && len(grandchildren) == 0 {
+		// Recursively filter children
+		filteredChildren := s.filterItems(item.Children, userRole, search, itemMap)
+		// Search match on current item
+		matchesSearch := search == "" || s.matchesSearch(item.Label, item.Href, search)
+		if search != "" && !matchesSearch && len(filteredChildren) == 0 {
 			continue
 		}
-		sidebarChild := dto.SidebarItem{
-			Label:    child.Label,
-			Icon:     child.Icon,
-			Children: grandchildren,
+		sidebarItem := dto.SidebarItem{
+			Label:    item.Label,
+			Icon:     item.Icon,
+			Children: filteredChildren,
 		}
-		if child.Href != nil {
-			sidebarChild.Href = *child.Href
+		if item.Href != nil {
+			sidebarItem.Href = *item.Href
 		}
-		result = append(result, sidebarChild)
+		result = append(result, sidebarItem)
 	}
-	return result, nil
+	return result
+}
+
+func (s *userMenuService) buildFullTree(items []models.MenuItem) (map[uint]*models.MenuItem, []models.MenuItem) {
+	itemMap := make(map[uint]*models.MenuItem)
+	for i := range items {
+		itemMap[items[i].ID] = &items[i]
+		itemMap[items[i].ID].Children = []models.MenuItem{} // initialize
+	}
+	var roots []models.MenuItem
+	for i := range items {
+		parentID := items[i].ParentID
+		if parentID == nil || *parentID == 0 {
+			roots = append(roots, items[i])
+		} else {
+			if parent, ok := itemMap[*parentID]; ok {
+				parent.Children = append(parent.Children, items[i])
+			}
+		}
+	}
+	return itemMap, roots
 }
 
 func (s *userMenuService) matchesSearch(label string, href *string, search string) bool {
