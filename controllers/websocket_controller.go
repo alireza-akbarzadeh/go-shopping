@@ -88,7 +88,7 @@ func (wc *WebSocketController) MarkNotificationAsRead(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse[any](c, "notification marked as read", nil)
+	utils.SuccessResponse(c, "notification marked as read", nil)
 }
 
 // MarkAllNotificationsAsRead marks all user notifications as read
@@ -104,7 +104,7 @@ func (wc *WebSocketController) MarkAllNotificationsAsRead(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse[any](c, "all notifications marked as read", nil)
+	utils.SuccessResponse(c, "all notifications marked as read", nil)
 }
 
 // CreateChatRoom creates a new chat room for customer support
@@ -159,7 +159,7 @@ func (wc *WebSocketController) SendChatMessage(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse[any](c, "message sent successfully", nil)
+	utils.SuccessResponse(c, "message sent successfully", nil)
 }
 
 // GetChatMessages retrieves chat messages for a room

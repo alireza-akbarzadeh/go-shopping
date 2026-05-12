@@ -251,5 +251,5 @@ func (ctrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse[any](c, "order status updated successfully", nil)
+	utils.SuccessResponse(c, "order status updated successfully", nil)
 }

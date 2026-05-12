@@ -190,5 +190,5 @@ func (pc *UserController) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse[any](c, constants.MsgDeleteSuccess, nil)
+	utils.SuccessResponse(c, constants.MsgDeleteSuccess, nil)
 }

@@ -48,27 +48,25 @@ type BulkDeleteProductsRequest struct {
 	ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
 }
 
-type ProductListData struct {
-	Products []models.Product `json:"products"`
-	Total    int64            `json:"total"`
-	Limit    int              `json:"limit"`
-	Offset   int              `json:"offset"`
+// ProductListResponse is the full API response wrapper
+
+type ProductListResponse struct {
+	BaseResponse
+	Data ProductListData `json:"data"`
 }
 
-// ProductListResponse is the full API response wrapper
-type ProductListResponse struct {
-	Success bool            `json:"success"`
-	Message string          `json:"message"`
-	Data    ProductListData `json:"data"`
+type ProductSingleResponse struct {
+	BaseResponse
+	Data ProductSingleData `json:"data"`
 }
 
 type ProductSingleData struct {
-	Product models.Product `json:"product"`
+	Product *models.Product `json:"data"`
 }
 
-// ProductSingleResponse is the full API response wrapper
-type ProductSingleResponse struct {
-	Success bool              `json:"success"`
-	Message string            `json:"message"`
-	Data    ProductSingleData `json:"data"`
+type ProductListData struct {
+	Products []*models.Product `json:"products"`
+	Total    int64             `json:"total"`
+	Limit    int               `json:"limit"`
+	Offset   int               `json:"offset"`
 }

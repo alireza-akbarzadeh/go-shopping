@@ -198,5 +198,5 @@ func (ctrl *ShipmentController) UpdateShipmentStatus(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse[any](c, "shipment status updated successfully", nil)
+	utils.SuccessResponse(c, "shipment status updated successfully", nil)
 }

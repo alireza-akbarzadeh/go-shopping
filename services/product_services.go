@@ -11,11 +11,11 @@ import (
 )
 
 type ProductServiceInterface interface {
-	List(limit, offset int, filters map[string]interface{}) ([]models.Product, int64, error)
+	List(limit, offset int, filters map[string]interface{}) ([]*models.Product, int64, error)
+	BulkCreate(products []dto.CreateProductRequest) ([]*models.Product, error)
 	GetByID(id uint) (*models.Product, error)
 	GetBySlug(slug string) (*models.Product, error)
 	Create(req dto.CreateProductRequest) (*models.Product, error)
-	BulkCreate(products []dto.CreateProductRequest) ([]*models.Product, error)
 	Update(productID uint, req dto.UpdateProductRequest) (*models.Product, error)
 	Delete(id uint) error
 	BulkDelete(productIDs []uint) error
@@ -189,7 +189,8 @@ func (s *productService) Delete(id uint) error {
 }
 
 // List retrieve list of product
-func (s *productService) List(limit, offset int, filters map[string]interface{}) ([]models.Product, int64, error) {
+func (s *productService) List(limit, offset int, filters map[string]interface{}) ([]*models.Product, int64, error) {
+
 	const maxLimit = 100
 	if limit <= 0 {
 		limit = 10
@@ -235,7 +236,7 @@ func (s *productService) List(limit, offset int, filters map[string]interface{})
 		return nil, 0, fmt.Errorf("count products: %w", err)
 	}
 
-	var products []models.Product
+	var products []*models.Product
 	if err := query.Limit(limit).Offset(offset).Preload("Category").Find(&products).Error; err != nil {
 		return nil, 0, fmt.Errorf("find products: %w", err)
 	}
