@@ -30,7 +30,9 @@ type Product struct {
 	Status            string   `gorm:"not null;default:'draft'" json:"status" validate:"oneof=draft active inactive archived"`
 	MetaTitle         string   `json:"meta_title,omitempty"`
 	MetaDescription   string   `json:"meta_description,omitempty"`
-
+	Rating            float32  `gorm:"type:decimal(3,2);default:0" json:"rating"`
+	ReviewsCount      int      `gorm:"default:0" json:"reviews_count"`
+	IsNew             bool     `gorm:"default:false" json:"is_new"`
 	// Audit
 	CreatedByID *uint `json:"created_by,omitempty"`
 	UpdatedByID *uint `json:"updated_by,omitempty"`
