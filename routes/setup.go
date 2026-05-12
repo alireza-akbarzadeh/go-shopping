@@ -49,6 +49,7 @@ func (r *Router) Setup() {
 		SetupShipmentRoutes(protected, r.controllers)
 		SetupCouponRoutes(public, protected, r.controllers)
 		SetupAddressRoutes(protected, r.controllers)
+		SetupReviewRoutes(public, protected, r.controllers)
 
 	}
 }

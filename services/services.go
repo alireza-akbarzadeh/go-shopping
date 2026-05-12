@@ -22,6 +22,7 @@ type Services struct {
 	Coupon       CouponServiceInterface
 	Address      AddressServiceInterface
 	Menu         UserMenuServicesInterface
+	Review       ReviewServiceInterface
 }
 
 func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) *Services {
@@ -43,6 +44,7 @@ func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) 
 		Category:     NewCategoryService(db),
 		Address:      NewAddressService(db),
 		Menu:         NewMenuService(db),
+		Review:       NewReviewService(db),
 		Order:        orderSvc,
 		Shipment:     NewShipmentService(db, workerPool, notificationSvc),
 		Coupon:       couponSvc,
