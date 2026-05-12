@@ -13,7 +13,7 @@ import (
 type Response struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
+	Data    interface{} `json:"data,omitempty" swaggertype:"object"`
 	Error   string      `json:"error,omitempty"`
 	Errors  interface{} `json:"errors,omitempty"`
 }

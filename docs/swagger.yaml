@@ -494,7 +494,7 @@ definitions:
     type: object
   dto.ProductSingleData:
     properties:
-      data:
+      product:
         $ref: '#/definitions/models.Product'
     type: object
   dto.ProductSingleResponse:
@@ -776,17 +776,6 @@ definitions:
     required:
     - code
     - order_total
-    type: object
-  github_com_alireza-akbarzadeh_shopping-platform_utils.Response:
-    properties:
-      data: {}
-      error:
-        type: string
-      errors: {}
-      message:
-        type: string
-      success:
-        type: boolean
     type: object
   gorm.DeletedAt:
     properties:
@@ -1195,7 +1184,8 @@ definitions:
     type: object
   utils.Response:
     properties:
-      data: {}
+      data:
+        type: object
       error:
         type: string
       errors: {}
@@ -3057,15 +3047,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
       security:
       - BearerAuth: []
       summary: List products
@@ -3259,19 +3249,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
       security:
       - BearerAuth: []
       summary: Bulk delete products
@@ -3300,15 +3290,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
+            $ref: '#/definitions/utils.Response'
       security:
       - BearerAuth: []
       summary: Bulk create products

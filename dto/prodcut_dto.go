@@ -52,7 +52,7 @@ type BulkDeleteProductsRequest struct {
 
 type ProductListResponse struct {
 	BaseResponse
-	Data ProductListData `json:"data"`
+	Data ProductListData
 }
 
 type ProductSingleResponse struct {
@@ -61,7 +61,7 @@ type ProductSingleResponse struct {
 }
 
 type ProductSingleData struct {
-	Product *models.Product `json:"data"`
+	Product *models.Product `json:"product"`
 }
 
 type ProductListData struct {

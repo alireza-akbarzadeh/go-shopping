@@ -2873,19 +2873,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -2994,19 +2994,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -3049,25 +3049,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -4657,7 +4657,7 @@ const docTemplate = `{
         "dto.ProductSingleData": {
             "type": "object",
             "properties": {
-                "data": {
+                "product": {
                     "$ref": "#/definitions/models.Product"
                 }
             }
@@ -5071,22 +5071,6 @@ const docTemplate = `{
                 },
                 "order_total": {
                     "type": "number"
-                }
-            }
-        },
-        "github_com_alireza-akbarzadeh_shopping-platform_utils.Response": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "error": {
-                    "type": "string"
-                },
-                "errors": {},
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
                 }
             }
         },
@@ -5694,7 +5678,9 @@ const docTemplate = `{
         "utils.Response": {
             "type": "object",
             "properties": {
-                "data": {},
+                "data": {
+                    "type": "object"
+                },
                 "error": {
                     "type": "string"
                 },
