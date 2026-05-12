@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/alireza-akbarzadeh/shopping-platform/models"
+
 type BulkStockUpdate struct {
 	ProductID uint `json:"product_id" validate:"required,gt=0"`
 	Stock     int  `json:"stock" validate:"gte=0"`
@@ -44,4 +46,29 @@ type UpdateProductRequest struct {
 
 type BulkDeleteProductsRequest struct {
 	ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
+}
+
+type ProductListData struct {
+	Products []models.Product `json:"products"`
+	Total    int64            `json:"total"`
+	Limit    int              `json:"limit"`
+	Offset   int              `json:"offset"`
+}
+
+// ProductListResponse is the full API response wrapper
+type ProductListResponse struct {
+	Success bool            `json:"success"`
+	Message string          `json:"message"`
+	Data    ProductListData `json:"data"`
+}
+
+type ProductSingleData struct {
+	Product models.Product `json:"product"`
+}
+
+// ProductSingleResponse is the full API response wrapper
+type ProductSingleResponse struct {
+	Success bool              `json:"success"`
+	Message string            `json:"message"`
+	Data    ProductSingleData `json:"data"`
 }

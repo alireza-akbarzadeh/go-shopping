@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -32,11 +33,11 @@ func NewCategoryController(categoryService services.CategoryServiceInterface) *C
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body dto.CreateCategoryRequest true "Category creation data"
-// @Success      201 {object} utils.Response{data=models.Category}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      403 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      201 {object} dto.CategorySingleResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      403 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /categories [post]
 func (ctrl *CategoryController) Create(c *gin.Context) {
 	var req dto.CreateCategoryRequest
@@ -48,7 +49,15 @@ func (ctrl *CategoryController) Create(c *gin.Context) {
 		utils.InternalServerErrorResponse(c, err, "failed to create category")
 		return
 	}
-	utils.CreatedResponse(c, constants.MsgCreateSuccess, category)
+	resp := dto.CategorySingleResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgCreateSuccess,
+			Code:    http.StatusCreated,
+		},
+		Data: dto.CategoryData{Category: *category},
+	}
+	c.JSON(http.StatusCreated, resp)
 }
 
 // Update updates an existing category (admin only).
@@ -60,12 +69,12 @@ func (ctrl *CategoryController) Create(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id      path      int                           true  "Category ID"
 // @Param        request body      dto.UpdateCategoryRequest true  "Category update data"
-// @Success      200     {object}  utils.Response{data=models.Category}
-// @Failure      400     {object}  utils.Response
-// @Failure      401     {object}  utils.Response
-// @Failure      403     {object}  utils.Response
-// @Failure      404     {object}  utils.Response
-// @Failure      500     {object}  utils.Response
+// @Success      200     {object}  dto.CategorySingleResponse
+// @Failure      400     {object}  utils.Response[any]
+// @Failure      401     {object}  utils.Response[any]
+// @Failure      403     {object}  utils.Response[any]
+// @Failure      404     {object}  utils.Response[any]
+// @Failure      500     {object}  utils.Response[any]
 // @Router       /categories/{id} [put]
 func (ctrl *CategoryController) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -84,7 +93,15 @@ func (ctrl *CategoryController) Update(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to update category")
 		return
 	}
-	utils.SuccessResponse(c, constants.MsgUpdateSuccess, category)
+	resp := dto.CategorySingleResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgUpdateSuccess,
+			Code:    http.StatusOK,
+		},
+		Data: dto.CategoryData{Category: *category},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // Delete deletes a category (admin only).
@@ -96,12 +113,12 @@ func (ctrl *CategoryController) Update(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      int  true  "Category ID"
-// @Success      200  {object}  utils.Response
-// @Failure      400  {object}  utils.Response
-// @Failure      401  {object}  utils.Response
-// @Failure      403  {object}  utils.Response
-// @Failure      404  {object}  utils.Response
-// @Failure      500  {object}  utils.Response
+// @Success      200  {object}  dto.EmptyResponse
+// @Failure      400  {object}  utils.Response[any]
+// @Failure      401  {object}  utils.Response[any]
+// @Failure      403  {object}  utils.Response[any]
+// @Failure      404  {object}  utils.Response[any]
+// @Failure      500  {object}  utils.Response[any]
 // @Router       /categories/{id} [delete]
 func (ctrl *CategoryController) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -114,7 +131,14 @@ func (ctrl *CategoryController) Delete(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to delete category")
 		return
 	}
-	utils.SuccessResponse(c, constants.MsgDeleteSuccess, nil)
+	resp := dto.EmptyResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgDeleteSuccess,
+			Code:    http.StatusOK,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // GetOne retrieves a single category by ID or slug (public).
@@ -124,10 +148,10 @@ func (ctrl *CategoryController) Delete(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        identifier   path      string  true  "Category ID (numeric) or slug (string)"
-// @Success      200          {object}  utils.Response{data=models.Category}
-// @Failure      400          {object}  utils.Response
-// @Failure      404          {object}  utils.Response
-// @Failure      500          {object}  utils.Response
+// @Success      200          {object}  dto.CategorySingleResponse
+// @Failure      400          {object}  utils.Response[any]
+// @Failure      404          {object}  utils.Response[any]
+// @Failure      500          {object}  utils.Response[any]
 // @Router       /categories/{identifier} [get]
 func (ctrl *CategoryController) GetOne(c *gin.Context) {
 	identifier := c.Param("identifier")
@@ -142,7 +166,15 @@ func (ctrl *CategoryController) GetOne(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to fetch category")
 		return
 	}
-	utils.SuccessResponse(c, constants.MsgFetchSuccess, category)
+	resp := dto.CategorySingleResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgFetchSuccess,
+			Code:    http.StatusOK,
+		},
+		Data: dto.CategoryData{Category: *category},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // List returns a paginated list of categories (public).
@@ -155,9 +187,9 @@ func (ctrl *CategoryController) GetOne(c *gin.Context) {
 // @Param        offset      query     int     false  "Offset (skip number of items)"  default(0)  minimum(0)
 // @Param        is_active   query     bool    false  "Filter by active status (true/false)"
 // @Param        parent_id   query     int     false  "Filter by parent category ID"
-// @Success      200         {object}  utils.Response{data=object{categories=[]models.Category,total=int,limit=int,offset=int}}
-// @Failure      400         {object}  utils.Response
-// @Failure      500         {object}  utils.Response
+// @Success      200         {object}  dto.CategoryListResponse
+// @Failure      400         {object}  utils.Response[any]
+// @Failure      500         {object}  utils.Response[any]
 // @Router       /categories [get]
 func (ctrl *CategoryController) List(c *gin.Context) {
 	var req dto.CategoryListFilters
@@ -170,13 +202,21 @@ func (ctrl *CategoryController) List(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to list categories")
 		return
 	}
-	data := gin.H{
-		"categories": categories,
-		"total":      total,
-		"limit":      req.Limit,
-		"offset":     req.Offset,
+
+	resp := dto.CategoryListResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgFetchSuccess,
+			Code:    http.StatusOK,
+		},
+		Data: dto.CategoryListData{
+			Categories: categories,
+			Total:      total,
+			Limit:      req.Limit,
+			Offset:     req.Offset,
+		},
 	}
-	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
+	c.JSON(http.StatusOK, resp)
 }
 
 // BulkCreate creates multiple categories in one request (admin only).
@@ -187,11 +227,11 @@ func (ctrl *CategoryController) List(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body []dto.CreateCategoryRequest true "Array of categories to create"
-// @Success      201 {object} utils.Response{data=[]models.Category}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      403 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      201 {object} dto.BulkCreateCategoryResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      403 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /categories/bulk [post]
 func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
 	var reqs []dto.CreateCategoryRequest
@@ -207,7 +247,15 @@ func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to bulk create categories")
 		return
 	}
-	utils.CreatedResponse(c, "categories created successfully", categories)
+	resp := dto.BulkCreateCategoryResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "categories created successfully",
+			Code:    http.StatusCreated,
+		},
+		Data: dto.BulkCategoryData{Categories: categories},
+	}
+	c.JSON(http.StatusCreated, resp)
 }
 
 // BulkDelete removes multiple categories (admin only).
@@ -219,12 +267,12 @@ func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body object true "Category IDs to delete" SchemaExample({"ids":[1,2,3]})
-// @Success      200 {object} utils.Response
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      403 {object} utils.Response
-// @Failure      404 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      200 {object} dto.EmptyResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      403 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /categories/bulk [delete]
 func (ctrl *CategoryController) BulkDelete(c *gin.Context) {
 	var req services.BulkDeleteCategoryRequest
@@ -235,5 +283,12 @@ func (ctrl *CategoryController) BulkDelete(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to bulk delete categories")
 		return
 	}
-	utils.SuccessResponse(c, "categories deleted successfully", nil)
+	resp := dto.EmptyResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "categories deleted successfully",
+			Code:    http.StatusOK,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }

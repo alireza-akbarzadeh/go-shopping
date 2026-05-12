@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/alireza-akbarzadeh/shopping-platform/models"
+
 type CreateAddressRequest struct {
 	AddressType   string `json:"address_type" validate:"required,oneof=shipping billing both"`
 	IsDefault     bool   `json:"is_default"`
@@ -26,4 +28,23 @@ type UpdateAddressRequest struct {
 	PostalCode    *string `json:"postal_code,omitempty" validate:"omitempty,required"`
 	Country       *string `json:"country,omitempty" validate:"omitempty,required"`
 	Instructions  *string `json:"instructions,omitempty"`
+}
+
+type AddressSingleResponse struct {
+	BaseResponse
+	Data AddressData `json:"data"`
+}
+
+type AddressData struct {
+	Address models.Address `json:"address"`
+}
+
+// AddressListResponse – used for List
+type AddressListResponse struct {
+	BaseResponse
+	Data AddressList `json:"data"`
+}
+
+type AddressList struct {
+	Addresses []models.Address `json:"addresses"`
 }

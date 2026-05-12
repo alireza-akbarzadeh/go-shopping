@@ -34,9 +34,9 @@ func NewOrderController(orderService services.OrderServiceInterface) *OrderContr
 // @Security     BearerAuth
 // @Param        request body object false "Checkout request (optional coupon_code)" SchemaExample({"coupon_code":"SAVE10"})
 // @Success      201 {object} utils.Response{data=models.Order}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /orders [post]
 func (ctrl *OrderController) Checkout(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -60,7 +60,6 @@ func (ctrl *OrderController) Checkout(c *gin.Context) {
 	utils.CreatedResponse(c, "order created successfully", order)
 }
 
-
 // GetUserOrders returns paginated orders for the authenticated user.
 // @Summary      Get user's orders
 // @Description  Returns all orders for the authenticated user (paginated).
@@ -71,8 +70,8 @@ func (ctrl *OrderController) Checkout(c *gin.Context) {
 // @Param        limit   query   int  false  "Items per page"   default(20)
 // @Param        offset  query   int  false  "Offset (begin)"   default(0)
 // @Success      200     {object} utils.Response{data=object{orders=[]models.Order,total=int,limit=int,offset=int}}
-// @Failure      401     {object} utils.Response
-// @Failure      500     {object} utils.Response
+// @Failure      401     {object} utils.Response[any]
+// @Failure      500     {object} utils.Response[any]
 // @Router       /orders/my [get]
 func (ctrl *OrderController) GetUserOrders(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -151,9 +150,9 @@ func (ctrl *OrderController) GetOrder(c *gin.Context) {
 // @Param        max_amount  query   number  false  "Maximum amount"
 // @Param        user_id     query   int     false  "Filter by user ID"
 // @Success      200         {object} utils.Response{data=object{orders=[]models.Order,total=int,limit=int,offset=int}}
-// @Failure      401         {object} utils.Response
-// @Failure      403         {object} utils.Response
-// @Failure      500         {object} utils.Response
+// @Failure      401         {object} utils.Response[any]
+// @Failure      403         {object} utils.Response[any]
+// @Failure      500         {object} utils.Response[any]
 // @Router       /orders [get]
 func (ctrl *OrderController) ListAllOrders(c *gin.Context) {
 	// Pagination
@@ -224,12 +223,12 @@ func (ctrl *OrderController) ListAllOrders(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id      path    int     true  "Order ID"
 // @Param        request body    object  true  "Status update request"
-// @Success      200     {object} utils.Response
-// @Failure      400     {object} utils.Response
-// @Failure      401     {object} utils.Response
-// @Failure      403     {object} utils.Response
-// @Failure      404     {object} utils.Response
-// @Failure      500     {object} utils.Response
+// @Success      200     {object} utils.Response[any]
+// @Failure      400     {object} utils.Response[any]
+// @Failure      401     {object} utils.Response[any]
+// @Failure      403     {object} utils.Response[any]
+// @Failure      404     {object} utils.Response[any]
+// @Failure      500     {object} utils.Response[any]
 // @Router       /orders/{id}/status [put]
 func (ctrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	orderID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -252,5 +251,5 @@ func (ctrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "order status updated successfully", nil)
+	utils.SuccessResponse[any](c, "order status updated successfully", nil)
 }

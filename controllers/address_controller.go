@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -32,10 +33,10 @@ func NewAddressController(svc services.AddressServiceInterface) *AddressControll
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body dto.CreateAddressRequest true "Address data"
-// @Success      201 {object} utils.Response{data=models.Address}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      201 {object} dto.AddressSingleResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /addresses [post]
 func (ac *AddressController) Create(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -52,7 +53,15 @@ func (ac *AddressController) Create(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to create address")
 		return
 	}
-	utils.CreatedResponse(c, "address created", address)
+	resp := dto.AddressSingleResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "address created",
+			Code:    http.StatusCreated,
+		},
+		Data: dto.AddressData{Address: *address},
+	}
+	c.JSON(http.StatusCreated, resp)
 }
 
 // Update an existing address.
@@ -64,11 +73,11 @@ func (ac *AddressController) Create(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id      path      int                       true  "Address ID"
 // @Param        request body      dto.UpdateAddressRequest true  "Updated address data"
-// @Success      200     {object}  utils.Response{data=models.Address}
-// @Failure      400     {object}  utils.Response
-// @Failure      401     {object}  utils.Response
-// @Failure      404     {object}  utils.Response
-// @Failure      500     {object}  utils.Response
+// @Success      200     {object}  dto.AddressSingleResponse
+// @Failure      400     {object}  utils.Response[any]
+// @Failure      401     {object}  utils.Response[any]
+// @Failure      404     {object}  utils.Response[any]
+// @Failure      500     {object}  utils.Response[any]
 // @Router       /addresses/{id} [put]
 func (ac *AddressController) Update(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -90,7 +99,15 @@ func (ac *AddressController) Update(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to update address")
 		return
 	}
-	utils.SuccessResponse(c, "address updated", address)
+	resp := dto.AddressSingleResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "address updated",
+			Code:    http.StatusOK,
+		},
+		Data: dto.AddressData{Address: *address},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // Delete an address.
@@ -101,11 +118,11 @@ func (ac *AddressController) Update(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      int  true  "Address ID"
-// @Success      200  {object}  utils.Response
-// @Failure      400  {object}  utils.Response
-// @Failure      401  {object}  utils.Response
-// @Failure      404  {object}  utils.Response
-// @Failure      500  {object}  utils.Response
+// @Success      200  {object}  dto.EmptyResponse
+// @Failure      400  {object}  utils.Response[any]
+// @Failure      401  {object}  utils.Response[any]
+// @Failure      404  {object}  utils.Response[any]
+// @Failure      500  {object}  utils.Response[any]
 // @Router       /addresses/{id} [delete]
 func (ac *AddressController) Delete(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -123,19 +140,26 @@ func (ac *AddressController) Delete(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to delete address")
 		return
 	}
-	utils.SuccessResponse(c, "address deleted", nil)
+	resp := dto.EmptyResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "address deleted",
+			Code:    http.StatusOK,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
-// List Get all addresses of the authenticated user.
+// List addresses of the authenticated user.
 // @Summary      List addresses
 // @Description  Returns all addresses (shipping/billing) belonging to the current user.
 // @Tags         Addresses
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200 {object} utils.Response{data=[]models.Address}
-// @Failure      401 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      200 {object} dto.AddressListResponse
+// @Failure      401 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /addresses [get]
 func (ac *AddressController) List(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -148,10 +172,18 @@ func (ac *AddressController) List(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to fetch addresses")
 		return
 	}
-	utils.SuccessResponse(c, constants.MsgFetchSuccess, addresses)
+	resp := dto.AddressListResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgFetchSuccess,
+			Code:    http.StatusOK,
+		},
+		Data: dto.AddressList{Addresses: addresses},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
-// SetDefault Set an address as the default for its type.
+// SetDefault sets an address as the default for its type.
 // @Summary      Set default address
 // @Description  Marks a specific address as the default (for its address_type, e.g., shipping or billing). Only one default per type.
 // @Tags         Addresses
@@ -159,11 +191,11 @@ func (ac *AddressController) List(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      int  true  "Address ID"
-// @Success      200  {object}  utils.Response
-// @Failure      400  {object}  utils.Response
-// @Failure      401  {object}  utils.Response
-// @Failure      404  {object}  utils.Response
-// @Failure      500  {object}  utils.Response
+// @Success      200  {object}  dto.EmptyResponse
+// @Failure      400  {object}  utils.Response[any]
+// @Failure      401  {object}  utils.Response[any]
+// @Failure      404  {object}  utils.Response[any]
+// @Failure      500  {object}  utils.Response[any]
 // @Router       /addresses/{id}/default [patch]
 func (ac *AddressController) SetDefault(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -181,7 +213,14 @@ func (ac *AddressController) SetDefault(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to set default address")
 		return
 	}
-	utils.SuccessResponse(c, "default address updated", nil)
+	resp := dto.EmptyResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "default address updated",
+			Code:    http.StatusOK,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // GetDefault returns the default address of a given type for the user.
@@ -192,9 +231,9 @@ func (ac *AddressController) SetDefault(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        type query string false "Address type (shipping/billing)" default(shipping) Enums(shipping, billing)
-// @Success      200 {object} utils.Response{data=models.Address}
-// @Failure      401 {object} utils.Response
-// @Failure      404 {object} utils.Response
+// @Success      200 {object} dto.AddressSingleResponse
+// @Failure      401 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
 // @Router       /addresses/default [get]
 func (ac *AddressController) GetDefault(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -216,5 +255,13 @@ func (ac *AddressController) GetDefault(c *gin.Context) {
 		utils.NotFoundResponse(c, "no default address found")
 		return
 	}
-	utils.SuccessResponse(c, constants.MsgFetchSuccess, addr)
+	resp := dto.AddressSingleResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgFetchSuccess,
+			Code:    http.StatusOK,
+		},
+		Data: dto.AddressData{Address: *addr},
+	}
+	c.JSON(http.StatusOK, resp)
 }

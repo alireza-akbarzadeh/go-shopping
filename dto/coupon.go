@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/alireza-akbarzadeh/shopping-platform/models"
+)
 
 type CreateCouponRequest struct {
 	Code               string    `json:"code" validate:"required,min=3,max=50"`
@@ -35,4 +39,43 @@ type CouponListFilters struct {
 	DiscountType string     `form:"discount_type" validate:"omitempty,oneof=percentage fixed"`
 	StartDate    *time.Time `form:"start_date"`
 	EndDate      *time.Time `form:"end_date"`
+}
+
+type CouponSingleResponse struct {
+	BaseResponse
+	Data CouponData `json:"data"`
+}
+
+type CouponData struct {
+	Coupon models.Coupon `json:"coupon"`
+}
+
+// CouponListResponse for paginated list
+type CouponListResponse struct {
+	BaseResponse
+	Data CouponListData `json:"data"`
+}
+
+type CouponListData struct {
+	Coupons []models.Coupon `json:"coupons"`
+	Total   int64           `json:"total"`
+	Limit   int             `json:"limit"`
+	Offset  int             `json:"offset"`
+}
+
+// CouponValidateResponse for validation endpoint
+type CouponValidateResponse struct {
+	BaseResponse
+	Data CouponValidateData `json:"data"`
+}
+
+type CouponValidateData struct {
+	Coupon         models.Coupon `json:"coupon"`
+	DiscountAmount float64       `json:"discount_amount"`
+	FinalTotal     float64       `json:"final_total"`
+}
+
+type ValidateRequest struct {
+	Code       string  `json:"code" validate:"required"`
+	OrderTotal float64 `json:"order_total" validate:"required,gt=0"`
 }

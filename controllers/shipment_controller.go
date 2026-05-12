@@ -43,11 +43,11 @@ func NewShipmentController(shipmentService services.ShipmentServiceInterface) *S
 //	})
 //
 // @Success      201 {object} utils.Response{data=models.Shipment}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      403 {object} utils.Response
-// @Failure      404 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      403 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /admin/shipments [post]
 func (ctrl *ShipmentController) CreateShipment(c *gin.Context) {
 	var req services.CreateShipmentRequest
@@ -123,10 +123,10 @@ type GetShipmentsByOrderRequest struct {
 // @Security     BearerAuth
 // @Param        order_id  query  int  true  "Order ID"
 // @Success      200       {object} utils.Response{data=[]models.Shipment}
-// @Failure      400       {object} utils.Response
-// @Failure      401       {object} utils.Response
-// @Failure      403       {object} utils.Response
-// @Failure      404       {object} utils.Response
+// @Failure      400       {object} utils.Response[any]
+// @Failure      401       {object} utils.Response[any]
+// @Failure      403       {object} utils.Response[any]
+// @Failure      404       {object} utils.Response[any]
 // @Router       /shipments [get]
 func (ctrl *ShipmentController) GetShipmentsByOrder(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -170,12 +170,12 @@ func (ctrl *ShipmentController) GetShipmentsByOrder(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id      path    int     true  "Shipment ID"
 // @Param        request body    object  true  "Status update request"
-// @Success      200     {object} utils.Response
-// @Failure      400     {object} utils.Response
-// @Failure      401     {object} utils.Response
-// @Failure      403     {object} utils.Response
-// @Failure      404     {object} utils.Response
-// @Failure      500     {object} utils.Response
+// @Success      200     {object} utils.Response[any]
+// @Failure      400     {object} utils.Response[any]
+// @Failure      401     {object} utils.Response[any]
+// @Failure      403     {object} utils.Response[any]
+// @Failure      404     {object} utils.Response[any]
+// @Failure      500     {object} utils.Response[any]
 // @Router       /admin/shipments/{id}/status [put]
 func (ctrl *ShipmentController) UpdateShipmentStatus(c *gin.Context) {
 	shipmentID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -198,5 +198,5 @@ func (ctrl *ShipmentController) UpdateShipmentStatus(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "shipment status updated successfully", nil)
+	utils.SuccessResponse[any](c, "shipment status updated successfully", nil)
 }

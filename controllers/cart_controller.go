@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
+	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -30,11 +32,11 @@ func NewCartController(cartService services.CartServiceInterface) *CartControlle
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body object true "Add item" SchemaExample({"product_id":1,"quantity":2})
-// @Success      200 {object} utils.Response{data=object{cart_item=object{id=uint,product_id=uint,quantity=int,price=float64}}}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      404 {object} utils.Response
+// @Param        request body services.AddItemRequest true "Add item"
+// @Success      200 {object} dto.AddItemResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
 // @Router       /cart/items [post]
 func (ctrl *CartController) AddItem(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -51,14 +53,20 @@ func (ctrl *CartController) AddItem(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to add item")
 		return
 	}
-	utils.SuccessResponse(c, "item added to cart", gin.H{
-		"cart_item": gin.H{
-			"id":         item.ID,
-			"product_id": item.ProductID,
-			"quantity":   item.Quantity,
-			"price":      item.Price,
+	resp := dto.AddItemResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "item added to cart",
+			Code:    http.StatusOK,
 		},
-	})
+		Data: dto.CartItemData{
+			ID:        item.ID,
+			ProductID: item.ProductID,
+			Quantity:  item.Quantity,
+			Price:     item.Price,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // GetCart returns the current user's cart.
@@ -67,8 +75,8 @@ func (ctrl *CartController) AddItem(c *gin.Context) {
 // @Tags         Cart
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200 {object} utils.Response{data=object{cart=object{id=uint,items=[]object{id=uint,product_id=uint,name=string,quantity=int,price=float64,total=float64},total=float64}}}
-// @Failure      401 {object} utils.Response
+// @Success      200 {object} dto.GetCartResponse
+// @Failure      401 {object} utils.Response[any]
 // @Router       /cart [get]
 func (ctrl *CartController) GetCart(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -81,28 +89,35 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 		utils.InternalServerErrorResponse(c, err, "failed to fetch cart")
 		return
 	}
-	items := make([]gin.H, len(cart.Items))
+	items := make([]dto.CartItemDetail, len(cart.Items))
 	var total float64
 	for i, item := range cart.Items {
 		itemTotal := float64(item.Quantity) * item.Price
 		total += itemTotal
-		items[i] = gin.H{
-			"id":         item.ID,
-			"product_id": item.ProductID,
-			"name":       item.Product.Name,
-			"quantity":   item.Quantity,
-			"price":      item.Price,
-			"total":      itemTotal,
+		items[i] = dto.CartItemDetail{
+			ID:        item.ID,
+			ProductID: item.ProductID,
+			Name:      item.Product.Name,
+			Quantity:  item.Quantity,
+			Price:     item.Price,
+			Total:     itemTotal,
 		}
 	}
-	data := gin.H{
-		"cart": gin.H{
-			"id":    cart.ID,
-			"items": items,
+	resp := dto.GetCartResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgFetchSuccess,
+			Code:    http.StatusOK,
 		},
-		"total": total,
+		Data: dto.GetCartData{
+			Cart: dto.CartData{
+				ID:    cart.ID,
+				Items: items,
+			},
+			Total: total,
+		},
 	}
-	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
+	c.JSON(http.StatusOK, resp)
 }
 
 // UpdateItem updates cart item quantity.
@@ -113,11 +128,11 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path int true "Cart item ID"
-// @Param        request body object true "Update quantity" SchemaExample({"quantity":3})
-// @Success      200 {object} utils.Response
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      404 {object} utils.Response
+// @Param        request body services.UpdateCartItemRequest true "Update quantity"
+// @Success      200 {object} dto.EmptyResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
 // @Router       /cart/items/{id} [put]
 func (ctrl *CartController) UpdateItem(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -139,7 +154,14 @@ func (ctrl *CartController) UpdateItem(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "cart item updated", nil)
+	resp := dto.EmptyResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "cart item updated",
+			Code:    http.StatusOK,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // RemoveItem deletes an item from the cart.
@@ -148,9 +170,10 @@ func (ctrl *CartController) UpdateItem(c *gin.Context) {
 // @Tags         Cart
 // @Security     BearerAuth
 // @Param        id path int true "Cart item ID"
-// @Success      200 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      404 {object} utils.Response
+// @Success      200 {object} dto.EmptyResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
 // @Router       /cart/items/{id} [delete]
 func (ctrl *CartController) RemoveItem(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -170,5 +193,12 @@ func (ctrl *CartController) RemoveItem(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "item removed from cart", nil)
+	resp := dto.EmptyResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "item removed from cart",
+			Code:    http.StatusOK,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
@@ -32,12 +33,12 @@ func NewCouponController(couponService services.CouponServiceInterface) *CouponC
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body dto.CreateCouponRequest true "Coupon creation data"
-// @Success      201 {object} utils.Response{data=models.Coupon}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      403 {object} utils.Response
-// @Failure      409 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      201 {object} dto.CouponSingleResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      403 {object} utils.Response[any]
+// @Failure      409 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /coupons [post]
 func (cc *CouponController) Create(c *gin.Context) {
 	var req dto.CreateCouponRequest
@@ -50,7 +51,15 @@ func (cc *CouponController) Create(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to create coupon")
 		return
 	}
-	utils.CreatedResponse(c, constants.MsgCreateSuccess, coupon)
+	resp := dto.CouponSingleResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgCreateSuccess,
+			Code:    http.StatusCreated,
+		},
+		Data: dto.CouponData{Coupon: *coupon},
+	}
+	c.JSON(http.StatusCreated, resp)
 }
 
 // Update an existing coupon (admin only).
@@ -62,13 +71,13 @@ func (cc *CouponController) Create(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id      path      int                       true  "Coupon ID"
 // @Param        request body      dto.UpdateCouponRequest   true  "Coupon update data"
-// @Success      200     {object}  utils.Response{data=models.Coupon}
-// @Failure      400     {object}  utils.Response
-// @Failure      401     {object}  utils.Response
-// @Failure      403     {object}  utils.Response
-// @Failure      404     {object}  utils.Response
-// @Failure      409     {object}  utils.Response
-// @Failure      500     {object}  utils.Response
+// @Success      200     {object}  dto.CouponSingleResponse
+// @Failure      400     {object}  utils.Response[any]
+// @Failure      401     {object}  utils.Response[any]
+// @Failure      403     {object}  utils.Response[any]
+// @Failure      404     {object}  utils.Response[any]
+// @Failure      409     {object}  utils.Response[any]
+// @Failure      500     {object}  utils.Response[any]
 // @Router       /coupons/{id} [put]
 func (cc *CouponController) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -85,7 +94,15 @@ func (cc *CouponController) Update(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to update coupon")
 		return
 	}
-	utils.SuccessResponse(c, constants.MsgUpdateSuccess, coupon)
+	resp := dto.CouponSingleResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgUpdateSuccess,
+			Code:    http.StatusOK,
+		},
+		Data: dto.CouponData{Coupon: *coupon},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // Delete a coupon (admin only).
@@ -96,12 +113,12 @@ func (cc *CouponController) Update(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      int  true  "Coupon ID"
-// @Success      200  {object}  utils.Response
-// @Failure      400  {object}  utils.Response
-// @Failure      401  {object}  utils.Response
-// @Failure      403  {object}  utils.Response
-// @Failure      404  {object}  utils.Response
-// @Failure      500  {object}  utils.Response
+// @Success      200  {object}  dto.EmptyResponse
+// @Failure      400  {object}  utils.Response[any]
+// @Failure      401  {object}  utils.Response[any]
+// @Failure      403  {object}  utils.Response[any]
+// @Failure      404  {object}  utils.Response[any]
+// @Failure      500  {object}  utils.Response[any]
 // @Router       /coupons/{id} [delete]
 func (cc *CouponController) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -114,7 +131,14 @@ func (cc *CouponController) Delete(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to delete coupon")
 		return
 	}
-	utils.SuccessResponse(c, constants.MsgDeleteSuccess, nil)
+	resp := dto.EmptyResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgDeleteSuccess,
+			Code:    http.StatusOK,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // Validate checks if a coupon code is applicable to the user's cart.
@@ -124,17 +148,14 @@ func (cc *CouponController) Delete(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body object true "Coupon validation request" SchemaExample({"code":"SAVE10","order_total":100.0})
-// @Success      200 {object} utils.Response{data=object{coupon=models.Coupon,discount_amount=float64,final_total=float64}}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Param        request body dto.ValidateRequest true "Coupon validation request"
+// @Success      200 {object} dto.CouponValidateResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /coupons/validate [post]
 func (cc *CouponController) Validate(c *gin.Context) {
-	var req struct {
-		Code       string  `json:"code" validate:"required"`
-		OrderTotal float64 `json:"order_total" validate:"required,gt=0"`
-	}
+	var req dto.ValidateRequest
 	if !utils.BindAndValidate(c, &req, cc.validate) {
 		return
 	}
@@ -148,11 +169,19 @@ func (cc *CouponController) Validate(c *gin.Context) {
 		utils.HandleAppError(c, err, "coupon validation failed")
 		return
 	}
-	utils.SuccessResponse(c, "coupon valid", gin.H{
-		"coupon":          coupon,
-		"discount_amount": discount,
-		"final_total":     req.OrderTotal - discount,
-	})
+	resp := dto.CouponValidateResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: "coupon valid",
+			Code:    http.StatusOK,
+		},
+		Data: dto.CouponValidateData{
+			Coupon:         *coupon,
+			DiscountAmount: discount,
+			FinalTotal:     req.OrderTotal - discount,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // List returns a paginated list of coupons with optional filters (admin only).
@@ -169,11 +198,11 @@ func (cc *CouponController) Validate(c *gin.Context) {
 // @Param        discount_type query     string  false  "Filter by discount type (percentage/fixed)"
 // @Param        start_date    query     string  false  "Filter by start date (ISO 8601)"
 // @Param        end_date      query     string  false  "Filter by end date (ISO 8601)"
-// @Success      200           {object}  utils.Response{data=object{coupons=[]models.Coupon,total=int,limit=int,offset=int}}
-// @Failure      400           {object}  utils.Response
-// @Failure      401           {object}  utils.Response
-// @Failure      403           {object}  utils.Response
-// @Failure      500           {object}  utils.Response
+// @Success      200           {object}  dto.CouponListResponse
+// @Failure      400           {object}  utils.Response[any]
+// @Failure      401           {object}  utils.Response[any]
+// @Failure      403           {object}  utils.Response[any]
+// @Failure      500           {object}  utils.Response[any]
 // @Router       /coupons [get]
 func (cc *CouponController) List(c *gin.Context) {
 	var filters dto.CouponListFilters
@@ -186,12 +215,18 @@ func (cc *CouponController) List(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to list coupons")
 		return
 	}
-
-	data := gin.H{
-		"coupons": coupons,
-		"total":   total,
-		"limit":   filters.Limit,
-		"offset":  filters.Offset,
+	resp := dto.CouponListResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgFetchSuccess,
+			Code:    http.StatusOK,
+		},
+		Data: dto.CouponListData{
+			Coupons: coupons,
+			Total:   total,
+			Limit:   filters.Limit,
+			Offset:  filters.Offset,
+		},
 	}
-	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
+	c.JSON(http.StatusOK, resp)
 }

@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/alireza-akbarzadeh/shopping-platform/models"
+)
 
 type OrderFilters struct {
 	Status    string
@@ -18,4 +22,35 @@ type OrderListFilters struct {
 	ToDate    *time.Time `form:"to_date"`
 	MinAmount *float64   `form:"min_amount" validate:"omitempty,gt=0"`
 	MaxAmount *float64   `form:"max_amount" validate:"omitempty,gt=0"`
+}
+
+type CategorySingleResponse struct {
+	BaseResponse
+	Data CategoryData `json:"data"`
+}
+
+type CategoryData struct {
+	Category models.Category `json:"category"`
+}
+
+type CategoryListResponse struct {
+	BaseResponse
+	Data CategoryListData `json:"data"`
+}
+
+type CategoryListData struct {
+	Categories []models.Category `json:"categories"`
+	Total      int64             `json:"total"`
+	Limit      int               `json:"limit"`
+	Offset     int               `json:"offset"`
+}
+
+// BulkCreateCategoryResponse – for bulk create
+type BulkCreateCategoryResponse struct {
+	BaseResponse
+	Data BulkCategoryData `json:"data"`
+}
+
+type BulkCategoryData struct {
+	Categories []*models.Category `json:"categories"`
 }

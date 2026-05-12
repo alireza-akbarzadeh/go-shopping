@@ -33,10 +33,10 @@ func NewProductController(productServices services.ProductServiceInterface) *Pro
 // @Security     BearerAuth
 // @Param        request body dto.CreateProductRequest true "Product details"
 // @Success      201 {object} utils.Response{data=models.Product}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      409 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      409 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /products [post]
 func (ctrl *ProductController) Create(c *gin.Context) {
 	var req dto.CreateProductRequest
@@ -63,11 +63,11 @@ func (ctrl *ProductController) Create(c *gin.Context) {
 // @Param        id path int true "Product ID"
 // @Param        request body dto.UpdateProductRequest true "Product update data"
 // @Success      200 {object} utils.Response{data=models.Product}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      404 {object} utils.Response
-// @Failure      409 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
+// @Failure      409 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /products/{id} [put]
 func (ctrl *ProductController) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -95,11 +95,11 @@ func (ctrl *ProductController) Update(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path int true "Product ID"
-// @Success      200 {object} utils.Response
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      404 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      200 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /products/{id} [delete]
 func (ctrl *ProductController) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -113,7 +113,7 @@ func (ctrl *ProductController) Delete(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, constants.MsgDeleteSuccess, nil)
+	utils.SuccessResponse[any](c, constants.MsgDeleteSuccess, nil)
 }
 
 // GetOne retrieves a product by ID or slug.
@@ -124,11 +124,11 @@ func (ctrl *ProductController) Delete(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        identifier path string true "Product identifier (ID or slug)"
-// @Success      200 {object} utils.Response{data=models.Product}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      404 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      200  {object}  dto.ProductSingleResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /products/{identifier} [get]
 func (ctrl *ProductController) GetOne(c *gin.Context) {
 	identifier := c.Param("identifier")
@@ -170,10 +170,10 @@ type ProductListFilters struct {
 // @Param        min_price query number false "Minimum price filter" Example(10.99)
 // @Param        max_price query number false "Maximum price filter" Example(999.99)
 // @Param        is_digital query boolean false "Filter digital products (true/false)" Example(true)
-// @Success      200 {object} utils.Response{data=object{products=[]models.Product,total=int,limit=int,offset=int}}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      500 {object} utils.Response
+// @Success      200  {object}  dto.ProductListResponse
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      500 {object} utils.Response[any]
 // @Router       /products [get]
 func (ctrl *ProductController) List(c *gin.Context) {
 	limit := constants.DefaultLimit
@@ -240,9 +240,9 @@ func (ctrl *ProductController) List(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        request body []dto.CreateProductRequest true "Array of products"
 // @Success      201 {object} utils.Response{data=[]models.Product}
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      403 {object} utils.Response
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      403 {object} utils.Response[any]
 // @Router       /products/bulk [post]
 func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 	var reqs []dto.CreateProductRequest
@@ -269,11 +269,11 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body dto.BulkDeleteProductsRequest true "Product IDs to delete"
-// @Success      200 {object} utils.Response
-// @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
-// @Failure      403 {object} utils.Response
-// @Failure      404 {object} utils.Response
+// @Success      200 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response[any]
+// @Failure      403 {object} utils.Response[any]
+// @Failure      404 {object} utils.Response[any]
 // @Router       /products/bulk [delete]
 func (ctrl *ProductController) BulkDelete(c *gin.Context) {
 	var req dto.BulkDeleteProductsRequest
@@ -284,5 +284,5 @@ func (ctrl *ProductController) BulkDelete(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to delete products")
 		return
 	}
-	utils.SuccessResponse(c, "products deleted successfully", nil)
+	utils.SuccessResponse[any](c, "products deleted successfully", nil)
 }
