@@ -32,9 +32,9 @@ func NewUserController(userService services.UserServiceInterface) *UserControlle
 // @Produce      json
 // @Security     BearerAuth
 // @Success      200 {object} utils.Response{data=object{id=uint,email=string,first_name=string,last_name=string,phone=string,role=string,is_active=bool,created_at=string}}
-// @Failure      401 {object} utils.Response[any]
-// @Failure      404 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /profile [get]
 func (pc *UserController) GetProfile(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -72,10 +72,10 @@ func (pc *UserController) GetProfile(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        request body object true "Profile update data" SchemaExample({"first_name":"John","last_name":"Doe","phone":"+1234567890"})
 // @Success      200 {object} utils.Response{data=object{id=uint,email=string,first_name=string,last_name=string,phone=string}}
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      404 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /profile [put]
 func (pc *UserController) UpdateProfile(c *gin.Context) {
 	var req services.UpdateProfileRequest
@@ -122,9 +122,9 @@ func (pc *UserController) UpdateProfile(c *gin.Context) {
 // @Param        last_name   query  string  false  "Partial match on last name"
 // @Param        role        query  string  false  "Exact match on role"                  Enums(user, admin, moderator)
 // @Success      200 {object} utils.Response{data=object{users=[]object{id=uint,email=string,first_name=string,last_name=string,phone=string,role=string,is_active=bool,created_at=string},limit=int,offset=int,total=int64}}
-// @Failure      401 {object} utils.Response[any]
-// @Failure      403 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /users [get]
 func (pc *UserController) GetAllUsers(c *gin.Context) {
 	var filter services.UserFilter

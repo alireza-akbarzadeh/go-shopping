@@ -34,9 +34,9 @@ func NewCartController(cartService services.CartServiceInterface) *CartControlle
 // @Security     BearerAuth
 // @Param        request body services.AddItemRequest true "Add item"
 // @Success      200 {object} dto.AddItemResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      404 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
 // @Router       /cart/items [post]
 func (ctrl *CartController) AddItem(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -76,7 +76,7 @@ func (ctrl *CartController) AddItem(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Success      200 {object} dto.GetCartResponse
-// @Failure      401 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response
 // @Router       /cart [get]
 func (ctrl *CartController) GetCart(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -130,9 +130,9 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 // @Param        id path int true "Cart item ID"
 // @Param        request body services.UpdateCartItemRequest true "Update quantity"
 // @Success      200 {object} dto.EmptyResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      404 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
 // @Router       /cart/items/{id} [put]
 func (ctrl *CartController) UpdateItem(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -171,9 +171,9 @@ func (ctrl *CartController) UpdateItem(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id path int true "Cart item ID"
 // @Success      200 {object} dto.EmptyResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      404 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
 // @Router       /cart/items/{id} [delete]
 func (ctrl *CartController) RemoveItem(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)

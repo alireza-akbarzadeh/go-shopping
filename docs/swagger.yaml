@@ -7,6 +7,69 @@ definitions:
     required:
     - refresh_token
     type: object
+  dto.AddItemResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.CartItemData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.AddressData:
+    properties:
+      address:
+        $ref: '#/definitions/models.Address'
+    type: object
+  dto.AddressList:
+    properties:
+      addresses:
+        items:
+          $ref: '#/definitions/models.Address'
+        type: array
+    type: object
+  dto.AddressListResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.AddressList'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.AddressSingleResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.AddressData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.BulkCategoryData:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+    type: object
+  dto.BulkCreateCategoryResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.BulkCategoryData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   dto.BulkDeleteProductsRequest:
     properties:
       product_ids:
@@ -16,6 +79,81 @@ definitions:
         type: array
     required:
     - product_ids
+    type: object
+  dto.CartData:
+    properties:
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/dto.CartItemDetail'
+        type: array
+    type: object
+  dto.CartItemData:
+    properties:
+      id:
+        type: integer
+      price:
+        type: number
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  dto.CartItemDetail:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      total:
+        type: number
+    type: object
+  dto.CategoryData:
+    properties:
+      category:
+        $ref: '#/definitions/models.Category'
+    type: object
+  dto.CategoryListData:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.CategoryListResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.CategoryListData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.CategorySingleResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.CategoryData'
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   dto.ChangePasswordRequest:
     properties:
@@ -28,6 +166,66 @@ definitions:
     required:
     - current_password
     - new_password
+    type: object
+  dto.CouponData:
+    properties:
+      coupon:
+        $ref: '#/definitions/models.Coupon'
+    type: object
+  dto.CouponListData:
+    properties:
+      coupons:
+        items:
+          $ref: '#/definitions/models.Coupon'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.CouponListResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.CouponListData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.CouponSingleResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.CouponData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.CouponValidateData:
+    properties:
+      coupon:
+        $ref: '#/definitions/models.Coupon'
+      discount_amount:
+        type: number
+      final_total:
+        type: number
+    type: object
+  dto.CouponValidateResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.CouponValidateData'
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   dto.CreateAddressRequest:
     properties:
@@ -201,12 +399,39 @@ definitions:
     - price
     - sku
     type: object
+  dto.EmptyResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   dto.ForgotPasswordRequest:
     properties:
       email:
         type: string
     required:
     - email
+    type: object
+  dto.GetCartData:
+    properties:
+      cart:
+        $ref: '#/definitions/dto.CartData'
+      total:
+        type: number
+    type: object
+  dto.GetCartResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/dto.GetCartData'
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   dto.LoginRequest:
     properties:
@@ -238,6 +463,42 @@ definitions:
     type: object
   dto.MessageResponse:
     properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.ProductListData:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      products:
+        items:
+          $ref: '#/definitions/models.Product'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.ProductListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.ProductListData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.ProductSingleData:
+    properties:
+      product:
+        $ref: '#/definitions/models.Product'
+    type: object
+  dto.ProductSingleResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.ProductSingleData'
       message:
         type: string
       success:
@@ -501,6 +762,16 @@ definitions:
         type: string
       role:
         type: string
+    type: object
+  dto.ValidateRequest:
+    properties:
+      code:
+        type: string
+      order_total:
+        type: number
+    required:
+    - code
+    - order_total
     type: object
   gorm.DeletedAt:
     properties:
@@ -890,6 +1161,23 @@ definitions:
       user_id:
         type: integer
     type: object
+  services.AddItemRequest:
+    properties:
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  services.UpdateCartItemRequest:
+    properties:
+      quantity:
+        type: integer
+    required:
+    - quantity
+    type: object
   utils.Response:
     properties:
       data: {}
@@ -926,14 +1214,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/models.Address'
-                  type: array
-              type: object
+            $ref: '#/definitions/dto.AddressListResponse'
         "401":
           description: Unauthorized
           schema:
@@ -964,12 +1245,7 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Address'
-              type: object
+            $ref: '#/definitions/dto.AddressSingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -1004,7 +1280,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.EmptyResponse'
         "400":
           description: Bad Request
           schema:
@@ -1048,12 +1324,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Address'
-              type: object
+            $ref: '#/definitions/dto.AddressSingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -1093,7 +1364,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.EmptyResponse'
         "400":
           description: Bad Request
           schema:
@@ -1136,12 +1407,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Address'
-              type: object
+            $ref: '#/definitions/dto.AddressSingleResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1774,40 +2040,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  properties:
-                    cart:
-                      properties:
-                        id:
-                          type: integer
-                        items:
-                          items:
-                            properties:
-                              id:
-                                type: integer
-                              name:
-                                type: string
-                              price:
-                                format: float64
-                                type: number
-                              product_id:
-                                type: integer
-                              quantity:
-                                type: integer
-                              total:
-                                format: float64
-                                type: number
-                            type: object
-                          type: array
-                        total:
-                          format: float64
-                          type: number
-                      type: object
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.GetCartResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1828,32 +2061,14 @@ paths:
         name: request
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/services.AddItemRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  properties:
-                    cart_item:
-                      properties:
-                        id:
-                          type: integer
-                        price:
-                          format: float64
-                          type: number
-                        product_id:
-                          type: integer
-                        quantity:
-                          type: integer
-                      type: object
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.AddItemResponse'
         "400":
           description: Bad Request
           schema:
@@ -1884,6 +2099,10 @@ paths:
         "200":
           description: OK
           schema:
+            $ref: '#/definitions/dto.EmptyResponse'
+        "400":
+          description: Bad Request
+          schema:
             $ref: '#/definitions/utils.Response'
         "401":
           description: Unauthorized
@@ -1913,14 +2132,14 @@ paths:
         name: request
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/services.UpdateCartItemRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.EmptyResponse'
         "400":
           description: Bad Request
           schema:
@@ -1971,23 +2190,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  properties:
-                    categories:
-                      items:
-                        $ref: '#/definitions/models.Category'
-                      type: array
-                    limit:
-                      type: integer
-                    offset:
-                      type: integer
-                    total:
-                      type: integer
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.CategoryListResponse'
         "400":
           description: Bad Request
           schema:
@@ -2017,12 +2220,7 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Category'
-              type: object
+            $ref: '#/definitions/dto.CategorySingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -2063,7 +2261,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.EmptyResponse'
         "400":
           description: Bad Request
           schema:
@@ -2112,12 +2310,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Category'
-              type: object
+            $ref: '#/definitions/dto.CategorySingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -2161,12 +2354,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Category'
-              type: object
+            $ref: '#/definitions/dto.CategorySingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -2202,7 +2390,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.EmptyResponse'
         "400":
           description: Bad Request
           schema:
@@ -2248,14 +2436,7 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/models.Category'
-                  type: array
-              type: object
+            $ref: '#/definitions/dto.BulkCreateCategoryResponse'
         "400":
           description: Bad Request
           schema:
@@ -2323,23 +2504,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  properties:
-                    coupons:
-                      items:
-                        $ref: '#/definitions/models.Coupon'
-                      type: array
-                    limit:
-                      type: integer
-                    offset:
-                      type: integer
-                    total:
-                      type: integer
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.CouponListResponse'
         "400":
           description: Bad Request
           schema:
@@ -2379,12 +2544,7 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Coupon'
-              type: object
+            $ref: '#/definitions/dto.CouponSingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -2428,7 +2588,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.EmptyResponse'
         "400":
           description: Bad Request
           schema:
@@ -2477,12 +2637,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Coupon'
-              type: object
+            $ref: '#/definitions/dto.CouponSingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -2524,28 +2679,14 @@ paths:
         name: request
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/dto.ValidateRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  properties:
-                    coupon:
-                      $ref: '#/definitions/models.Coupon'
-                    discount_amount:
-                      format: float64
-                      type: number
-                    final_total:
-                      format: float64
-                      type: number
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.CouponValidateResponse'
         "400":
           description: Bad Request
           schema:
@@ -2897,23 +3038,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  properties:
-                    limit:
-                      type: integer
-                    offset:
-                      type: integer
-                    products:
-                      items:
-                        $ref: '#/definitions/models.Product'
-                      type: array
-                    total:
-                      type: integer
-                  type: object
-              type: object
+            $ref: '#/definitions/dto.ProductListResponse'
         "400":
           description: Bad Request
           schema:
@@ -3085,12 +3210,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Product'
-              type: object
+            $ref: '#/definitions/dto.ProductSingleResponse'
         "400":
           description: Bad Request
           schema:

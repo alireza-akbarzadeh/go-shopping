@@ -34,10 +34,10 @@ func NewCategoryController(categoryService services.CategoryServiceInterface) *C
 // @Security     BearerAuth
 // @Param        request body dto.CreateCategoryRequest true "Category creation data"
 // @Success      201 {object} dto.CategorySingleResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      403 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /categories [post]
 func (ctrl *CategoryController) Create(c *gin.Context) {
 	var req dto.CreateCategoryRequest
@@ -70,11 +70,11 @@ func (ctrl *CategoryController) Create(c *gin.Context) {
 // @Param        id      path      int                           true  "Category ID"
 // @Param        request body      dto.UpdateCategoryRequest true  "Category update data"
 // @Success      200     {object}  dto.CategorySingleResponse
-// @Failure      400     {object}  utils.Response[any]
-// @Failure      401     {object}  utils.Response[any]
-// @Failure      403     {object}  utils.Response[any]
-// @Failure      404     {object}  utils.Response[any]
-// @Failure      500     {object}  utils.Response[any]
+// @Failure      400     {object}  utils.Response
+// @Failure      401     {object}  utils.Response
+// @Failure      403     {object}  utils.Response
+// @Failure      404     {object}  utils.Response
+// @Failure      500     {object}  utils.Response
 // @Router       /categories/{id} [put]
 func (ctrl *CategoryController) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -114,11 +114,11 @@ func (ctrl *CategoryController) Update(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id   path      int  true  "Category ID"
 // @Success      200  {object}  dto.EmptyResponse
-// @Failure      400  {object}  utils.Response[any]
-// @Failure      401  {object}  utils.Response[any]
-// @Failure      403  {object}  utils.Response[any]
-// @Failure      404  {object}  utils.Response[any]
-// @Failure      500  {object}  utils.Response[any]
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
 // @Router       /categories/{id} [delete]
 func (ctrl *CategoryController) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -149,9 +149,9 @@ func (ctrl *CategoryController) Delete(c *gin.Context) {
 // @Produce      json
 // @Param        identifier   path      string  true  "Category ID (numeric) or slug (string)"
 // @Success      200          {object}  dto.CategorySingleResponse
-// @Failure      400          {object}  utils.Response[any]
-// @Failure      404          {object}  utils.Response[any]
-// @Failure      500          {object}  utils.Response[any]
+// @Failure      400          {object}  utils.Response
+// @Failure      404          {object}  utils.Response
+// @Failure      500          {object}  utils.Response
 // @Router       /categories/{identifier} [get]
 func (ctrl *CategoryController) GetOne(c *gin.Context) {
 	identifier := c.Param("identifier")
@@ -188,8 +188,8 @@ func (ctrl *CategoryController) GetOne(c *gin.Context) {
 // @Param        is_active   query     bool    false  "Filter by active status (true/false)"
 // @Param        parent_id   query     int     false  "Filter by parent category ID"
 // @Success      200         {object}  dto.CategoryListResponse
-// @Failure      400         {object}  utils.Response[any]
-// @Failure      500         {object}  utils.Response[any]
+// @Failure      400         {object}  utils.Response
+// @Failure      500         {object}  utils.Response
 // @Router       /categories [get]
 func (ctrl *CategoryController) List(c *gin.Context) {
 	var req dto.CategoryListFilters
@@ -228,10 +228,10 @@ func (ctrl *CategoryController) List(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        request body []dto.CreateCategoryRequest true "Array of categories to create"
 // @Success      201 {object} dto.BulkCreateCategoryResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      403 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /categories/bulk [post]
 func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
 	var reqs []dto.CreateCategoryRequest
@@ -268,11 +268,11 @@ func (ctrl *CategoryController) BulkCreate(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        request body object true "Category IDs to delete" SchemaExample({"ids":[1,2,3]})
 // @Success      200 {object} dto.EmptyResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      403 {object} utils.Response[any]
-// @Failure      404 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Failure      404 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /categories/bulk [delete]
 func (ctrl *CategoryController) BulkDelete(c *gin.Context) {
 	var req services.BulkDeleteCategoryRequest

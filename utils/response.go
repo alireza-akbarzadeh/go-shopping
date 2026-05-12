@@ -10,17 +10,17 @@ import (
 )
 
 // Response represents the standard API response structure.
-type Response[T any] struct {
+type Response struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message,omitempty"`
-	Data    T           `json:"data"`
+	Data    interface{} `json:"data,omitempty"`
 	Error   string      `json:"error,omitempty"`
 	Errors  interface{} `json:"errors,omitempty"`
 }
 
 // SuccessResponse sends a 200 OK response with data.
-func SuccessResponse[T any](c *gin.Context, message string, data T) {
-	c.JSON(http.StatusOK, Response[T]{ // <--- instantiate with [T]
+func SuccessResponse(c *gin.Context, message string, data interface{}) {
+	c.JSON(http.StatusOK, Response{
 		Success: true,
 		Message: message,
 		Data:    data,
@@ -28,8 +28,8 @@ func SuccessResponse[T any](c *gin.Context, message string, data T) {
 }
 
 // CreatedResponse sends a 201 Created response with data.
-func CreatedResponse[T any](c *gin.Context, message string, data T) {
-	c.JSON(http.StatusCreated, Response[T]{
+func CreatedResponse(c *gin.Context, message string, data interface{}) {
+	c.JSON(http.StatusCreated, Response{
 		Success: true,
 		Message: message,
 		Data:    data,
@@ -38,7 +38,7 @@ func CreatedResponse[T any](c *gin.Context, message string, data T) {
 
 // ErrorResponse sends an error response with the given status code.
 func ErrorResponse(c *gin.Context, status int, message string) {
-	c.JSON(status, Response[any]{
+	c.JSON(status, Response{
 		Success: false,
 		Message: message,
 	})
@@ -87,7 +87,7 @@ func FormatValidationErrors(err error) map[string]string {
 
 // ValidationErrorResponse sends a 400 Bad Request with validation details.
 func ValidationErrorResponse(c *gin.Context, errors interface{}) {
-	c.JSON(http.StatusBadRequest, Response[any]{
+	c.JSON(http.StatusBadRequest, Response{
 		Success: false,
 		Message: "validation failed",
 		Errors:  errors,

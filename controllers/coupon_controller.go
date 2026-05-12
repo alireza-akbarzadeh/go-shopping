@@ -34,11 +34,11 @@ func NewCouponController(couponService services.CouponServiceInterface) *CouponC
 // @Security     BearerAuth
 // @Param        request body dto.CreateCouponRequest true "Coupon creation data"
 // @Success      201 {object} dto.CouponSingleResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      403 {object} utils.Response[any]
-// @Failure      409 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Failure      409 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /coupons [post]
 func (cc *CouponController) Create(c *gin.Context) {
 	var req dto.CreateCouponRequest
@@ -72,12 +72,12 @@ func (cc *CouponController) Create(c *gin.Context) {
 // @Param        id      path      int                       true  "Coupon ID"
 // @Param        request body      dto.UpdateCouponRequest   true  "Coupon update data"
 // @Success      200     {object}  dto.CouponSingleResponse
-// @Failure      400     {object}  utils.Response[any]
-// @Failure      401     {object}  utils.Response[any]
-// @Failure      403     {object}  utils.Response[any]
-// @Failure      404     {object}  utils.Response[any]
-// @Failure      409     {object}  utils.Response[any]
-// @Failure      500     {object}  utils.Response[any]
+// @Failure      400     {object}  utils.Response
+// @Failure      401     {object}  utils.Response
+// @Failure      403     {object}  utils.Response
+// @Failure      404     {object}  utils.Response
+// @Failure      409     {object}  utils.Response
+// @Failure      500     {object}  utils.Response
 // @Router       /coupons/{id} [put]
 func (cc *CouponController) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -114,11 +114,11 @@ func (cc *CouponController) Update(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id   path      int  true  "Coupon ID"
 // @Success      200  {object}  dto.EmptyResponse
-// @Failure      400  {object}  utils.Response[any]
-// @Failure      401  {object}  utils.Response[any]
-// @Failure      403  {object}  utils.Response[any]
-// @Failure      404  {object}  utils.Response[any]
-// @Failure      500  {object}  utils.Response[any]
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
 // @Router       /coupons/{id} [delete]
 func (cc *CouponController) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -150,9 +150,9 @@ func (cc *CouponController) Delete(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        request body dto.ValidateRequest true "Coupon validation request"
 // @Success      200 {object} dto.CouponValidateResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /coupons/validate [post]
 func (cc *CouponController) Validate(c *gin.Context) {
 	var req dto.ValidateRequest
@@ -199,10 +199,10 @@ func (cc *CouponController) Validate(c *gin.Context) {
 // @Param        start_date    query     string  false  "Filter by start date (ISO 8601)"
 // @Param        end_date      query     string  false  "Filter by end date (ISO 8601)"
 // @Success      200           {object}  dto.CouponListResponse
-// @Failure      400           {object}  utils.Response[any]
-// @Failure      401           {object}  utils.Response[any]
-// @Failure      403           {object}  utils.Response[any]
-// @Failure      500           {object}  utils.Response[any]
+// @Failure      400           {object}  utils.Response
+// @Failure      401           {object}  utils.Response
+// @Failure      403           {object}  utils.Response
+// @Failure      500           {object}  utils.Response
 // @Router       /coupons [get]
 func (cc *CouponController) List(c *gin.Context) {
 	var filters dto.CouponListFilters

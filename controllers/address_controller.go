@@ -34,9 +34,9 @@ func NewAddressController(svc services.AddressServiceInterface) *AddressControll
 // @Security     BearerAuth
 // @Param        request body dto.CreateAddressRequest true "Address data"
 // @Success      201 {object} dto.AddressSingleResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /addresses [post]
 func (ac *AddressController) Create(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -74,10 +74,10 @@ func (ac *AddressController) Create(c *gin.Context) {
 // @Param        id      path      int                       true  "Address ID"
 // @Param        request body      dto.UpdateAddressRequest true  "Updated address data"
 // @Success      200     {object}  dto.AddressSingleResponse
-// @Failure      400     {object}  utils.Response[any]
-// @Failure      401     {object}  utils.Response[any]
-// @Failure      404     {object}  utils.Response[any]
-// @Failure      500     {object}  utils.Response[any]
+// @Failure      400     {object}  utils.Response
+// @Failure      401     {object}  utils.Response
+// @Failure      404     {object}  utils.Response
+// @Failure      500     {object}  utils.Response
 // @Router       /addresses/{id} [put]
 func (ac *AddressController) Update(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -119,10 +119,10 @@ func (ac *AddressController) Update(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id   path      int  true  "Address ID"
 // @Success      200  {object}  dto.EmptyResponse
-// @Failure      400  {object}  utils.Response[any]
-// @Failure      401  {object}  utils.Response[any]
-// @Failure      404  {object}  utils.Response[any]
-// @Failure      500  {object}  utils.Response[any]
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
 // @Router       /addresses/{id} [delete]
 func (ac *AddressController) Delete(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -158,8 +158,8 @@ func (ac *AddressController) Delete(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Success      200 {object} dto.AddressListResponse
-// @Failure      401 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /addresses [get]
 func (ac *AddressController) List(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -192,10 +192,10 @@ func (ac *AddressController) List(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        id   path      int  true  "Address ID"
 // @Success      200  {object}  dto.EmptyResponse
-// @Failure      400  {object}  utils.Response[any]
-// @Failure      401  {object}  utils.Response[any]
-// @Failure      404  {object}  utils.Response[any]
-// @Failure      500  {object}  utils.Response[any]
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
 // @Router       /addresses/{id}/default [patch]
 func (ac *AddressController) SetDefault(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -232,8 +232,8 @@ func (ac *AddressController) SetDefault(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        type query string false "Address type (shipping/billing)" default(shipping) Enums(shipping, billing)
 // @Success      200 {object} dto.AddressSingleResponse
-// @Failure      401 {object} utils.Response[any]
-// @Failure      404 {object} utils.Response[any]
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
 // @Router       /addresses/default [get]
 func (ac *AddressController) GetDefault(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
