@@ -2873,19 +2873,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     }
                 }
@@ -2922,19 +2922,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/utils.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.Product"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/dto.ProductSingleResponse"
                         }
                     },
                     "400": {
@@ -3000,40 +2988,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/utils.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/models.Product"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/dto.ProductListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     }
                 }
@@ -3070,31 +3043,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/dto.EmptyResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response"
                         }
                     }
                 }
@@ -3201,19 +3174,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/utils.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.Product"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/dto.ProductSingleResponse"
                         }
                     },
                     "400": {
@@ -3278,7 +3239,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/dto.EmptyResponse"
                         }
                     },
                     "400": {
@@ -4679,6 +4640,9 @@ const docTemplate = `{
         "dto.ProductListResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/dto.ProductListData"
                 },
@@ -4693,7 +4657,7 @@ const docTemplate = `{
         "dto.ProductSingleData": {
             "type": "object",
             "properties": {
-                "product": {
+                "data": {
                     "$ref": "#/definitions/models.Product"
                 }
             }
@@ -4701,6 +4665,9 @@ const docTemplate = `{
         "dto.ProductSingleResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "data": {
                     "$ref": "#/definitions/dto.ProductSingleData"
                 },
@@ -5104,6 +5071,22 @@ const docTemplate = `{
                 },
                 "order_total": {
                     "type": "number"
+                }
+            }
+        },
+        "github_com_alireza-akbarzadeh_shopping-platform_utils.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string"
+                },
+                "errors": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },

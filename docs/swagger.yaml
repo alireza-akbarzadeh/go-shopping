@@ -483,6 +483,8 @@ definitions:
     type: object
   dto.ProductListResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/dto.ProductListData'
       message:
@@ -492,11 +494,13 @@ definitions:
     type: object
   dto.ProductSingleData:
     properties:
-      product:
+      data:
         $ref: '#/definitions/models.Product'
     type: object
   dto.ProductSingleResponse:
     properties:
+      code:
+        type: integer
       data:
         $ref: '#/definitions/dto.ProductSingleData'
       message:
@@ -772,6 +776,17 @@ definitions:
     required:
     - code
     - order_total
+    type: object
+  github_com_alireza-akbarzadeh_shopping-platform_utils.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      errors: {}
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   gorm.DeletedAt:
     properties:
@@ -3042,15 +3057,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
       security:
       - BearerAuth: []
       summary: List products
@@ -3073,12 +3088,7 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Product'
-              type: object
+            $ref: '#/definitions/dto.ProductSingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -3117,7 +3127,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.EmptyResponse'
         "400":
           description: Bad Request
           schema:
@@ -3161,12 +3171,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Product'
-              type: object
+            $ref: '#/definitions/dto.ProductSingleResponse'
         "400":
           description: Bad Request
           schema:
@@ -3250,23 +3255,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/dto.EmptyResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
       security:
       - BearerAuth: []
       summary: Bulk delete products
@@ -3291,26 +3296,19 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/models.Product'
-                  type: array
-              type: object
+            $ref: '#/definitions/dto.ProductListResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/github_com_alireza-akbarzadeh_shopping-platform_utils.Response'
       security:
       - BearerAuth: []
       summary: Bulk create products

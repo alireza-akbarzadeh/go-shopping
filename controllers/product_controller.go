@@ -199,9 +199,9 @@ type ProductListFilters struct {
 // @Param        max_price query number false "Maximum price filter" Example(999.99)
 // @Param        is_digital query boolean false "Filter digital products (true/false)" Example(true)
 // @Success      200  {object}  dto.ProductListResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      500 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      500 {object} utils.Response
 // @Router       /products [get]
 func (ctrl *ProductController) List(c *gin.Context) {
 	limit := constants.DefaultLimit
@@ -274,9 +274,9 @@ func (ctrl *ProductController) List(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        request body []dto.CreateProductRequest true "Array of products"
 // @Success      201 {object} dto.ProductListResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      403 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
 // @Router       /products/bulk [post]
 func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 	var reqs []dto.CreateProductRequest
@@ -316,10 +316,10 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        request body dto.BulkDeleteProductsRequest true "Product IDs to delete"
 // @Success      200 {object} dto.EmptyResponse
-// @Failure      400 {object} utils.Response[any]
-// @Failure      401 {object} utils.Response[any]
-// @Failure      403 {object} utils.Response[any]
-// @Failure      404 {object} utils.Response[any]
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      403 {object} utils.Response
+// @Failure      404 {object} utils.Response
 // @Router       /products/bulk [delete]
 func (ctrl *ProductController) BulkDelete(c *gin.Context) {
 	var req dto.BulkDeleteProductsRequest
