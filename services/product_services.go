@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
@@ -11,7 +12,7 @@ import (
 )
 
 type ProductServiceInterface interface {
-	List(limit, offset int, filters map[string]interface{}) ([]*models.Product, int64, error)
+	List(limit, offset int, filters dto.ProductListFilters) ([]*models.Product, int64, error)
 	BulkCreate(products []dto.CreateProductRequest) ([]*models.Product, error)
 	GetByID(id uint) (*models.Product, error)
 	GetBySlug(slug string) (*models.Product, error)
@@ -71,12 +72,18 @@ func (s *productService) Create(req dto.CreateProductRequest) (*models.Product, 
 		Status:            req.Status,
 		MetaTitle:         req.MetaTitle,
 		MetaDescription:   req.MetaDescription,
+		IsNew:             time.Now().AddDate(0, 0, 30).After(time.Now()),
+		Rating:            0.0,
+		ReviewsCount:      0,
 	}
 	if product.Status == "" {
 		product.Status = "draft"
 	}
 	if product.LowStockThreshold == 0 {
 		product.LowStockThreshold = 5
+	}
+	if req.IsNew != nil {
+		product.IsNew = *req.IsNew
 	}
 
 	if err := s.db.Create(product).Error; err != nil {
@@ -167,6 +174,10 @@ func (s *productService) Update(id uint, req dto.UpdateProductRequest) (*models.
 	if req.MetaTitle != nil {
 		product.MetaTitle = *req.MetaTitle
 	}
+	if req.IsNew != nil {
+		product.IsNew = *req.IsNew
+	}
+
 	if req.MetaDescription != nil {
 		product.MetaDescription = *req.MetaDescription
 	}
@@ -189,8 +200,7 @@ func (s *productService) Delete(id uint) error {
 }
 
 // List retrieve list of product
-func (s *productService) List(limit, offset int, filters map[string]interface{}) ([]*models.Product, int64, error) {
-
+func (s *productService) List(limit, offset int, filters dto.ProductListFilters) ([]*models.Product, int64, error) {
 	const maxLimit = 100
 	if limit <= 0 {
 		limit = 10
@@ -205,30 +215,45 @@ func (s *productService) List(limit, offset int, filters map[string]interface{})
 	query := s.db.Model(&models.Product{}).Order("id DESC")
 
 	// String filters
-	if v, ok := filters["status"].(string); ok && v != "" {
-		query = query.Where("status = ?", v)
+	if filters.Status != "" {
+		query = query.Where("status = ?", filters.Status)
 	}
-	if v, ok := filters["name"].(string); ok && v != "" {
-		query = query.Where("name = ?", v)
+	if filters.Name != "" {
+		query = query.Where("name = ?", filters.Name)
 	}
-	if v, ok := filters["sku"].(string); ok && v != "" {
-		query = query.Where("sku = ?", v)
+	if filters.SKU != "" {
+		query = query.Where("sku = ?", filters.SKU)
 	}
 
 	// Numeric filters
-	if v, ok := filters["category_id"].(uint); ok && v != 0 {
-		query = query.Where("category_id = ?", v)
+	if filters.CategoryID != 0 {
+		query = query.Where("category_id = ?", filters.CategoryID)
 	}
-	if v, ok := filters["min_price"].(float64); ok {
-		query = query.Where("price >= ?", v)
+	if filters.MinPrice != 0 {
+		query = query.Where("price >= ?", filters.MinPrice)
 	}
-	if v, ok := filters["max_price"].(float64); ok {
-		query = query.Where("price <= ?", v)
+	if filters.MaxPrice != 0 {
+		query = query.Where("price <= ?", filters.MaxPrice)
+	}
+	if filters.MinRating != 0 {
+		query = query.Where("rating >= ?", filters.MinRating)
+	}
+	if filters.MaxRating != 0 {
+		query = query.Where("rating <= ?", filters.MaxRating)
+	}
+	if filters.MinReviews != 0 {
+		query = query.Where("reviews_count >= ?", filters.MinReviews)
+	}
+	if filters.MaxReviews != 0 {
+		query = query.Where("reviews_count <= ?", filters.MaxReviews)
 	}
 
-	// Boolean filter
-	if v, ok := filters["is_digital"].(bool); ok {
-		query = query.Where("is_digital = ?", v)
+	// Boolean filters (handle nil pointers)
+	if filters.IsDigital != nil {
+		query = query.Where("is_digital = ?", *filters.IsDigital)
+	}
+	if filters.IsNew != nil {
+		query = query.Where("is_new = ?", *filters.IsNew)
 	}
 
 	var total int64

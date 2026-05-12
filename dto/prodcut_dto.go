@@ -24,6 +24,7 @@ type CreateProductRequest struct {
 	Status            string   `json:"status" validate:"oneof=draft active inactive archived"`
 	MetaTitle         string   `json:"meta_title,omitempty"`
 	MetaDescription   string   `json:"meta_description,omitempty"`
+	IsNew             *bool    `json:"is_new,omitempty"`
 }
 type UpdateProductRequest struct {
 	Name              *string   `json:"name,omitempty" validate:"omitempty,min=3,max=255"`
@@ -42,6 +43,7 @@ type UpdateProductRequest struct {
 	Status            *string   `json:"status,omitempty" validate:"omitempty,oneof=draft active inactive archived"`
 	MetaTitle         *string   `json:"meta_title,omitempty"`
 	MetaDescription   *string   `json:"meta_description,omitempty"`
+	IsNew             *bool     `json:"is_new,omitempty"`
 }
 
 type BulkDeleteProductsRequest struct {
@@ -69,4 +71,20 @@ type ProductListData struct {
 	Total    int64             `json:"total"`
 	Limit    int               `json:"limit"`
 	Offset   int               `json:"offset"`
+}
+
+type ProductListFilters struct {
+	Status     string  `form:"status"`
+	Name       string  `form:"name"`
+	SKU        string  `form:"sku"`
+	CategoryID uint    `form:"category_id"`
+	MinPrice   float64 `form:"min_price"`
+	MaxPrice   float64 `form:"max_price"`
+	MinRating  float64 `form:"min_rating"`
+	MaxRating  float64 `form:"max_rating"`
+	MinReviews int     `form:"min_reviews"`
+	MaxReviews int     `form:"max_reviews"`
+	IsDigital  *bool   `form:"is_digital"`
+	IsNew      *bool   `form:"is_new"`
+	Sort       string  `form:"sort"`
 }

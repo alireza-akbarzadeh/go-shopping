@@ -174,36 +174,35 @@ func (ctrl *ProductController) GetOne(c *gin.Context) {
 	})
 }
 
-type ProductListFilters struct {
-	Status     string  `form:"status"`
-	Name       string  `form:"name"`
-	CategoryID uint    `form:"category_id"`
-	MinPrice   float64 `form:"min_price"`
-	MaxPrice   float64 `form:"max_price"`
-	IsDigital  *bool   `form:"is_digital"`
-}
-
 // List retrieves a paginated list of products with optional filters.
 // @Summary      List products
-// @Description  Get products with pagination and filtering by status, name, category, price range, and digital flag.
+// @Description  Get products with pagination and filtering by status, name, category, price range, rating, reviews count, digital flag, new flag, and sorting.
 // @Tags         Products
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        limit query int false "Items per page (default 20, max 100)" default(20)
 // @Param        offset query int false "Number of items to skip (default 0)" default(0)
-// @Param        status query string false "Product status (e.g., active, draft, archived)" Example(active)
-// @Param        name query string false "Filter by product name (partial match)" Example(laptop)
+// @Param        status query string false "Product status (active, draft, archived)" Example(active)
+// @Param        name query string false "Filter by exact product name" Example(laptop)
+// @Param        sku query string false "Filter by SKU" Example(SKU-123)
 // @Param        category_id query int false "Filter by category ID" Example(5)
 // @Param        min_price query number false "Minimum price filter" Example(10.99)
 // @Param        max_price query number false "Maximum price filter" Example(999.99)
-// @Param        is_digital query boolean false "Filter digital products (true/false)" Example(true)
+// @Param        min_rating query number false "Minimum rating (0.0 to 5.0)" Example(4.0)
+// @Param        max_rating query number false "Maximum rating" Example(5.0)
+// @Param        min_reviews query int false "Minimum number of reviews" Example(10)
+// @Param        max_reviews query int false "Maximum number of reviews" Example(1000)
+// @Param        is_digital query bool false "Filter digital or physical products" Example(true)
+// @Param        is_new query bool false "Filter newly added products (first 30 days)" Example(true)
+// @Param        sort query string false "Sort order: rating_desc, rating_asc, newest, reviews_desc, price_asc, price_desc" Example(rating_desc)
 // @Success      200  {object}  dto.ProductListResponse
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      500 {object} utils.Response
 // @Router       /products [get]
 func (ctrl *ProductController) List(c *gin.Context) {
+	// Parse limit & offset
 	limit := constants.DefaultLimit
 	if l, err := strconv.Atoi(c.DefaultQuery("limit", strconv.Itoa(constants.DefaultLimit))); err == nil && l >= constants.MinLimit {
 		limit = l
@@ -217,34 +216,17 @@ func (ctrl *ProductController) List(c *gin.Context) {
 		offset = o
 	}
 
-	// Bind filters
-	var filters ProductListFilters
+	// Bind filters directly from query string
+	var filters dto.ProductListFilters
 	if !utils.BindAndValidateQuery(c, &filters, ctrl.validate) {
 		return
 	}
 
-	// Convert to map (if service expects map) or pass struct directly
-	filterMap := make(map[string]interface{})
-	if filters.Status != "" {
-		filterMap["status"] = filters.Status
-	}
-	if filters.Name != "" {
-		filterMap["name"] = filters.Name
-	}
-	if filters.CategoryID != 0 {
-		filterMap["category_id"] = filters.CategoryID
-	}
-	if filters.MinPrice != 0 {
-		filterMap["min_price"] = filters.MinPrice
-	}
-	if filters.MaxPrice != 0 {
-		filterMap["max_price"] = filters.MaxPrice
-	}
-	if filters.IsDigital != nil {
-		filterMap["is_digital"] = *filters.IsDigital
-	}
+	// Optional: run validator if you have validation rules on the struct
+	// if err := ctrl.validate.Struct(filters); err != nil { ... }
 
-	products, total, err := ctrl.productService.List(limit, offset, filterMap)
+	// Call service with struct (no map conversion needed)
+	products, total, err := ctrl.productService.List(limit, offset, filters)
 	if err != nil {
 		utils.InternalServerErrorResponse(c, err, "failed to list products")
 		return
