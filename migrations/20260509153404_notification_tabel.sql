@@ -1,4 +1,4 @@
--- +migrate Up
+-- +goose Up
 CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
@@ -12,12 +12,11 @@ CREATE TABLE notifications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create index for faster queries
 CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 
--- +migrate Down
+-- +goose Down
 DROP INDEX IF EXISTS idx_notifications_is_read;
 DROP INDEX IF EXISTS idx_notifications_created_at;
 DROP INDEX IF EXISTS idx_notifications_user_id;
