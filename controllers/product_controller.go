@@ -144,15 +144,15 @@ func (ctrl *ProductController) Delete(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        identifier path string true "Product identifier (ID or slug)"
+// @Param        id path string true "Product identifier (ID or slug)"
 // @Success      200  {object}  dto.ProductSingleResponse
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      404 {object} utils.Response
 // @Failure      500 {object} utils.Response
-// @Router       /products/{identifier} [get]
+// @Router       /products/{id} [get]
 func (ctrl *ProductController) GetOne(c *gin.Context) {
-	identifier := c.Param("identifier")
+	identifier := c.Param("id")
 	id, err := strconv.ParseUint(identifier, 10, 64)
 	var product *models.Product
 	if err == nil {
@@ -317,6 +317,58 @@ func (ctrl *ProductController) BulkDelete(c *gin.Context) {
 			Success: true,
 			Message: "products deleted successfully",
 			Code:    http.StatusOK,
+		},
+	})
+}
+
+// GetRelated retrieves products related to a given product (same category, excluding itself).
+// @Summary      Get related products
+// @Description  Fetch a list of products from the same category as the specified product, ordered by rating and review count.
+// @Tags         Products
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "Product ID"
+// @Param        limit query int false "Number of related products (default 4, max 10)"
+// @Success      200 {object} dto.ProductListResponse
+// @Failure      400 {object} utils.Response
+// @Failure      401 {object} utils.Response
+// @Failure      404 {object} utils.Response
+// @Failure      500 {object} utils.Response
+// @Router       /products/{id}/related [get]
+func (ctrl *ProductController) GetRelated(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "invalid product id")
+		return
+	}
+
+	limit := 4
+	if l, err := strconv.Atoi(c.DefaultQuery("limit", "4")); err == nil && l > 0 {
+		if l > 10 {
+			limit = 10
+		} else {
+			limit = l
+		}
+	}
+
+	products, err := ctrl.productService.GetRelated(uint(id), limit)
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to fetch related products")
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ProductListResponse{
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Message: constants.MsgFetchSuccess,
+			Code:    http.StatusOK,
+		},
+		Data: dto.ProductListData{
+			Products: products,
+			Total:    int64(len(products)),
+			Limit:    limit,
+			Offset:   0,
 		},
 	})
 }

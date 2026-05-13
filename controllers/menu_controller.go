@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/gin-gonic/gin"
@@ -155,7 +156,7 @@ func (ctrl *MenuController) DeleteGroup(c *gin.Context) {
 // @Tags         Menu Items
 // @Produce      json
 // @Param        flat  query   bool  false  "Return flat list" default(false)
-// @Success      200   {array}  models.MenuItem
+// @Success      200   {object}  dto.MenuListResponse
 // @Failure      500   {object}  dto.MessageResponse
 // @Router       /admin/menu/items [get]
 // @Security     BearerAuth
@@ -167,10 +168,21 @@ func (ctrl *MenuController) GetAllItems(c *gin.Context) {
 	flat, _ := strconv.ParseBool(c.DefaultQuery("flat", "false"))
 	items, err := ctrl.menuService.GetAllItems(flat)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": dto.MessageResponse{
+			Success: false,
+			Message: err.Error(),
+		}})
 		return
 	}
-	c.JSON(http.StatusOK, items)
+	resp := dto.MenuListResponse{
+		Items: items,
+		BaseResponse: dto.BaseResponse{
+			Success: true,
+			Code:    http.StatusOK,
+			Message: constants.MsgFetchSuccess,
+		},
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // GetItemByID godoc

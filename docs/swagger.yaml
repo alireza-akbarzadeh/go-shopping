@@ -454,6 +454,19 @@ definitions:
       user:
         $ref: '#/definitions/dto.UserResponse'
     type: object
+  dto.MenuListResponse:
+    properties:
+      code:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/models.MenuItem'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   dto.MessageResponse:
     properties:
       message:
@@ -1573,9 +1586,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.MenuItem'
-            type: array
+            $ref: '#/definitions/dto.MenuListResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -3176,6 +3187,45 @@ paths:
       summary: Delete product
       tags:
       - Products
+    get:
+      consumes:
+      - application/json
+      description: Fetch a single product using either its numeric ID or slug (URL-friendly
+        name)
+      parameters:
+      - description: Product identifier (ID or slug)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ProductSingleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get product by ID or slug
+      tags:
+      - Products
     put:
       consumes:
       - application/json
@@ -3224,25 +3274,29 @@ paths:
       summary: Update product
       tags:
       - Products
-  /products/{identifier}:
+  /products/{id}/related:
     get:
       consumes:
       - application/json
-      description: Fetch a single product using either its numeric ID or slug (URL-friendly
-        name)
+      description: Fetch a list of products from the same category as the specified
+        product, ordered by rating and review count.
       parameters:
-      - description: Product identifier (ID or slug)
+      - description: Product ID
         in: path
-        name: identifier
+        name: id
         required: true
-        type: string
+        type: integer
+      - description: Number of related products (default 4, max 10)
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ProductSingleResponse'
+            $ref: '#/definitions/dto.ProductListResponse'
         "400":
           description: Bad Request
           schema:
@@ -3261,7 +3315,7 @@ paths:
             $ref: '#/definitions/utils.Response'
       security:
       - BearerAuth: []
-      summary: Get product by ID or slug
+      summary: Get related products
       tags:
       - Products
   /products/bulk:

@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/alireza-akbarzadeh/shopping-platform/models"
+)
 
 // ------------------- Request DTOs -------------------
 
@@ -70,4 +74,9 @@ type SidebarItem struct {
 	Href     string        `json:"href,omitempty"`
 	Icon     string        `json:"icon"`
 	Children []SidebarItem `json:"children,omitempty"`
+}
+
+type MenuListResponse struct {
+	Items []models.MenuItem `json:"items"`
+	BaseResponse
 }

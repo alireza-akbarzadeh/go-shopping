@@ -21,6 +21,7 @@ type ProductServiceInterface interface {
 	Delete(id uint) error
 	BulkDelete(productIDs []uint) error
 	CheckLowStockAndAlert() error
+	GetRelated(productID uint, limit int) ([]*models.Product, error)
 }
 
 type productService struct {
@@ -359,4 +360,29 @@ func (s *productService) CheckLowStockAndAlert() error {
 	// s.sendLowStockEmail(products)
 
 	return nil
+}
+
+func (s *productService) GetRelated(productID uint, limit int) ([]*models.Product, error) {
+	var product models.Product
+	if err := s.db.First(&product, productID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, utils.ErrNotFound("product not found")
+		}
+		return nil, err
+	}
+	if product.CategoryID == nil {
+		return []*models.Product{}, nil
+	}
+
+	var related []*models.Product
+
+	query := s.db.Where("category_id = ? AND id != ?", product.CategoryID, productID).
+		Order("rating DESC, reviews_count DESC").
+		Limit(limit)
+
+	if err := query.Find(&related).Error; err != nil {
+		return nil, err
+	}
+	return related, nil
+
 }
