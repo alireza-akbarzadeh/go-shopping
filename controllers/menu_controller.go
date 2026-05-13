@@ -20,7 +20,7 @@ func NewMenuController(menuService services.UserMenuServicesInterface) *MenuCont
 // GetAllGroups godoc
 // @Summary      Get all menu groups
 // @Description  Retrieves all menu groups ordered by display_order
-// @Tags         Admin Menu Groups
+// @Tags         Menu Groups
 // @Produce      json
 // @Success      200  {array}   models.MenuGroup
 // @Failure      500  {object}  dto.MessageResponse
@@ -39,7 +39,7 @@ func (ctrl *MenuController) GetAllGroups(c *gin.Context) {
 // GetGroupByID godoc
 // @Summary      Get group by ID
 // @Description  Returns a single menu group by its ID
-// @Tags         Admin Menu Groups
+// @Tags         Menu Groups
 // @Produce      json
 // @Param        id   path      int  true  "Group ID"
 // @Success      200  {object}  models.MenuGroup
@@ -69,7 +69,7 @@ func (ctrl *MenuController) GetGroupByID(c *gin.Context) {
 // CreateGroup godoc
 // @Summary      Create a new menu group
 // @Description  Creates a menu group (e.g., "Overview", "Users & Access")
-// @Tags         Admin Menu Groups
+// @Tags         Menu Groups
 // @Accept       json
 // @Produce      json
 // @Param        request body      dto.CreateMenuGroupRequest true "Group data"
@@ -95,7 +95,7 @@ func (ctrl *MenuController) CreateGroup(c *gin.Context) {
 // UpdateGroup godoc
 // @Summary      Update an existing menu group
 // @Description  Updates group name or display order
-// @Tags         Admin Menu Groups
+// @Tags         Menu Groups
 // @Accept       json
 // @Produce      json
 // @Param        id       path      int                        true "Group ID"
@@ -128,7 +128,7 @@ func (ctrl *MenuController) UpdateGroup(c *gin.Context) {
 // DeleteGroup godoc
 // @Summary      Delete a menu group
 // @Description  Deletes a group and all its menu items (cascade)
-// @Tags         Admin Menu Groups
+// @Tags         Menu Groups
 // @Produce      json
 // @Param        id   path      int  true "Group ID"
 // @Success      204  "No Content"
@@ -152,7 +152,7 @@ func (ctrl *MenuController) DeleteGroup(c *gin.Context) {
 // GetAllItems godoc
 // @Summary      Get all menu items
 // @Description  Returns flat or nested menu items (use ?flat=true for flat list)
-// @Tags         Admin Menu Items
+// @Tags         Menu Items
 // @Produce      json
 // @Param        flat  query   bool  false  "Return flat list" default(false)
 // @Success      200   {array}  models.MenuItem
@@ -176,7 +176,7 @@ func (ctrl *MenuController) GetAllItems(c *gin.Context) {
 // GetItemByID godoc
 // @Summary      Get menu item by ID
 // @Description  Returns a single menu item by its ID
-// @Tags         Admin Menu Items
+// @Tags         Menu Items
 // @Produce      json
 // @Param        id   path      int  true "Item ID"
 // @Success      200  {object}  models.MenuItem
@@ -206,7 +206,7 @@ func (ctrl *MenuController) GetItemByID(c *gin.Context) {
 // CreateItem godoc
 // @Summary      Create a new menu item
 // @Description  Adds a new menu item (can be top-level or child of another item)
-// @Tags         Admin Menu Items
+// @Tags         Menu Items
 // @Accept       json
 // @Produce      json
 // @Param        request body      dto.CreateMenuItemRequest true "Menu item data"
@@ -232,7 +232,7 @@ func (ctrl *MenuController) CreateItem(c *gin.Context) {
 // UpdateItem godoc
 // @Summary      Update an existing menu item
 // @Description  Updates menu item details including group, parent, label, href, etc.
-// @Tags         Admin Menu Items
+// @Tags         Menu Items
 // @Accept       json
 // @Produce      json
 // @Param        id       path      int                       true "Item ID"
@@ -265,7 +265,7 @@ func (ctrl *MenuController) UpdateItem(c *gin.Context) {
 // DeleteItem godoc
 // @Summary      Delete a menu item
 // @Description  Deletes a menu item and all its children (cascade delete due to foreign key constraint)
-// @Tags         Admin Menu Items
+// @Tags         Menu Items
 // @Produce      json
 // @Param        id   path      int  true  "Menu item ID"
 // @Success      204  "No Content"

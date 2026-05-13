@@ -364,6 +364,8 @@ definitions:
         type: array
       is_digital:
         type: boolean
+      is_new:
+        type: boolean
       low_stock_threshold:
         type: integer
       meta_description:
@@ -398,6 +400,20 @@ definitions:
     - name
     - price
     - sku
+    type: object
+  dto.CreateReviewRequest:
+    properties:
+      comment:
+        type: string
+      product_id:
+        type: integer
+      rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+    required:
+    - product_id
+    - rating
     type: object
   dto.EmptyResponse:
     properties:
@@ -721,6 +737,8 @@ definitions:
         type: array
       is_digital:
         type: boolean
+      is_new:
+        type: boolean
       low_stock_threshold:
         type: integer
       meta_description:
@@ -751,6 +769,15 @@ definitions:
       weight:
         minimum: 0
         type: number
+    type: object
+  dto.UpdateReviewRequest:
+    properties:
+      comment:
+        type: string
+      rating:
+        maximum: 5
+        minimum: 1
+        type: integer
     type: object
   dto.UserResponse:
     properties:
@@ -1055,21 +1082,16 @@ definitions:
       barcode:
         type: string
       category:
-        allOf:
-        - $ref: '#/definitions/models.Category'
-        description: Associations
+        $ref: '#/definitions/models.Category'
       category_id:
         type: integer
       compare_at_price:
-        minimum: 0
         type: number
       cost:
-        minimum: 0
         type: number
       created_at:
         type: string
       created_by:
-        description: Audit
         type: integer
       deleted_at:
         $ref: '#/definitions/gorm.DeletedAt'
@@ -1083,6 +1105,8 @@ definitions:
         type: array
       is_digital:
         type: boolean
+      is_new:
+        type: boolean
       low_stock_threshold:
         type: integer
       meta_description:
@@ -1091,20 +1115,20 @@ definitions:
         type: string
       name:
         maxLength: 255
-        minLength: 3
+        minLength: 2
         type: string
       price:
-        minimum: 0
         type: number
+      rating:
+        type: number
+      reviews_count:
+        type: integer
       sku:
-        maxLength: 50
-        minLength: 3
         type: string
       slug:
         type: string
       status:
         enum:
-        - draft
         - active
         - inactive
         - archived
@@ -1117,13 +1141,35 @@ definitions:
       updated_by:
         type: integer
       weight:
-        minimum: 0
         type: number
     required:
     - name
     - price
     - sku
     - slug
+    type: object
+  models.Review:
+    properties:
+      comment:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      is_verified:
+        type: boolean
+      product_id:
+        type: integer
+      rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
     type: object
   models.Shipment:
     properties:
@@ -1457,7 +1503,7 @@ paths:
       - BearerAuth: []
       summary: Create a new menu group
       tags:
-      - Admin Menu Groups
+      - Menu Groups
   /admin/menu/groups/{id}:
     delete:
       description: Deletes a group and all its menu items (cascade)
@@ -1484,7 +1530,7 @@ paths:
       - BearerAuth: []
       summary: Delete a menu group
       tags:
-      - Admin Menu Groups
+      - Menu Groups
     get:
       description: Returns a single menu group by its ID
       parameters:
@@ -1516,7 +1562,7 @@ paths:
       - BearerAuth: []
       summary: Get group by ID
       tags:
-      - Admin Menu Groups
+      - Menu Groups
     put:
       consumes:
       - application/json
@@ -1556,7 +1602,7 @@ paths:
       - BearerAuth: []
       summary: Update an existing menu group
       tags:
-      - Admin Menu Groups
+      - Menu Groups
   /admin/menu/items:
     get:
       description: Returns flat or nested menu items (use ?flat=true for flat list)
@@ -1583,7 +1629,7 @@ paths:
       - BearerAuth: []
       summary: Get all menu items
       tags:
-      - Admin Menu Items
+      - Menu Items
     post:
       consumes:
       - application/json
@@ -1614,7 +1660,7 @@ paths:
       - BearerAuth: []
       summary: Create a new menu item
       tags:
-      - Admin Menu Items
+      - Menu Items
   /admin/menu/items/{id}:
     delete:
       description: Deletes a menu item and all its children (cascade delete due to
@@ -1642,7 +1688,7 @@ paths:
       - BearerAuth: []
       summary: Delete a menu item
       tags:
-      - Admin Menu Items
+      - Menu Items
     get:
       description: Returns a single menu item by its ID
       parameters:
@@ -1674,7 +1720,7 @@ paths:
       - BearerAuth: []
       summary: Get menu item by ID
       tags:
-      - Admin Menu Items
+      - Menu Items
     put:
       consumes:
       - application/json
@@ -1715,7 +1761,7 @@ paths:
       - BearerAuth: []
       summary: Update an existing menu item
       tags:
-      - Admin Menu Items
+      - Menu Items
   /admin/shipments:
     post:
       consumes:
@@ -1814,7 +1860,7 @@ paths:
       - BearerAuth: []
       summary: Update shipment status (admin)
       tags:
-      - Admin Shipments
+      - Shipments
   /auth/forgot-password:
     post:
       consumes:
@@ -2530,7 +2576,7 @@ paths:
       - BearerAuth: []
       summary: List coupons
       tags:
-      - Admin Coupons
+      - Coupons
     post:
       consumes:
       - application/json
@@ -2574,7 +2620,7 @@ paths:
       - BearerAuth: []
       summary: Create coupon
       tags:
-      - Admin Coupons
+      - Coupons
   /coupons/{id}:
     delete:
       consumes:
@@ -2618,7 +2664,7 @@ paths:
       - BearerAuth: []
       summary: Delete coupon
       tags:
-      - Admin Coupons
+      - Coupons
     put:
       consumes:
       - application/json
@@ -2671,7 +2717,7 @@ paths:
       - BearerAuth: []
       summary: Update coupon
       tags:
-      - Admin Coupons
+      - Coupons
   /coupons/validate:
     post:
       consumes:
@@ -2808,7 +2854,7 @@ paths:
       - BearerAuth: []
       summary: List all orders (admin)
       tags:
-      - Admin Orders
+      - Orders
     post:
       consumes:
       - application/json
@@ -2937,7 +2983,7 @@ paths:
       - BearerAuth: []
       summary: Update order status (admin)
       tags:
-      - Admin Orders
+      - Orders
   /orders/my:
     get:
       consumes:
@@ -2995,7 +3041,7 @@ paths:
       consumes:
       - application/json
       description: Get products with pagination and filtering by status, name, category,
-        price range, and digital flag.
+        price range, rating, reviews count, digital flag, new flag, and sorting.
       parameters:
       - default: 20
         description: Items per page (default 20, max 100)
@@ -3007,15 +3053,20 @@ paths:
         in: query
         name: offset
         type: integer
-      - description: Product status (e.g., active, draft, archived)
+      - description: Product status (active, draft, archived)
         example: active
         in: query
         name: status
         type: string
-      - description: Filter by product name (partial match)
+      - description: Filter by exact product name
         example: laptop
         in: query
         name: name
+        type: string
+      - description: Filter by SKU
+        example: SKU-123
+        in: query
+        name: sku
         type: string
       - description: Filter by category ID
         example: 5
@@ -3032,11 +3083,42 @@ paths:
         in: query
         name: max_price
         type: number
-      - description: Filter digital products (true/false)
+      - description: Minimum rating (0.0 to 5.0)
+        example: 4
+        in: query
+        name: min_rating
+        type: number
+      - description: Maximum rating
+        example: 5
+        in: query
+        name: max_rating
+        type: number
+      - description: Minimum number of reviews
+        example: 10
+        in: query
+        name: min_reviews
+        type: integer
+      - description: Maximum number of reviews
+        example: 1000
+        in: query
+        name: max_reviews
+        type: integer
+      - description: Filter digital or physical products
         example: true
         in: query
         name: is_digital
         type: boolean
+      - description: Filter newly added products (first 30 days)
+        example: true
+        in: query
+        name: is_new
+        type: boolean
+      - description: 'Sort order: rating_desc, rating_asc, newest, reviews_desc, price_asc,
+          price_desc'
+        example: rating_desc
+        in: query
+        name: sort
+        type: string
       produces:
       - application/json
       responses:
@@ -3447,6 +3529,137 @@ paths:
       summary: Change password
       tags:
       - Authentication
+  /reviews:
+    get:
+      description: Returns paginated reviews for a specific product
+      parameters:
+      - description: Product ID
+        in: query
+        name: product_id
+        required: true
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+                    reviews:
+                      items:
+                        $ref: '#/definitions/models.Review'
+                      type: array
+                    total:
+                      type: integer
+                  type: object
+              type: object
+      summary: Get product reviews
+      tags:
+      - Reviews
+    post:
+      consumes:
+      - application/json
+      description: Leave a rating and comment for a product
+      parameters:
+      - description: Review data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Review'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Create product review
+      tags:
+      - Reviews
+  /reviews/{id}:
+    delete:
+      description: Remove a review by ID
+      parameters:
+      - description: Review ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a review
+      tags:
+      - Reviews
+    put:
+      consumes:
+      - application/json
+      description: Modify rating or comment of an existing review
+      parameters:
+      - description: Review ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated review data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Review'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a review
+      tags:
+      - Reviews
   /shipments:
     get:
       consumes:

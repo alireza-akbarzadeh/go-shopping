@@ -28,7 +28,7 @@ func NewCouponController(couponService services.CouponServiceInterface) *CouponC
 // Create a new coupon (admin only).
 // @Summary      Create coupon
 // @Description  Creates a new discount coupon. Only accessible by users with the "admin" role.
-// @Tags         Admin Coupons
+// @Tags         Coupons
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -65,7 +65,7 @@ func (cc *CouponController) Create(c *gin.Context) {
 // Update an existing coupon (admin only).
 // @Summary      Update coupon
 // @Description  Updates a coupon by ID. Only accessible by users with the "admin" role.
-// @Tags         Admin Coupons
+// @Tags         Coupons
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -108,7 +108,7 @@ func (cc *CouponController) Update(c *gin.Context) {
 // Delete a coupon (admin only).
 // @Summary      Delete coupon
 // @Description  Soft-deletes a coupon by ID. Only accessible by users with the "admin" role.
-// @Tags         Admin Coupons
+// @Tags         Coupons
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -187,7 +187,7 @@ func (cc *CouponController) Validate(c *gin.Context) {
 // List returns a paginated list of coupons with optional filters (admin only).
 // @Summary      List coupons
 // @Description  Returns a paginated list of coupons with optional filters (admin only)
-// @Tags         Admin Coupons
+// @Tags         Coupons
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth

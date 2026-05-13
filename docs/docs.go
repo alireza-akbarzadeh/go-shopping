@@ -376,7 +376,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Groups"
+                    "Menu Groups"
                 ],
                 "summary": "Create a new menu group",
                 "parameters": [
@@ -424,7 +424,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Groups"
+                    "Menu Groups"
                 ],
                 "summary": "Get group by ID",
                 "parameters": [
@@ -477,7 +477,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Groups"
+                    "Menu Groups"
                 ],
                 "summary": "Update an existing menu group",
                 "parameters": [
@@ -536,7 +536,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Groups"
+                    "Menu Groups"
                 ],
                 "summary": "Delete a menu group",
                 "parameters": [
@@ -579,7 +579,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Items"
+                    "Menu Items"
                 ],
                 "summary": "Get all menu items",
                 "parameters": [
@@ -623,7 +623,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Items"
+                    "Menu Items"
                 ],
                 "summary": "Create a new menu item",
                 "parameters": [
@@ -671,7 +671,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Items"
+                    "Menu Items"
                 ],
                 "summary": "Get menu item by ID",
                 "parameters": [
@@ -724,7 +724,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Items"
+                    "Menu Items"
                 ],
                 "summary": "Update an existing menu item",
                 "parameters": [
@@ -783,7 +783,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Menu Items"
+                    "Menu Items"
                 ],
                 "summary": "Delete a menu item",
                 "parameters": [
@@ -910,7 +910,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Shipments"
+                    "Shipments"
                 ],
                 "summary": "Update shipment status (admin)",
                 "parameters": [
@@ -1981,7 +1981,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Coupons"
+                    "Coupons"
                 ],
                 "summary": "List coupons",
                 "parameters": [
@@ -2080,7 +2080,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Coupons"
+                    "Coupons"
                 ],
                 "summary": "Create coupon",
                 "parameters": [
@@ -2206,7 +2206,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Coupons"
+                    "Coupons"
                 ],
                 "summary": "Update coupon",
                 "parameters": [
@@ -2286,7 +2286,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Coupons"
+                    "Coupons"
                 ],
                 "summary": "Delete coupon",
                 "parameters": [
@@ -2381,7 +2381,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Orders"
+                    "Orders"
                 ],
                 "summary": "List all orders (admin)",
                 "parameters": [
@@ -2726,7 +2726,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Orders"
+                    "Orders"
                 ],
                 "summary": "Update order status (admin)",
                 "parameters": [
@@ -2794,7 +2794,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get products with pagination and filtering by status, name, category, price range, and digital flag.",
+                "description": "Get products with pagination and filtering by status, name, category, price range, rating, reviews count, digital flag, new flag, and sorting.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2823,15 +2823,22 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "example": "active",
-                        "description": "Product status (e.g., active, draft, archived)",
+                        "description": "Product status (active, draft, archived)",
                         "name": "status",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "example": "laptop",
-                        "description": "Filter by product name (partial match)",
+                        "description": "Filter by exact product name",
                         "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "SKU-123",
+                        "description": "Filter by SKU",
+                        "name": "sku",
                         "in": "query"
                     },
                     {
@@ -2856,10 +2863,52 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "number",
+                        "example": 4,
+                        "description": "Minimum rating (0.0 to 5.0)",
+                        "name": "min_rating",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "example": 5,
+                        "description": "Maximum rating",
+                        "name": "max_rating",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 10,
+                        "description": "Minimum number of reviews",
+                        "name": "min_reviews",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1000,
+                        "description": "Maximum number of reviews",
+                        "name": "max_reviews",
+                        "in": "query"
+                    },
+                    {
                         "type": "boolean",
                         "example": true,
-                        "description": "Filter digital products (true/false)",
+                        "description": "Filter digital or physical products",
                         "name": "is_digital",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "example": true,
+                        "description": "Filter newly added products (first 30 days)",
+                        "name": "is_new",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "rating_desc",
+                        "description": "Sort order: rating_desc, rating_asc, newest, reviews_desc, price_asc, price_desc",
+                        "name": "sort",
                         "in": "query"
                     }
                 ],
@@ -3495,6 +3544,223 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/dto.MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/reviews": {
+            "get": {
+                "description": "Returns paginated reviews for a specific product",
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get product reviews",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "limit": {
+                                                    "type": "integer"
+                                                },
+                                                "offset": {
+                                                    "type": "integer"
+                                                },
+                                                "reviews": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/definitions/models.Review"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Leave a rating and comment for a product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Create product review",
+                "parameters": [
+                    {
+                        "description": "Review data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateReviewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Review"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/reviews/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Modify rating or comment of an existing review",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Update a review",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Review ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated review data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateReviewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Review"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove a review by ID",
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Delete a review",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Review ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -4468,6 +4734,9 @@ const docTemplate = `{
                 "is_digital": {
                     "type": "boolean"
                 },
+                "is_new": {
+                    "type": "boolean"
+                },
                 "low_stock_threshold": {
                     "type": "integer"
                 },
@@ -4507,6 +4776,26 @@ const docTemplate = `{
                 "weight": {
                     "type": "number",
                     "minimum": 0
+                }
+            }
+        },
+        "dto.CreateReviewRequest": {
+            "type": "object",
+            "required": [
+                "product_id",
+                "rating"
+            ],
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 }
             }
         },
@@ -4994,6 +5283,9 @@ const docTemplate = `{
                 "is_digital": {
                     "type": "boolean"
                 },
+                "is_new": {
+                    "type": "boolean"
+                },
                 "low_stock_threshold": {
                     "type": "integer"
                 },
@@ -5033,6 +5325,19 @@ const docTemplate = `{
                 "weight": {
                     "type": "number",
                     "minimum": 0
+                }
+            }
+        },
+        "dto.UpdateReviewRequest": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 }
             }
         },
@@ -5495,29 +5800,21 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "category": {
-                    "description": "Associations",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Category"
-                        }
-                    ]
+                    "$ref": "#/definitions/models.Category"
                 },
                 "category_id": {
                     "type": "integer"
                 },
                 "compare_at_price": {
-                    "type": "number",
-                    "minimum": 0
+                    "type": "number"
                 },
                 "cost": {
-                    "type": "number",
-                    "minimum": 0
+                    "type": "number"
                 },
                 "created_at": {
                     "type": "string"
                 },
                 "created_by": {
-                    "description": "Audit",
                     "type": "integer"
                 },
                 "deleted_at": {
@@ -5538,6 +5835,9 @@ const docTemplate = `{
                 "is_digital": {
                     "type": "boolean"
                 },
+                "is_new": {
+                    "type": "boolean"
+                },
                 "low_stock_threshold": {
                     "type": "integer"
                 },
@@ -5550,16 +5850,19 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "maxLength": 255,
-                    "minLength": 3
+                    "minLength": 2
                 },
                 "price": {
-                    "type": "number",
-                    "minimum": 0
+                    "type": "number"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "reviews_count": {
+                    "type": "integer"
                 },
                 "sku": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3
+                    "type": "string"
                 },
                 "slug": {
                     "type": "string"
@@ -5567,7 +5870,6 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "enum": [
-                        "draft",
                         "active",
                         "inactive",
                         "archived"
@@ -5584,8 +5886,41 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "weight": {
-                    "type": "number",
-                    "minimum": 0
+                    "type": "number"
+                }
+            }
+        },
+        "models.Review": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "product_id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

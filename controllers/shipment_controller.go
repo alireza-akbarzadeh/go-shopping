@@ -164,7 +164,7 @@ func (ctrl *ShipmentController) GetShipmentsByOrder(c *gin.Context) {
 // UpdateShipmentStatus updates a shipment's status (admin only).
 // @Summary      Update shipment status (admin)
 // @Description  Updates the status of a shipment and sends real-time notifications.
-// @Tags         Admin Shipments
+// @Tags         Shipments
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth

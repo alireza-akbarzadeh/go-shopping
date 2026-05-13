@@ -137,7 +137,7 @@ func (ctrl *OrderController) GetOrder(c *gin.Context) {
 // ListAllOrders returns all orders with advanced filters (admin only).
 // @Summary      List all orders (admin)
 // @Description  Returns paginated list of all orders with filtering by status, date, amount, and user ID.
-// @Tags         Admin Orders
+// @Tags         Orders
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
@@ -217,7 +217,7 @@ func (ctrl *OrderController) ListAllOrders(c *gin.Context) {
 // UpdateOrderStatus updates an order's status (admin only).
 // @Summary      Update order status (admin)
 // @Description  Updates the status of an order and sends real-time notifications.
-// @Tags         Admin Orders
+// @Tags         Orders
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
