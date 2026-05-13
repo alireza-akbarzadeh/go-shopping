@@ -18,51 +18,13 @@
     "basePath": "/api/v1",
     "paths": {
         "/addresses": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns all addresses (shipping/billing) belonging to the current user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Addresses"
-                ],
-                "summary": "List addresses",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AddressListResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    }
-                }
-            },
             "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Adds a new shipping or billing address for the current user.",
+                "description": "Adds a new shipping, billing, or both type address for the current user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -75,7 +37,7 @@
                 "summary": "Create address",
                 "parameters": [
                     {
-                        "description": "Address data",
+                        "description": "Address data including address_type (shipping, billing, both)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -172,7 +134,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Modifies an address by ID. Only the owner can update.",
+                "description": "Updates an address by its ID. Only owner can update. Supports partial updates.",
                 "consumes": [
                     "application/json"
                 ],
@@ -192,7 +154,7 @@
                         "required": true
                     },
                     {
-                        "description": "Updated address data",
+                        "description": "Fields to update (optional) including address_type (shipping, billing, both)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -240,7 +202,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Removes an address by ID (soft delete). Only the owner can delete.",
+                "description": "Soft deletes an address by ID. Only owner can delete.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4204,50 +4166,14 @@
                 }
             }
         },
-        "dto.AddressData": {
+        "dto.AddressSingleResponse": {
             "type": "object",
             "properties": {
                 "address": {
                     "$ref": "#/definitions/models.Address"
-                }
-            }
-        },
-        "dto.AddressList": {
-            "type": "object",
-            "properties": {
-                "addresses": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Address"
-                    }
-                }
-            }
-        },
-        "dto.AddressListResponse": {
-            "type": "object",
-            "properties": {
+                },
                 "code": {
                     "type": "integer"
-                },
-                "data": {
-                    "$ref": "#/definitions/dto.AddressList"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "dto.AddressSingleResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {
-                    "$ref": "#/definitions/dto.AddressData"
                 },
                 "message": {
                     "type": "string"

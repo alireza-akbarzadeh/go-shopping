@@ -18,35 +18,12 @@ definitions:
       success:
         type: boolean
     type: object
-  dto.AddressData:
+  dto.AddressSingleResponse:
     properties:
       address:
         $ref: '#/definitions/models.Address'
-    type: object
-  dto.AddressList:
-    properties:
-      addresses:
-        items:
-          $ref: '#/definitions/models.Address'
-        type: array
-    type: object
-  dto.AddressListResponse:
-    properties:
       code:
         type: integer
-      data:
-        $ref: '#/definitions/dto.AddressList'
-      message:
-        type: string
-      success:
-        type: boolean
-    type: object
-  dto.AddressSingleResponse:
-    properties:
-      code:
-        type: integer
-      data:
-        $ref: '#/definitions/dto.AddressData'
       message:
         type: string
       success:
@@ -1254,37 +1231,13 @@ info:
   version: "1.0"
 paths:
   /addresses:
-    get:
-      consumes:
-      - application/json
-      description: Returns all addresses (shipping/billing) belonging to the current
-        user.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.AddressListResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/utils.Response'
-      security:
-      - BearerAuth: []
-      summary: List addresses
-      tags:
-      - Addresses
     post:
       consumes:
       - application/json
-      description: Adds a new shipping or billing address for the current user.
+      description: Adds a new shipping, billing, or both type address for the current
+        user.
       parameters:
-      - description: Address data
+      - description: Address data including address_type (shipping, billing, both)
         in: body
         name: request
         required: true
@@ -1318,7 +1271,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Removes an address by ID (soft delete). Only the owner can delete.
+      description: Soft deletes an address by ID. Only owner can delete.
       parameters:
       - description: Address ID
         in: path
@@ -1356,14 +1309,16 @@ paths:
     put:
       consumes:
       - application/json
-      description: Modifies an address by ID. Only the owner can update.
+      description: Updates an address by its ID. Only owner can update. Supports partial
+        updates.
       parameters:
       - description: Address ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Updated address data
+      - description: Fields to update (optional) including address_type (shipping,
+          billing, both)
         in: body
         name: request
         required: true

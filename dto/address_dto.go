@@ -30,21 +30,18 @@ type UpdateAddressRequest struct {
 	Instructions  *string `json:"instructions,omitempty"`
 }
 
+// AddressSingleResponse is the response for single address operations
 type AddressSingleResponse struct {
-	BaseResponse
-	Data AddressData `json:"data"`
-}
-
-type AddressData struct {
+	Success bool           `json:"success"`
+	Message string         `json:"message"`
+	Code    int            `json:"code"`
 	Address models.Address `json:"address"`
 }
 
-// AddressListResponse – used for List
+// AddressListResponse is the response for listing addresses
 type AddressListResponse struct {
-	BaseResponse
-	Data AddressList `json:"data"`
-}
-
-type AddressList struct {
-	Addresses []models.Address `json:"addresses"`
+	Success bool             `json:"success"`
+	Message string           `json:"message"`
+	Code    int              `json:"code"`
+	Address []models.Address `json:"address"`
 }

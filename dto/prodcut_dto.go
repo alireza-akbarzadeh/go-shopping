@@ -54,7 +54,7 @@ type BulkDeleteProductsRequest struct {
 
 type ProductListResponse struct {
 	BaseResponse
-	Data ProductListData
+	Data ProductListData `json:"data"`
 }
 
 type ProductSingleResponse struct {

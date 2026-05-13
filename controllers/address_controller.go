@@ -27,12 +27,12 @@ func NewAddressController(svc services.AddressServiceInterface) *AddressControll
 
 // Create a new address for the authenticated user.
 // @Summary      Create address
-// @Description  Adds a new shipping or billing address for the current user.
+// @Description  Adds a new shipping, billing, or both type address for the current user.
 // @Tags         Addresses
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body dto.CreateAddressRequest true "Address data"
+// @Param        request body dto.CreateAddressRequest true "Address data including address_type (shipping, billing, both)"
 // @Success      201 {object} dto.AddressSingleResponse
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
@@ -54,25 +54,23 @@ func (ac *AddressController) Create(c *gin.Context) {
 		return
 	}
 	resp := dto.AddressSingleResponse{
-		BaseResponse: dto.BaseResponse{
-			Success: true,
-			Message: "address created",
-			Code:    http.StatusCreated,
-		},
-		Data: dto.AddressData{Address: *address},
+		Success: true,
+		Message: "address created",
+		Code:    http.StatusCreated,
+		Address: *address,
 	}
 	c.JSON(http.StatusCreated, resp)
 }
 
 // Update an existing address.
 // @Summary      Update address
-// @Description  Modifies an address by ID. Only the owner can update.
+// @Description  Updates an address by its ID. Only owner can update. Supports partial updates.
 // @Tags         Addresses
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id      path      int                       true  "Address ID"
-// @Param        request body      dto.UpdateAddressRequest true  "Updated address data"
+// @Param        request body      dto.UpdateAddressRequest true  "Fields to update (optional) including address_type (shipping, billing, both)"
 // @Success      200     {object}  dto.AddressSingleResponse
 // @Failure      400     {object}  utils.Response
 // @Failure      401     {object}  utils.Response
@@ -100,19 +98,17 @@ func (ac *AddressController) Update(c *gin.Context) {
 		return
 	}
 	resp := dto.AddressSingleResponse{
-		BaseResponse: dto.BaseResponse{
-			Success: true,
-			Message: "address updated",
-			Code:    http.StatusOK,
-		},
-		Data: dto.AddressData{Address: *address},
+		Success: true,
+		Message: "address updated",
+		Code:    http.StatusOK,
+		Address: *address,
 	}
 	c.JSON(http.StatusOK, resp)
 }
 
 // Delete an address.
 // @Summary      Delete address
-// @Description  Removes an address by ID (soft delete). Only the owner can delete.
+// @Description  Soft deletes an address by ID. Only owner can delete.
 // @Tags         Addresses
 // @Accept       json
 // @Produce      json
@@ -150,17 +146,20 @@ func (ac *AddressController) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// List addresses of the authenticated user.
-// @Summary      List addresses
-// @Description  Returns all addresses (shipping/billing) belonging to the current user.
+// SetDefault sets an address as default for its address_type (shipping, billing, or both).
+// @Summary      Set default address
+// @Description  Marks a specific address as default for its type. Only one default per type per user.
 // @Tags         Addresses
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200 {object} dto.AddressListResponse
-// @Failure      401 {object} utils.Response
-// @Failure      500 {object} utils.Response
-// @Router       /addresses [get]
+// @Param        id   path      int  true  "Address ID"
+// @Success      200  {object}  dto.EmptyResponse
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /addresses/{id}/default [patch]
 func (ac *AddressController) List(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
@@ -173,12 +172,10 @@ func (ac *AddressController) List(c *gin.Context) {
 		return
 	}
 	resp := dto.AddressListResponse{
-		BaseResponse: dto.BaseResponse{
-			Success: true,
-			Message: constants.MsgFetchSuccess,
-			Code:    http.StatusOK,
-		},
-		Data: dto.AddressList{Addresses: addresses},
+		Success: true,
+		Message: "",
+		Code:    http.StatusOK,
+		Address: addresses,
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -256,12 +253,10 @@ func (ac *AddressController) GetDefault(c *gin.Context) {
 		return
 	}
 	resp := dto.AddressSingleResponse{
-		BaseResponse: dto.BaseResponse{
-			Success: true,
-			Message: constants.MsgFetchSuccess,
-			Code:    http.StatusOK,
-		},
-		Data: dto.AddressData{Address: *addr},
+		Success: true,
+		Message: constants.MsgFetchSuccess,
+		Code:    http.StatusOK,
+		Address: *addr,
 	}
 	c.JSON(http.StatusOK, resp)
 }
