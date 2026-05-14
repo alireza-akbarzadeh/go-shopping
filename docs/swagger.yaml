@@ -501,7 +501,7 @@ definitions:
         type: integer
       products:
         items:
-          $ref: '#/definitions/dto.ProductResponse'
+          $ref: '#/definitions/models.Product'
         type: array
       total:
         type: integer
