@@ -1,6 +1,12 @@
 package dto
 
-import "github.com/alireza-akbarzadeh/shopping-platform/models"
+import (
+	"time"
+
+	"github.com/alireza-akbarzadeh/shopping-platform/models"
+)
+
+// ─── Request DTOs ────────────────────────────────────────────────────────────
 
 type BulkStockUpdate struct {
 	ProductID uint `json:"product_id" validate:"required,gt=0"`
@@ -26,6 +32,7 @@ type CreateProductRequest struct {
 	MetaDescription   string   `json:"meta_description,omitempty"`
 	IsNew             *bool    `json:"is_new,omitempty"`
 }
+
 type UpdateProductRequest struct {
 	Name              *string   `json:"name,omitempty" validate:"omitempty,min=3,max=255"`
 	Description       *string   `json:"description,omitempty"`
@@ -50,29 +57,6 @@ type BulkDeleteProductsRequest struct {
 	ProductIDs []uint `json:"product_ids" validate:"required,min=1"`
 }
 
-// ProductListResponse is the full API response wrapper
-
-type ProductListResponse struct {
-	BaseResponse
-	Data ProductListData `json:"data"`
-}
-
-type ProductSingleResponse struct {
-	BaseResponse
-	Data ProductSingleData `json:"data"`
-}
-
-type ProductSingleData struct {
-	Product *models.Product `json:"product"`
-}
-
-type ProductListData struct {
-	Products []*models.Product `json:"products"`
-	Total    int64             `json:"total"`
-	Limit    int               `json:"limit"`
-	Offset   int               `json:"offset"`
-}
-
 type ProductListFilters struct {
 	Status     string  `form:"status"`
 	Name       string  `form:"name"`
@@ -87,4 +71,132 @@ type ProductListFilters struct {
 	IsDigital  *bool   `form:"is_digital"`
 	IsNew      *bool   `form:"is_new"`
 	Sort       string  `form:"sort"`
+}
+
+// ─── Response DTOs ───────────────────────────────────────────────────────────
+
+// CategoryResponse is a flat, GORM-free category shape for API responses.
+type CategoryResponse struct {
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Description string `json:"description,omitempty"`
+	Level       int    `json:"level"`
+	Path        string `json:"path,omitempty"`
+	IsActive    bool   `json:"is_active"`
+	ParentID    *uint  `json:"parent_id,omitempty"`
+}
+
+// ProductResponse is a flat, GORM-free product shape for API responses.
+// Swag will generate clean types from this — no GormDeletedAt, no recursive models.
+type ProductResponse struct {
+	ID                uint              `json:"id"`
+	Name              string            `json:"name"`
+	Slug              string            `json:"slug"`
+	SKU               string            `json:"sku"`
+	Barcode           string            `json:"barcode,omitempty"`
+	Description       string            `json:"description,omitempty"`
+	Price             float64           `json:"price"`
+	CompareAtPrice    *float64          `json:"compare_at_price,omitempty"`
+	Cost              *float64          `json:"cost,omitempty"`
+	Stock             int               `json:"stock"`
+	LowStockThreshold int               `json:"low_stock_threshold,omitempty"`
+	Weight            *float64          `json:"weight,omitempty"`
+	IsDigital         bool              `json:"is_digital"`
+	IsNew             bool              `json:"is_new"`
+	Status            string            `json:"status"`
+	Rating            float64           `json:"rating"`
+	ReviewsCount      int               `json:"reviews_count"`
+	Images            []string          `json:"images,omitempty"`
+	MetaTitle         string            `json:"meta_title,omitempty"`
+	MetaDescription   string            `json:"meta_description,omitempty"`
+	CategoryID        *uint             `json:"category_id,omitempty"`
+	Category          *CategoryResponse `json:"category,omitempty"`
+	CreatedAt         time.Time         `json:"created_at"`
+	UpdatedAt         time.Time         `json:"updated_at"`
+}
+
+// ToProductResponse maps a models.Product to a ProductResponse.
+// Call this in controllers instead of passing *models.Product directly.
+func ToProductResponse(p models.Product) ProductResponse {
+	r := ProductResponse{
+		ID:                p.ID,
+		Name:              p.Name,
+		Slug:              p.Slug,
+		SKU:               p.SKU,
+		Barcode:           p.Barcode,
+		Description:       p.Description,
+		Price:             p.Price,
+		CompareAtPrice:    p.CompareAtPrice,
+		Cost:              p.Cost,
+		Stock:             p.Stock,
+		LowStockThreshold: p.LowStockThreshold,
+		Weight:            p.Weight,
+		IsDigital:         p.IsDigital,
+		IsNew:             p.IsNew,
+		Status:            p.Status,
+		Rating:            p.Rating,
+		ReviewsCount:      p.ReviewsCount,
+		Images:            p.Images,
+		MetaTitle:         p.MetaTitle,
+		MetaDescription:   p.MetaDescription,
+		CreatedAt:         p.CreatedAt,
+		UpdatedAt:         p.UpdatedAt,
+	}
+
+	if p.CategoryID != nil {
+		r.CategoryID = p.CategoryID
+	}
+
+	if p.Category.ID != 0 {
+		cat := CategoryResponse{
+			ID:          p.Category.ID,
+			Name:        p.Category.Name,
+			Slug:        p.Category.Slug,
+			Description: p.Category.Description,
+			Level:       p.Category.Level,
+			Path:        p.Category.Path,
+			IsActive:    p.Category.IsActive,
+			ParentID:    p.Category.ParentID,
+		}
+		r.Category = &cat
+	}
+
+	return r
+}
+
+// ToProductResponses maps a slice of *models.Product to []ProductResponse.
+func ToProductResponses(products []*models.Product) []ProductResponse {
+	result := make([]ProductResponse, 0, len(products))
+	for _, p := range products {
+		result = append(result, ToProductResponse(*p))
+	}
+	return result
+}
+
+// ─── Envelope types (what Swag and Orval see for success responses) ──────────
+
+type ProductSingleData struct {
+	Product ProductResponse `json:"product"`
+}
+
+type ProductListData struct {
+	Products []*models.Product `json:"products"`
+	Total    int64             `json:"total"`
+	Limit    int               `json:"limit"`
+	Offset   int               `json:"offset"`
+}
+
+type ProductSingleResponse struct {
+	Success bool              `json:"success"`
+	Message string            `json:"message"`
+	Code    int               `json:"code"`
+	Data    ProductSingleData `json:"data"`
+}
+
+type ProductListResponse struct {
+	Success bool            `json:"success"`
+	Message string          `json:"message"`
+	Code    int             `json:"code"`
+	Data    ProductListData `json:"data"`
 }

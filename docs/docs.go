@@ -2753,7 +2753,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get products with pagination and filtering by status, name, category, price range, rating, reviews count, digital flag, new flag, and sorting.",
+                "description": "Get products with pagination and optional filters",
                 "consumes": [
                     "application/json"
                 ],
@@ -2775,98 +2775,98 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 0,
-                        "description": "Number of items to skip (default 0)",
+                        "description": "Number of items to skip",
                         "name": "offset",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "active",
+                            "draft",
+                            "archived"
+                        ],
                         "type": "string",
-                        "example": "active",
-                        "description": "Product status (active, draft, archived)",
+                        "description": "Product status",
                         "name": "status",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "laptop",
-                        "description": "Filter by exact product name",
+                        "description": "Filter by product name",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "SKU-123",
                         "description": "Filter by SKU",
                         "name": "sku",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "example": 5,
                         "description": "Filter by category ID",
                         "name": "category_id",
                         "in": "query"
                     },
                     {
                         "type": "number",
-                        "example": 10.99,
-                        "description": "Minimum price filter",
+                        "description": "Minimum price",
                         "name": "min_price",
                         "in": "query"
                     },
                     {
                         "type": "number",
-                        "example": 999.99,
-                        "description": "Maximum price filter",
+                        "description": "Maximum price",
                         "name": "max_price",
                         "in": "query"
                     },
                     {
                         "type": "number",
-                        "example": 4,
-                        "description": "Minimum rating (0.0 to 5.0)",
+                        "description": "Minimum rating (0–5)",
                         "name": "min_rating",
                         "in": "query"
                     },
                     {
                         "type": "number",
-                        "example": 5,
                         "description": "Maximum rating",
                         "name": "max_rating",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "example": 10,
-                        "description": "Minimum number of reviews",
+                        "description": "Minimum review count",
                         "name": "min_reviews",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "example": 1000,
-                        "description": "Maximum number of reviews",
+                        "description": "Maximum review count",
                         "name": "max_reviews",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "example": true,
-                        "description": "Filter digital or physical products",
+                        "description": "Digital products only",
                         "name": "is_digital",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "example": true,
-                        "description": "Filter newly added products (first 30 days)",
+                        "description": "New products only",
                         "name": "is_new",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "rating_desc",
+                            "rating_asc",
+                            "newest",
+                            "reviews_desc",
+                            "price_asc",
+                            "price_desc"
+                        ],
                         "type": "string",
-                        "example": "rating_desc",
-                        "description": "Sort order: rating_desc, rating_asc, newest, reviews_desc, price_asc, price_desc",
+                        "description": "Sort order",
                         "name": "sort",
                         "in": "query"
                     }
@@ -3282,7 +3282,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Fetch a list of products from the same category as the specified product, ordered by rating and review count.",
+                "description": "Fetch products from the same category, ordered by rating and review count",
                 "consumes": [
                     "application/json"
                 ],
@@ -4393,6 +4393,35 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CategoryResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_id": {
+                    "type": "integer"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CategorySingleResponse": {
             "type": "object",
             "properties": {
@@ -4926,7 +4955,7 @@ const docTemplate = `{
                 "products": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Product"
+                        "$ref": "#/definitions/dto.ProductResponse"
                     }
                 },
                 "total": {
@@ -4951,11 +4980,91 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ProductResponse": {
+            "type": "object",
+            "properties": {
+                "barcode": {
+                    "type": "string"
+                },
+                "category": {
+                    "$ref": "#/definitions/dto.CategoryResponse"
+                },
+                "category_id": {
+                    "type": "integer"
+                },
+                "compare_at_price": {
+                    "type": "number"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "is_digital": {
+                    "type": "boolean"
+                },
+                "is_new": {
+                    "type": "boolean"
+                },
+                "low_stock_threshold": {
+                    "type": "integer"
+                },
+                "meta_description": {
+                    "type": "string"
+                },
+                "meta_title": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "reviews_count": {
+                    "type": "integer"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "stock": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
         "dto.ProductSingleData": {
             "type": "object",
             "properties": {
                 "product": {
-                    "$ref": "#/definitions/models.Product"
+                    "$ref": "#/definitions/dto.ProductResponse"
                 }
             }
         },
@@ -6021,13 +6130,12 @@ const docTemplate = `{
         "utils.Response": {
             "type": "object",
             "properties": {
-                "data": {
-                    "type": "object"
+                "code": {
+                    "type": "integer"
                 },
                 "error": {
                     "type": "string"
                 },
-                "errors": {},
                 "message": {
                     "type": "string"
                 },

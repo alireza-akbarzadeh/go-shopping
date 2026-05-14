@@ -121,6 +121,25 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.CategoryResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      level:
+        type: integer
+      name:
+        type: string
+      parent_id:
+        type: integer
+      path:
+        type: string
+      slug:
+        type: string
+    type: object
   dto.CategorySingleResponse:
     properties:
       code:
@@ -482,7 +501,7 @@ definitions:
         type: integer
       products:
         items:
-          $ref: '#/definitions/models.Product'
+          $ref: '#/definitions/dto.ProductResponse'
         type: array
       total:
         type: integer
@@ -498,10 +517,63 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.ProductResponse:
+    properties:
+      barcode:
+        type: string
+      category:
+        $ref: '#/definitions/dto.CategoryResponse'
+      category_id:
+        type: integer
+      compare_at_price:
+        type: number
+      cost:
+        type: number
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      images:
+        items:
+          type: string
+        type: array
+      is_digital:
+        type: boolean
+      is_new:
+        type: boolean
+      low_stock_threshold:
+        type: integer
+      meta_description:
+        type: string
+      meta_title:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      rating:
+        type: number
+      reviews_count:
+        type: integer
+      sku:
+        type: string
+      slug:
+        type: string
+      status:
+        type: string
+      stock:
+        type: integer
+      updated_at:
+        type: string
+      weight:
+        type: number
+    type: object
   dto.ProductSingleData:
     properties:
       product:
-        $ref: '#/definitions/models.Product'
+        $ref: '#/definitions/dto.ProductResponse'
     type: object
   dto.ProductSingleResponse:
     properties:
@@ -1220,11 +1292,10 @@ definitions:
     type: object
   utils.Response:
     properties:
-      data:
-        type: object
+      code:
+        type: integer
       error:
         type: string
-      errors: {}
       message:
         type: string
       success:
@@ -3006,8 +3077,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get products with pagination and filtering by status, name, category,
-        price range, rating, reviews count, digital flag, new flag, and sorting.
+      description: Get products with pagination and optional filters
       parameters:
       - default: 20
         description: Items per page (default 20, max 100)
@@ -3015,73 +3085,70 @@ paths:
         name: limit
         type: integer
       - default: 0
-        description: Number of items to skip (default 0)
+        description: Number of items to skip
         in: query
         name: offset
         type: integer
-      - description: Product status (active, draft, archived)
-        example: active
+      - description: Product status
+        enum:
+        - active
+        - draft
+        - archived
         in: query
         name: status
         type: string
-      - description: Filter by exact product name
-        example: laptop
+      - description: Filter by product name
         in: query
         name: name
         type: string
       - description: Filter by SKU
-        example: SKU-123
         in: query
         name: sku
         type: string
       - description: Filter by category ID
-        example: 5
         in: query
         name: category_id
         type: integer
-      - description: Minimum price filter
-        example: 10.99
+      - description: Minimum price
         in: query
         name: min_price
         type: number
-      - description: Maximum price filter
-        example: 999.99
+      - description: Maximum price
         in: query
         name: max_price
         type: number
-      - description: Minimum rating (0.0 to 5.0)
-        example: 4
+      - description: Minimum rating (0–5)
         in: query
         name: min_rating
         type: number
       - description: Maximum rating
-        example: 5
         in: query
         name: max_rating
         type: number
-      - description: Minimum number of reviews
-        example: 10
+      - description: Minimum review count
         in: query
         name: min_reviews
         type: integer
-      - description: Maximum number of reviews
-        example: 1000
+      - description: Maximum review count
         in: query
         name: max_reviews
         type: integer
-      - description: Filter digital or physical products
-        example: true
+      - description: Digital products only
         in: query
         name: is_digital
         type: boolean
-      - description: Filter newly added products (first 30 days)
-        example: true
+      - description: New products only
         in: query
         name: is_new
         type: boolean
-      - description: 'Sort order: rating_desc, rating_asc, newest, reviews_desc, price_asc,
-          price_desc'
-        example: rating_desc
+      - description: Sort order
+        enum:
+        - rating_desc
+        - rating_asc
+        - newest
+        - reviews_desc
+        - price_asc
+        - price_desc
         in: query
         name: sort
         type: string
@@ -3278,8 +3345,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Fetch a list of products from the same category as the specified
-        product, ordered by rating and review count.
+      description: Fetch products from the same category, ordered by rating and review
+        count
       parameters:
       - description: Product ID
         in: path

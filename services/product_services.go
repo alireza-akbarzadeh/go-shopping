@@ -364,25 +364,24 @@ func (s *productService) CheckLowStockAndAlert() error {
 
 func (s *productService) GetRelated(productID uint, limit int) ([]*models.Product, error) {
 	var product models.Product
-	if err := s.db.First(&product, productID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, utils.ErrNotFound("product not found")
-		}
+
+	err := s.db.First(&product, productID).Error
+	if err != nil {
 		return nil, err
-	}
-	if product.CategoryID == nil {
-		return []*models.Product{}, nil
 	}
 
 	var related []*models.Product
 
-	query := s.db.Where("category_id = ? AND id != ?", product.CategoryID, productID).
+	err = s.db.
+		Preload("Category").
+		Where("category_id = ? AND id != ?", product.CategoryID, productID).
 		Order("rating DESC, reviews_count DESC").
-		Limit(limit)
+		Limit(limit).
+		Find(&related).Error
 
-	if err := query.Find(&related).Error; err != nil {
+	if err != nil {
 		return nil, err
 	}
-	return related, nil
 
+	return related, nil
 }

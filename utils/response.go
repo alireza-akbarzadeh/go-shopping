@@ -9,13 +9,18 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// Response represents the standard API response structure.
+// Response is the standard error/empty API response shape.
+// For success responses with data, controllers use typed dto.*Response structs
+// so Orval generates concrete types rather than unknown.
 type Response struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty" swaggertype:"object"`
-	Error   string      `json:"error,omitempty"`
-	Errors  interface{} `json:"errors,omitempty"`
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
+	// Data is only populated on generic success helpers; typed endpoints use dto envelopes.
+	Data  interface{} `json:"data,omitempty"    swaggerignore:"true"`
+	Error string      `json:"error,omitempty"`
+	// Errors holds validation field errors; shape varies so excluded from spec.
+	Errors interface{} `json:"errors,omitempty"  swaggerignore:"true"`
+	Code   int         `json:"code,omitempty"`
 }
 
 // SuccessResponse sends a 200 OK response with data.
@@ -41,6 +46,7 @@ func ErrorResponse(c *gin.Context, status int, message string) {
 	c.JSON(status, Response{
 		Success: false,
 		Message: message,
+		Code:    status,
 	})
 }
 
@@ -74,10 +80,11 @@ func InternalServerErrorResponse(c *gin.Context, err error, message string) {
 	ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 }
 
-// FormatValidationErrors converts validator.ValidationErrors to a map of field → tag
+// FormatValidationErrors converts validator.ValidationErrors to a map of field → tag.
 func FormatValidationErrors(err error) map[string]string {
 	errorsMap := make(map[string]string)
-	if ve, ok := err.(validator.ValidationErrors); ok {
+	var ve validator.ValidationErrors
+	if errors.As(err, &ve) {
 		for _, fe := range ve {
 			errorsMap[fe.Field()] = fe.Tag()
 		}
@@ -86,16 +93,15 @@ func FormatValidationErrors(err error) map[string]string {
 }
 
 // ValidationErrorResponse sends a 400 Bad Request with validation details.
-func ValidationErrorResponse(c *gin.Context, errors interface{}) {
+func ValidationErrorResponse(c *gin.Context, errs interface{}) {
 	c.JSON(http.StatusBadRequest, Response{
 		Success: false,
 		Message: "validation failed",
-		Errors:  errors,
+		Errors:  errs,
 	})
 }
 
-// BindAndValidate binds JSON request body and validates the resulting struct or slice.
-// It sends a 400 response when the body is invalid or validation fails.
+// BindAndValidate binds JSON body and validates the struct or slice.
 func BindAndValidate(c *gin.Context, req interface{}, validate *validator.Validate) bool {
 	if err := c.ShouldBindJSON(req); err != nil {
 		return handleBindingError(c, err)
@@ -103,7 +109,7 @@ func BindAndValidate(c *gin.Context, req interface{}, validate *validator.Valida
 	return handleValidationError(c, req, validate)
 }
 
-// BindAndValidateQuery binds query params and validates the resulting struct.
+// BindAndValidateQuery binds query params and validates the struct.
 func BindAndValidateQuery(c *gin.Context, req interface{}, validate *validator.Validate) bool {
 	if err := c.ShouldBindQuery(req); err != nil {
 		return handleBindingError(c, err)
@@ -112,7 +118,8 @@ func BindAndValidateQuery(c *gin.Context, req interface{}, validate *validator.V
 }
 
 func handleBindingError(c *gin.Context, err error) bool {
-	if ve, ok := err.(validator.ValidationErrors); ok {
+	var ve validator.ValidationErrors
+	if errors.As(err, &ve) {
 		ValidationErrorResponse(c, FormatValidationErrors(ve))
 		return false
 	}
@@ -122,7 +129,8 @@ func handleBindingError(c *gin.Context, err error) bool {
 
 func handleValidationError(c *gin.Context, req interface{}, validate *validator.Validate) bool {
 	if err := validateStruct(req, validate); err != nil {
-		if ve, ok := err.(validator.ValidationErrors); ok {
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
 			ValidationErrorResponse(c, FormatValidationErrors(ve))
 			return false
 		}
@@ -140,7 +148,6 @@ func validateStruct(req interface{}, validate *validator.Validate) error {
 	if !value.IsValid() {
 		return nil
 	}
-
 	switch value.Kind() {
 	case reflect.Slice, reflect.Array:
 		return validate.Var(value.Interface(), "dive")
