@@ -12,14 +12,16 @@ import (
 )
 
 type UserLikeController struct {
-	likeService services.UsertLikeServiceInterface
-	validate    *validator.Validate
+	likeService    services.UsertLikeServiceInterface
+	productService services.ProductServiceInterface
+	validate       *validator.Validate
 }
 
-func NewUserLikeController(ls services.UsertLikeServiceInterface) *UserLikeController {
+func NewUserLikeController(ls services.UsertLikeServiceInterface, productServices services.ProductServiceInterface) *UserLikeController {
 	return &UserLikeController{
-		likeService: ls,
-		validate:    validator.New(),
+		likeService:    ls,
+		productService: productServices,
+		validate:       validator.New(),
 	}
 }
 
@@ -51,26 +53,33 @@ func (ctrl *UserLikeController) ToggleLike(c *gin.Context) {
 	}
 
 	var req struct {
-		Like bool `json:"like" validate:"required"`
+		Like *bool `json:"like" validate:"required"`
 	}
 	if !utils.BindAndValidate(c, &req, ctrl.validate) {
 		return
 	}
 
 	var liked bool
-	if req.Like {
+	if req.Like != nil && *req.Like {
 		err = ctrl.likeService.Like(userID, uint(productID))
 		liked = true
-	} else {
+	} else if req.Like != nil && !*req.Like {
 		err = ctrl.likeService.Unlike(userID, uint(productID))
 		liked = false
+	} else {
+		utils.ErrorResponse(c, 400, "like field is required")
+		return
 	}
 	if err != nil {
 		utils.HandleAppError(c, err, "failed to toggle like")
 		return
 	}
 
-	utils.SuccessResponse(c, "success", gin.H{"liked": liked})
+	message := "product unliked successfully"
+	if liked {
+		message = "product liked successfully"
+	}
+	utils.SuccessResponse(c, message, gin.H{"liked": liked})
 }
 
 // IsLikedByUser checks if the current user has liked a specific product.

@@ -146,10 +146,7 @@ func (ctrl *ProductController) GetOne(c *gin.Context) {
 
 	isLiked := false
 	if userID, ok := middleware.GetUserID(c); ok {
-		utils.Log.Info(userID, "userid")
-		utils.Log.Infof("GetOne: userID=%d, productID=%d", userID, product.ID)
 		liked, err := ctrl.userLikeService.IsLikedByUser(userID, product.ID)
-		utils.Log.Infof("IsLikedByUser result: %v, err: %v", liked, err)
 		if err == nil {
 			isLiked = liked
 		}

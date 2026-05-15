@@ -40,6 +40,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, svc *services.Services) *Cont
 		Address:  NewAddressController(svc.Address),
 		Menu:     NewMenuController(svc.Menu),
 		Review:   NewReviewController(svc.Review),
-		UserLike: NewUserLikeController(svc.UserLike),
+		UserLike: NewUserLikeController(svc.UserLike, svc.Product),
 	}
 }

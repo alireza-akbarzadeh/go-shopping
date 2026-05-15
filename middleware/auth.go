@@ -10,7 +10,7 @@ import (
 // AuthMiddleware validates the JWT token and stores user info in context.
 func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := extractToken(c)
+		tokenString := ExtractToken(c)
 		if tokenString == "" {
 			utils.UnauthorizedResponse(c, constants.ErrorMissingAuthHeader)
 			c.Abort()
@@ -27,6 +27,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		c.Set("user_id", claims.UserID)
 		c.Set("user_email", claims.Email)
 		c.Set("user_role", claims.Role)
+		c.Set("auth_type", "auth")
 
 		c.Next()
 	}
@@ -65,23 +66,24 @@ func GetUserRole(c *gin.Context) (string, bool) {
 
 func GuestAuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := extractToken(c)
-
+		tokenString := ExtractToken(c)
+		utils.Log.Infof("GuestAuth: tokenString = %q", tokenString) // log the token
 		if tokenString == "" {
+			utils.Log.Info("GuestAuth: no token, proceeding")
 			c.Next()
 			return
 		}
-
 		claims, err := utils.ValidateToken(tokenString, cfg.JWT.Secret)
 		if err != nil {
+			utils.Log.WithError(err).Error("GuestAuth: token validation failed")
 			c.Next()
 			return
 		}
-
+		utils.Log.Infof("GuestAuth: setting user_id = %v", claims.UserID)
 		c.Set("user_id", claims.UserID)
 		c.Set("user_email", claims.Email)
 		c.Set("user_role", claims.Role)
-
+		c.Set("auth_type", "guest")
 		c.Next()
 	}
 }

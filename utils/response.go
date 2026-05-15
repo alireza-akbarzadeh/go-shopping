@@ -98,6 +98,7 @@ func ValidationErrorResponse(c *gin.Context, errs interface{}) {
 		Success: false,
 		Message: "validation failed",
 		Errors:  errs,
+		Code:    http.StatusBadRequest,
 	})
 }
 
