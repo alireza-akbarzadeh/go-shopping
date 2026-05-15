@@ -229,10 +229,12 @@ func (s *productService) List(limit, offset int, filters dto.ProductListFilters)
 		query = query.Where("status = ?", filters.Status)
 	}
 	if filters.Name != "" {
-		query = query.Where("name = ?", filters.Name)
+		// Case-insensitive partial match for product name
+		query = query.Where("LOWER(name) LIKE LOWER(?)", "%"+filters.Name+"%")
 	}
 	if filters.SKU != "" {
-		query = query.Where("sku = ?", filters.SKU)
+		// Partial match for SKU (usually exact but can be partial)
+		query = query.Where("sku LIKE ?", "%"+filters.SKU+"%")
 	}
 
 	// Numeric filters
@@ -278,9 +280,6 @@ func (s *productService) List(limit, offset int, filters dto.ProductListFilters)
 
 	return products, total, nil
 }
-
-
-
 
 // BulkCreate create multiple product
 func (s *productService) BulkCreate(products []dto.CreateProductRequest) ([]*models.Product, error) {

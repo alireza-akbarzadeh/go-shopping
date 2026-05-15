@@ -192,7 +192,7 @@ type ProductSingleData struct {
 // ProductListData holds paginated product results.
 // Using ProductResponse instead of models.Product to avoid GORM fields in Swagger.
 type ProductListData struct {
-	Products []ProductResponse `json:"products"` // changed from []*models.Product
+	Products []ProductListItem `json:"products"`
 	Total    int64             `json:"total"`
 	Limit    int               `json:"limit"`
 	Offset   int               `json:"offset"`
@@ -210,4 +210,9 @@ type ProductSingleResponse struct {
 type ProductListResponse struct {
 	// Data holds the paginated product list.
 	Data ProductListData `json:"data"`
+}
+
+type ProductListItem struct {
+	Items   ProductResponse `json:"items"`
+	IsLiked bool            `json:"is_liked"`
 }

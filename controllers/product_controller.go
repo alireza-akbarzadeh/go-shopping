@@ -219,19 +219,18 @@ func (ctrl *ProductController) List(c *gin.Context) {
 		}
 	}
 
-	items := make([]gin.H, len(products))
+	items := make([]dto.ProductListItem, len(products))
 	for i, p := range products {
-		items[i] = gin.H{
-			"product":  dto.ToProductResponse(*p),
-			"is_liked": likedMap[p.ID],
+		items[i] = dto.ProductListItem{
+			Items:   dto.ToProductResponse(*p),
+			IsLiked: likedMap[p.ID],
 		}
 	}
-
-	utils.SuccessResponse(c, constants.MsgFetchSuccess, gin.H{
-		"items":  items,
-		"total":  total,
-		"limit":  limit,
-		"offset": offset,
+	utils.SuccessResponse(c, constants.MsgFetchSuccess, dto.ProductListData{
+		Products: items,
+		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
 	})
 }
 
