@@ -76,6 +76,8 @@ func (s *productService) Create(req dto.CreateProductRequest) (*models.Product, 
 		IsNew:             time.Now().AddDate(0, 0, 30).After(time.Now()),
 		Rating:            0.0,
 		ReviewsCount:      0,
+		Colors:            marshalStrings(req.Colors),
+		Sizes:             marshalStrings(req.Sizes),
 	}
 	if product.Status == "" {
 		product.Status = "draft"
@@ -182,6 +184,13 @@ func (s *productService) Update(id uint, req dto.UpdateProductRequest) (*models.
 	if req.MetaDescription != nil {
 		product.MetaDescription = *req.MetaDescription
 	}
+	if req.Colors != nil {
+		product.Colors = marshalStrings(*req.Colors)
+	}
+	if req.Sizes != nil {
+		product.Sizes = marshalStrings(*req.Sizes)
+	}
+
 	if err := s.db.Save(product).Error; err != nil {
 		return nil, utils.ErrInternal(err)
 	}
@@ -270,6 +279,9 @@ func (s *productService) List(limit, offset int, filters dto.ProductListFilters)
 	return products, total, nil
 }
 
+
+
+
 // BulkCreate create multiple product
 func (s *productService) BulkCreate(products []dto.CreateProductRequest) ([]*models.Product, error) {
 	if len(products) == 0 {
@@ -299,6 +311,8 @@ func (s *productService) BulkCreate(products []dto.CreateProductRequest) ([]*mod
 				Status:            product.Status,
 				MetaTitle:         product.MetaTitle,
 				MetaDescription:   product.MetaDescription,
+				Colors:            marshalStrings(product.Colors),
+				Sizes:             marshalStrings(product.Sizes),
 			}
 			if product.Status == "" {
 				product.Status = "draft"
@@ -378,7 +392,6 @@ func (s *productService) GetRelated(productID uint, limit int) ([]*models.Produc
 		Order("rating DESC, reviews_count DESC").
 		Limit(limit).
 		Find(&related).Error
-
 	if err != nil {
 		return nil, err
 	}

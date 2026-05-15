@@ -2748,11 +2748,6 @@ const docTemplate = `{
         },
         "/products": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Get products with pagination and optional filters",
                 "consumes": [
                     "application/json"
@@ -2875,17 +2870,48 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ProductListResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "limit": {
+                                                    "type": "integer"
+                                                },
+                                                "offset": {
+                                                    "type": "integer"
+                                                },
+                                                "products": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "is_liked": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "product": {
+                                                                "$ref": "#/definitions/dto.ProductResponse"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -2930,7 +2956,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.ProductSingleResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ProductResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -2996,7 +3034,22 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.ProductListResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.ProductResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -3051,7 +3104,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.EmptyResponse"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "400": {
@@ -3083,12 +3136,7 @@ const docTemplate = `{
         },
         "/products/{id}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Fetch a single product using either its numeric ID or slug (URL-friendly name)",
+                "description": "Fetch a single product using either its numeric ID or slug",
                 "consumes": [
                     "application/json"
                 ],
@@ -3112,17 +3160,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ProductSingleResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "is_liked": {
+                                                    "type": "boolean"
+                                                },
+                                                "product": {
+                                                    "$ref": "#/definitions/dto.ProductResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -3180,7 +3242,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ProductSingleResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ProductResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -3221,7 +3295,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Delete an existing product permanently from the catalog",
+                "description": "Soft delete a product by its ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -3245,7 +3319,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.EmptyResponse"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "400": {
@@ -3275,13 +3349,161 @@ const docTemplate = `{
                 }
             }
         },
-        "/products/{id}/related": {
+        "/products/{id}/like": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Like or unlike a product. Send ` + "`" + `{\"like\": true}` + "`" + ` to like, ` + "`" + `{\"like\": false}` + "`" + ` to unlike.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product Likes"
+                ],
+                "summary": "Toggle product like",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Toggle action",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "liked": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/liked": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
+                "description": "Returns whether the authenticated user has liked the given product.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product Likes"
+                ],
+                "summary": "Check if product is liked",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "liked": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/related": {
+            "get": {
                 "description": "Fetch products from the same category, ordered by rating and review count",
                 "consumes": [
                     "application/json"
@@ -3312,17 +3534,26 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ProductListResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.ProductResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -3626,7 +3857,7 @@ const docTemplate = `{
                                                 "reviews": {
                                                     "type": "array",
                                                     "items": {
-                                                        "$ref": "#/definitions/models.Review"
+                                                        "$ref": "#/definitions/dto.ReviewResponse"
                                                     }
                                                 },
                                                 "total": {
@@ -4130,6 +4361,60 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/liked-products": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a list of product IDs that the authenticated user has liked.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product Likes"
+                ],
+                "summary": "Get user's liked product IDs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "product_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -4731,6 +5016,12 @@ const docTemplate = `{
                 "category_id": {
                     "type": "integer"
                 },
+                "colors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "compare_at_price": {
                     "type": "number",
                     "minimum": 0
@@ -4771,6 +5062,12 @@ const docTemplate = `{
                 "price": {
                     "type": "number",
                     "minimum": 0
+                },
+                "sizes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "sku": {
                     "type": "string",
@@ -4813,6 +5110,9 @@ const docTemplate = `{
                     "type": "integer",
                     "maximum": 5,
                     "minimum": 1
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },
@@ -4943,49 +5243,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ProductListData": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer"
-                },
-                "offset": {
-                    "type": "integer"
-                },
-                "products": {
-                    "description": "changed from []*models.Product",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.ProductResponse"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.ProductListResponse": {
-            "description": "Standard success response envelope for a product list.",
-            "type": "object",
-            "properties": {
-                "data": {
-                    "description": "Data holds the paginated product list.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.ProductListData"
-                        }
-                    ]
-                },
-                "message": {
-                    "description": "Message contains a human-readable message.\nexample: Product retrieved successfully",
-                    "type": "string"
-                },
-                "success": {
-                    "description": "Success indicates whether the request succeeded.\nexample: true",
-                    "type": "boolean"
-                }
-            }
-        },
         "dto.ProductResponse": {
             "type": "object",
             "properties": {
@@ -4997,6 +5254,12 @@ const docTemplate = `{
                 },
                 "category_id": {
                     "type": "integer"
+                },
+                "colors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "compare_at_price": {
                     "type": "number"
@@ -5046,6 +5309,12 @@ const docTemplate = `{
                 "reviews_count": {
                     "type": "integer"
                 },
+                "sizes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "sku": {
                     "type": "string"
                 },
@@ -5063,40 +5332,6 @@ const docTemplate = `{
                 },
                 "weight": {
                     "type": "number"
-                }
-            }
-        },
-        "dto.ProductSingleData": {
-            "type": "object",
-            "properties": {
-                "product": {
-                    "$ref": "#/definitions/dto.ProductResponse"
-                }
-            }
-        },
-        "dto.ProductSingleResponse": {
-            "description": "Standard success response envelope for a single product.",
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "Code is the HTTP status code.\nexample: 200",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "Data holds the actual response payload.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.ProductSingleData"
-                        }
-                    ]
-                },
-                "message": {
-                    "description": "Message contains a human-readable message.\nexample: Product retrieved successfully",
-                    "type": "string"
-                },
-                "success": {
-                    "description": "Success indicates whether the request succeeded.\nexample: true",
-                    "type": "boolean"
                 }
             }
         },
@@ -5197,6 +5432,41 @@ const docTemplate = `{
                 },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.ReviewResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "product_id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -5395,6 +5665,12 @@ const docTemplate = `{
                 "category_id": {
                     "type": "integer"
                 },
+                "colors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "compare_at_price": {
                     "type": "number",
                     "minimum": 0
@@ -5436,6 +5712,12 @@ const docTemplate = `{
                     "type": "number",
                     "minimum": 0
                 },
+                "sizes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "sku": {
                     "type": "string",
                     "maxLength": 50,
@@ -5470,6 +5752,9 @@ const docTemplate = `{
                     "type": "integer",
                     "maximum": 5,
                     "minimum": 1
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },
@@ -5937,6 +6222,12 @@ const docTemplate = `{
                 "category_id": {
                     "type": "integer"
                 },
+                "colors": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "compare_at_price": {
                     "type": "number"
                 },
@@ -5993,6 +6284,12 @@ const docTemplate = `{
                 "reviews_count": {
                     "type": "integer"
                 },
+                "sizes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "sku": {
                     "type": "string"
                 },
@@ -6047,6 +6344,9 @@ const docTemplate = `{
                     "type": "integer",
                     "maximum": 5,
                     "minimum": 1
+                },
+                "title": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"

@@ -7,6 +7,7 @@ func unmarshalJSONStrings(data []byte) []string {
 		return []string{}
 	}
 	var arr []string
-	_ = json.Unmarshal(data, &arr) // ignore error; if invalid, return empty slice
+	_ = json.Unmarshal(data, &arr) // ignore error; return empty slice on failure
 	return arr
 }
+

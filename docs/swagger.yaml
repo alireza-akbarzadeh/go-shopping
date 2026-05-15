@@ -346,6 +346,10 @@ definitions:
         type: string
       category_id:
         type: integer
+      colors:
+        items:
+          type: string
+        type: array
       compare_at_price:
         minimum: 0
         type: number
@@ -375,6 +379,10 @@ definitions:
       price:
         minimum: 0
         type: number
+      sizes:
+        items:
+          type: string
+        type: array
       sku:
         maxLength: 50
         minLength: 3
@@ -407,6 +415,8 @@ definitions:
         maximum: 5
         minimum: 1
         type: integer
+      title:
+        type: string
     required:
     - product_id
     - rating
@@ -493,38 +503,6 @@ definitions:
       success:
         type: boolean
     type: object
-  dto.ProductListData:
-    properties:
-      limit:
-        type: integer
-      offset:
-        type: integer
-      products:
-        description: changed from []*models.Product
-        items:
-          $ref: '#/definitions/dto.ProductResponse'
-        type: array
-      total:
-        type: integer
-    type: object
-  dto.ProductListResponse:
-    description: Standard success response envelope for a product list.
-    properties:
-      data:
-        allOf:
-        - $ref: '#/definitions/dto.ProductListData'
-        description: Data holds the paginated product list.
-      message:
-        description: |-
-          Message contains a human-readable message.
-          example: Product retrieved successfully
-        type: string
-      success:
-        description: |-
-          Success indicates whether the request succeeded.
-          example: true
-        type: boolean
-    type: object
   dto.ProductResponse:
     properties:
       barcode:
@@ -533,6 +511,10 @@ definitions:
         $ref: '#/definitions/dto.CategoryResponse'
       category_id:
         type: integer
+      colors:
+        items:
+          type: string
+        type: array
       compare_at_price:
         type: number
       cost:
@@ -565,6 +547,10 @@ definitions:
         type: number
       reviews_count:
         type: integer
+      sizes:
+        items:
+          type: string
+        type: array
       sku:
         type: string
       slug:
@@ -577,34 +563,6 @@ definitions:
         type: string
       weight:
         type: number
-    type: object
-  dto.ProductSingleData:
-    properties:
-      product:
-        $ref: '#/definitions/dto.ProductResponse'
-    type: object
-  dto.ProductSingleResponse:
-    description: Standard success response envelope for a single product.
-    properties:
-      code:
-        description: |-
-          Code is the HTTP status code.
-          example: 200
-        type: integer
-      data:
-        allOf:
-        - $ref: '#/definitions/dto.ProductSingleData'
-        description: Data holds the actual response payload.
-      message:
-        description: |-
-          Message contains a human-readable message.
-          example: Product retrieved successfully
-        type: string
-      success:
-        description: |-
-          Success indicates whether the request succeeded.
-          example: true
-        type: boolean
     type: object
   dto.RefreshResponse:
     properties:
@@ -673,6 +631,29 @@ definitions:
     required:
     - new_password
     - token
+    type: object
+  dto.ReviewResponse:
+    properties:
+      author:
+        type: string
+      comment:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_verified:
+        type: boolean
+      product_id:
+        type: integer
+      rating:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
     type: object
   dto.SidebarGroup:
     properties:
@@ -805,6 +786,10 @@ definitions:
         type: string
       category_id:
         type: integer
+      colors:
+        items:
+          type: string
+        type: array
       compare_at_price:
         minimum: 0
         type: number
@@ -834,6 +819,10 @@ definitions:
       price:
         minimum: 0
         type: number
+      sizes:
+        items:
+          type: string
+        type: array
       sku:
         maxLength: 50
         minLength: 3
@@ -860,6 +849,8 @@ definitions:
         maximum: 5
         minimum: 1
         type: integer
+      title:
+        type: string
     type: object
   dto.UserResponse:
     properties:
@@ -1167,6 +1158,10 @@ definitions:
         $ref: '#/definitions/models.Category'
       category_id:
         type: integer
+      colors:
+        items:
+          type: integer
+        type: array
       compare_at_price:
         type: number
       cost:
@@ -1205,6 +1200,10 @@ definitions:
         type: number
       reviews_count:
         type: integer
+      sizes:
+        items:
+          type: integer
+        type: array
       sku:
         type: string
       slug:
@@ -1248,6 +1247,8 @@ definitions:
         maximum: 5
         minimum: 1
         type: integer
+      title:
+        type: string
       updated_at:
         type: string
       user_id:
@@ -3178,21 +3179,36 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ProductListResponse'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+                    products:
+                      items:
+                        properties:
+                          is_liked:
+                            type: boolean
+                          product:
+                            $ref: '#/definitions/dto.ProductResponse'
+                        type: object
+                      type: array
+                    total:
+                      type: integer
+                  type: object
+              type: object
         "400":
           description: Bad Request
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "401":
-          description: Unauthorized
           schema:
             $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
-      security:
-      - BearerAuth: []
       summary: List products
       tags:
       - Products
@@ -3213,7 +3229,12 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.ProductSingleResponse'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
@@ -3239,7 +3260,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete an existing product permanently from the catalog
+      description: Soft delete a product by its ID
       parameters:
       - description: Product ID
         in: path
@@ -3252,7 +3273,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.EmptyResponse'
+            $ref: '#/definitions/utils.Response'
         "400":
           description: Bad Request
           schema:
@@ -3277,8 +3298,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Fetch a single product using either its numeric ID or slug (URL-friendly
-        name)
+      description: Fetch a single product using either its numeric ID or slug
       parameters:
       - description: Product identifier (ID or slug)
         in: path
@@ -3291,13 +3311,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ProductSingleResponse'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    is_liked:
+                      type: boolean
+                    product:
+                      $ref: '#/definitions/dto.ProductResponse'
+                  type: object
+              type: object
         "400":
           description: Bad Request
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "401":
-          description: Unauthorized
           schema:
             $ref: '#/definitions/utils.Response'
         "404":
@@ -3308,8 +3334,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
-      security:
-      - BearerAuth: []
       summary: Get product by ID or slug
       tags:
       - Products
@@ -3335,7 +3359,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ProductSingleResponse'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
@@ -3361,6 +3390,99 @@ paths:
       summary: Update product
       tags:
       - Products
+  /products/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: 'Like or unlike a product. Send `{"like": true}` to like, `{"like":
+        false}` to unlike.'
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Toggle action
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    liked:
+                      type: boolean
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Toggle product like
+      tags:
+      - Product Likes
+  /products/{id}/liked:
+    get:
+      consumes:
+      - application/json
+      description: Returns whether the authenticated user has liked the given product.
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    liked:
+                      type: boolean
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Check if product is liked
+      tags:
+      - Product Likes
   /products/{id}/related:
     get:
       consumes:
@@ -3383,13 +3505,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ProductListResponse'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ProductResponse'
+                  type: array
+              type: object
         "400":
           description: Bad Request
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "401":
-          description: Unauthorized
           schema:
             $ref: '#/definitions/utils.Response'
         "404":
@@ -3400,8 +3525,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
-      security:
-      - BearerAuth: []
       summary: Get related products
       tags:
       - Products
@@ -3423,7 +3546,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.EmptyResponse'
+            $ref: '#/definitions/utils.Response'
         "400":
           description: Bad Request
           schema:
@@ -3464,7 +3587,14 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.ProductListResponse'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ProductResponse'
+                  type: array
+              type: object
         "400":
           description: Bad Request
           schema:
@@ -3659,7 +3789,7 @@ paths:
                       type: integer
                     reviews:
                       items:
-                        $ref: '#/definitions/models.Review'
+                        $ref: '#/definitions/dto.ReviewResponse'
                       type: array
                     total:
                       type: integer
@@ -4020,6 +4150,37 @@ paths:
       summary: Delete a user
       tags:
       - User
+  /users/me/liked-products:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of product IDs that the authenticated user has liked.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    product_ids:
+                      items:
+                        type: integer
+                      type: array
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user's liked product IDs
+      tags:
+      - Product Likes
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and the JWT token.

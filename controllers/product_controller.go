@@ -36,7 +36,7 @@ func NewProductController(ps services.ProductServiceInterface, uls services.User
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body dto.CreateProductRequest true "Product details"
-// @Success      201 {object} utils.CreatedResponse{data=dto.ProductResponse}
+// @Success      201 {object} utils.Response{data=dto.ProductResponse}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      409 {object} utils.Response

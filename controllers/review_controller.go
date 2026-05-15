@@ -114,7 +114,7 @@ func (rc *ReviewController) Delete(c *gin.Context) {
 // @Param        product_id query int true "Product ID"
 // @Param        limit      query int false "Items per page" default(20)
 // @Param        offset     query int false "Offset" default(0)
-// @Success      200 {object} utils.Response{data=object{reviews=[]models.Review,total=int,limit=int,offset=int}}
+// @Success      200 {object} utils.Response{data=object{reviews=[]dto.ReviewResponse,total=int,limit=int,offset=int}}
 // @Router       /reviews [get]
 func (rc *ReviewController) GetProductReviews(c *gin.Context) {
 	productID, err := strconv.ParseUint(c.Query("product_id"), 10, 64)

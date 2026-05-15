@@ -2,10 +2,12 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/datatypes"
 )
 
@@ -20,13 +22,18 @@ func generateOrderNumber(userID uint) string {
 	return fmt.Sprintf("ORD-%d-%d", userID, time.Now().UnixNano())
 }
 
-func marshalStrings(arr []string) (datatypes.JSON, error) {
+func marshalStrings(arr []string) datatypes.JSON {
 	if arr == nil {
 		arr = []string{}
 	}
-	b, err := json.Marshal(arr)
-	if err != nil {
-		return nil, err
+	b, _ := json.Marshal(arr)
+	return datatypes.JSON(b)
+}
+
+func isDuplicateKeyError(err error) bool {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Code == "23505"
 	}
-	return datatypes.JSON(b), nil
+	return false
 }
