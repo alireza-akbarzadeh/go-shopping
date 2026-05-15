@@ -23,6 +23,7 @@ type Services struct {
 	Address      AddressServiceInterface
 	Menu         UserMenuServicesInterface
 	Review       ReviewServiceInterface
+	UserLike     UsertLikeServiceInterface
 }
 
 func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) *Services {
@@ -45,8 +46,9 @@ func NewServices(db *gorm.DB, cfg *config.Config, workerPool *tasks.WorkerPool) 
 		Address:      NewAddressService(db),
 		Menu:         NewMenuService(db),
 		Review:       NewReviewService(db),
-		Order:        orderSvc,
+		UserLike:     NewUserLikeService(db),
 		Shipment:     NewShipmentService(db, workerPool, notificationSvc),
+		Order:        orderSvc,
 		Coupon:       couponSvc,
 		Notification: notificationSvc,
 		WebSocketHub: wsHub,

@@ -31,6 +31,8 @@ type CreateProductRequest struct {
 	MetaTitle         string   `json:"meta_title,omitempty"`
 	MetaDescription   string   `json:"meta_description,omitempty"`
 	IsNew             *bool    `json:"is_new,omitempty"`
+	Colors            []string `json:"colors,omitempty"`
+	Sizes             []string `json:"sizes,omitempty"`
 }
 
 type UpdateProductRequest struct {
@@ -51,6 +53,8 @@ type UpdateProductRequest struct {
 	MetaTitle         *string   `json:"meta_title,omitempty"`
 	MetaDescription   *string   `json:"meta_description,omitempty"`
 	IsNew             *bool     `json:"is_new,omitempty"`
+	Colors            *[]string `json:"colors,omitempty"`
+	Sizes             *[]string `json:"sizes,omitempty"`
 }
 
 type BulkDeleteProductsRequest struct {
@@ -114,6 +118,8 @@ type ProductResponse struct {
 	Category          *CategoryResponse `json:"category,omitempty"`
 	CreatedAt         time.Time         `json:"created_at"`
 	UpdatedAt         time.Time         `json:"updated_at"`
+	Colors            []string          `json:"colors,omitempty"`
+	Sizes             []string          `json:"sizes,omitempty"`
 }
 
 // ToProductResponse maps a models.Product to a ProductResponse.
@@ -142,6 +148,8 @@ func ToProductResponse(p models.Product) ProductResponse {
 		MetaDescription:   p.MetaDescription,
 		CreatedAt:         p.CreatedAt,
 		UpdatedAt:         p.UpdatedAt,
+		Colors:            unmarshalJSONStrings(p.Colors),
+		Sizes:             unmarshalJSONStrings(p.Sizes),
 	}
 
 	if p.CategoryID != nil {
@@ -176,27 +184,30 @@ func ToProductResponses(products []*models.Product) []ProductResponse {
 
 // ─── Envelope types (what Swag and Orval see for success responses) ──────────
 
+// ProductSingleData wraps a single product response.
 type ProductSingleData struct {
 	Product ProductResponse `json:"product"`
 }
 
+// ProductListData holds paginated product results.
+// Using ProductResponse instead of models.Product to avoid GORM fields in Swagger.
 type ProductListData struct {
-	Products []*models.Product `json:"products"`
+	Products []ProductResponse `json:"products"` // changed from []*models.Product
 	Total    int64             `json:"total"`
 	Limit    int               `json:"limit"`
 	Offset   int               `json:"offset"`
 }
 
+// ProductSingleResponse defines the standard API envelope for a single product.
+// @Description Standard success response envelope for a single product.
 type ProductSingleResponse struct {
-	Success bool              `json:"success"`
-	Message string            `json:"message"`
-	Code    int               `json:"code"`
-	Data    ProductSingleData `json:"data"`
+	// Data holds the actual response payload.
+	Data ProductSingleData `json:"data"`
 }
 
+// ProductListResponse defines the standard API envelope for a product list.
+// @Description Standard success response envelope for a product list.
 type ProductListResponse struct {
-	Success bool            `json:"success"`
-	Message string          `json:"message"`
-	Code    int             `json:"code"`
-	Data    ProductListData `json:"data"`
+	// Data holds the paginated product list.
+	Data ProductListData `json:"data"`
 }

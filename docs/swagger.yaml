@@ -500,21 +500,29 @@ definitions:
       offset:
         type: integer
       products:
+        description: changed from []*models.Product
         items:
-          $ref: '#/definitions/models.Product'
+          $ref: '#/definitions/dto.ProductResponse'
         type: array
       total:
         type: integer
     type: object
   dto.ProductListResponse:
+    description: Standard success response envelope for a product list.
     properties:
-      code:
-        type: integer
       data:
-        $ref: '#/definitions/dto.ProductListData'
+        allOf:
+        - $ref: '#/definitions/dto.ProductListData'
+        description: Data holds the paginated product list.
       message:
+        description: |-
+          Message contains a human-readable message.
+          example: Product retrieved successfully
         type: string
       success:
+        description: |-
+          Success indicates whether the request succeeded.
+          example: true
         type: boolean
     type: object
   dto.ProductResponse:
@@ -576,14 +584,26 @@ definitions:
         $ref: '#/definitions/dto.ProductResponse'
     type: object
   dto.ProductSingleResponse:
+    description: Standard success response envelope for a single product.
     properties:
       code:
+        description: |-
+          Code is the HTTP status code.
+          example: 200
         type: integer
       data:
-        $ref: '#/definitions/dto.ProductSingleData'
+        allOf:
+        - $ref: '#/definitions/dto.ProductSingleData'
+        description: Data holds the actual response payload.
       message:
+        description: |-
+          Message contains a human-readable message.
+          example: Product retrieved successfully
         type: string
       success:
+        description: |-
+          Success indicates whether the request succeeded.
+          example: true
         type: boolean
     type: object
   dto.RefreshResponse:

@@ -4953,9 +4953,10 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "products": {
+                    "description": "changed from []*models.Product",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Product"
+                        "$ref": "#/definitions/dto.ProductResponse"
                     }
                 },
                 "total": {
@@ -4964,18 +4965,23 @@ const docTemplate = `{
             }
         },
         "dto.ProductListResponse": {
+            "description": "Standard success response envelope for a product list.",
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
-                    "$ref": "#/definitions/dto.ProductListData"
+                    "description": "Data holds the paginated product list.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.ProductListData"
+                        }
+                    ]
                 },
                 "message": {
+                    "description": "Message contains a human-readable message.\nexample: Product retrieved successfully",
                     "type": "string"
                 },
                 "success": {
+                    "description": "Success indicates whether the request succeeded.\nexample: true",
                     "type": "boolean"
                 }
             }
@@ -5069,18 +5075,27 @@ const docTemplate = `{
             }
         },
         "dto.ProductSingleResponse": {
+            "description": "Standard success response envelope for a single product.",
             "type": "object",
             "properties": {
                 "code": {
+                    "description": "Code is the HTTP status code.\nexample: 200",
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/dto.ProductSingleData"
+                    "description": "Data holds the actual response payload.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.ProductSingleData"
+                        }
+                    ]
                 },
                 "message": {
+                    "description": "Message contains a human-readable message.\nexample: Product retrieved successfully",
                     "type": "string"
                 },
                 "success": {
+                    "description": "Success indicates whether the request succeeded.\nexample: true",
                     "type": "boolean"
                 }
             }

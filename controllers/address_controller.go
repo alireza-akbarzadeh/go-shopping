@@ -146,7 +146,7 @@ func (ac *AddressController) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// SetDefault sets an address as default for its address_type (shipping, billing, or both).
+// List sets an address as default for its address_type (shipping, billing, or both).
 // @Summary      Set default address
 // @Description  Marks a specific address as default for its type. Only one default per type per user.
 // @Tags         Addresses

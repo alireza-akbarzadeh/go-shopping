@@ -17,6 +17,7 @@ type Review struct {
 	Rating     int    `gorm:"not null" json:"rating" validate:"min=1,max=5"`
 	Comment    string `json:"comment,omitempty"`
 	IsVerified bool   `gorm:"default:false" json:"is_verified"`
+	Title      string `gorm:"not null" json:"title"`
 
 	Product Product `gorm:"foreignKey:ProductID" json:"-"`
 	User    User    `gorm:"foreignKey:UserID" json:"-"`

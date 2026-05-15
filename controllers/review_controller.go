@@ -125,7 +125,7 @@ func (rc *ReviewController) GetProductReviews(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
 	if limit < 1 {
-		limit = 20
+		limit = 2
 	}
 	if limit > 100 {
 		limit = 100
@@ -135,8 +135,31 @@ func (rc *ReviewController) GetProductReviews(c *gin.Context) {
 		utils.InternalServerErrorResponse(c, err, "failed to fetch reviews")
 		return
 	}
+
+	// Build response slice with author names
+	responseReviews := make([]dto.ReviewResponse, len(reviews))
+	for i, rev := range reviews {
+		author := ""
+		// rev.User is now populated because we used Preload("User")
+		if rev.User.ID != 0 { // user exists
+			author = rev.User.FirstName + " " + rev.User.LastName
+		}
+		responseReviews[i] = dto.ReviewResponse{
+			ID:         rev.ID,
+			CreatedAt:  rev.CreatedAt,
+			UpdatedAt:  rev.UpdatedAt,
+			ProductID:  rev.ProductID,
+			UserID:     rev.UserID,
+			Rating:     rev.Rating,
+			Comment:    rev.Comment,
+			IsVerified: rev.IsVerified,
+			Title:      rev.Title,
+			Author:     author,
+		}
+	}
+
 	data := gin.H{
-		"reviews": reviews,
+		"reviews": responseReviews,
 		"total":   total,
 		"limit":   limit,
 		"offset":  offset,

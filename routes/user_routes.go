@@ -19,4 +19,9 @@ func SetupUserRoutes(protected *gin.RouterGroup, ctrl *controllers.Container) {
 	{
 		adminUsers.GET("/users", ctrl.User.GetAllUsers)
 	}
+
+	userMe := protected.Group("/users/me")
+	{
+		userMe.GET("/liked-products", ctrl.UserLike.GetUserLikedProductIDs) // GET /api/v1/users/me/liked-products
+	}
 }

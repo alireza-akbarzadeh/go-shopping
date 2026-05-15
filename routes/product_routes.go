@@ -13,14 +13,17 @@ func SetupProductRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Co
 	public.GET("/products/:id", ctrl.Product.GetOne)
 
 	// Admin routes (protected + admin role)
-	adminProducts := protected.Group("/products")
-	adminProducts.Use(middleware.RequireRole("admin"))
+	productActions := protected.Group("/products")
+	productActions.Use(middleware.RequireRole("admin"))
 	{
-		adminProducts.POST("/", ctrl.Product.Create)
-		adminProducts.POST("/bulk", ctrl.Product.BulkCreate)
-		adminProducts.PUT("/:id", ctrl.Product.Update)
-		adminProducts.DELETE("/:id", ctrl.Product.Delete)
-		adminProducts.DELETE("/bulk", ctrl.Product.BulkDelete)
+		productActions.POST("/", ctrl.Product.Create)
+		productActions.POST("/bulk", ctrl.Product.BulkCreate)
+		productActions.PUT("/:id", ctrl.Product.Update)
+		productActions.DELETE("/:id", ctrl.Product.Delete)
+		productActions.DELETE("/bulk", ctrl.Product.BulkDelete)
+		productActions.POST("/:id/like", ctrl.UserLike.ToggleLike)
+		productActions.GET("/:id/liked", ctrl.UserLike.IsLikedByUser)
+
 	}
 
 	adminUsers := protected.Group("/users")

@@ -6,6 +6,7 @@ import (
 
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/dto"
+	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
 	"github.com/alireza-akbarzadeh/shopping-platform/models"
 	"github.com/alireza-akbarzadeh/shopping-platform/services"
 	"github.com/alireza-akbarzadeh/shopping-platform/utils"
@@ -14,18 +15,20 @@ import (
 )
 
 type ProductController struct {
-	productService services.ProductServiceInterface
-	validate       *validator.Validate
+	productService  services.ProductServiceInterface
+	userLikeService services.UsertLikeServiceInterface
+	validate        *validator.Validate
 }
 
-func NewProductController(productServices services.ProductServiceInterface) *ProductController {
+func NewProductController(ps services.ProductServiceInterface, uls services.UsertLikeServiceInterface) *ProductController {
 	return &ProductController{
-		productService: productServices,
-		validate:       validator.New(),
+		productService:  ps,
+		userLikeService: uls,
+		validate:        validator.New(),
 	}
 }
 
-// Create creates a new product.
+// Create product (admin only)
 // @Summary      Create product
 // @Description  Add a new product to the catalog
 // @Tags         Products
@@ -33,7 +36,7 @@ func NewProductController(productServices services.ProductServiceInterface) *Pro
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body dto.CreateProductRequest true "Product details"
-// @Success      201 {object} dto.ProductSingleResponse
+// @Success      201 {object} utils.CreatedResponse{data=dto.ProductResponse}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      409 {object} utils.Response
@@ -49,24 +52,19 @@ func (ctrl *ProductController) Create(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to create product")
 		return
 	}
-	c.JSON(http.StatusCreated, dto.ProductSingleResponse{
-		Success: true,
-		Message: constants.MsgCreateSuccess,
-		Code:    http.StatusCreated,
-		Data:    dto.ProductSingleData{Product: dto.ToProductResponse(*product)},
-	})
+	utils.CreatedResponse(c, constants.MsgCreateSuccess, dto.ToProductResponse(*product))
 }
 
-// Update updates an existing product.
+// Update product (admin only)
 // @Summary      Update product
 // @Description  Update an existing product by its ID
 // @Tags         Products
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id   path int                      true "Product ID"
+// @Param        id   path int                       true "Product ID"
 // @Param        request body dto.UpdateProductRequest true "Product update data"
-// @Success      200 {object} dto.ProductSingleResponse
+// @Success      200 {object} utils.Response{data=dto.ProductResponse}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      404 {object} utils.Response
@@ -88,22 +86,18 @@ func (ctrl *ProductController) Update(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to update product")
 		return
 	}
-	c.JSON(http.StatusOK, dto.ProductSingleResponse{
-		Success: true, Message: constants.MsgUpdateSuccess,
-		Code: http.StatusOK,
-		Data: dto.ProductSingleData{Product: dto.ToProductResponse(*product)},
-	})
+	utils.SuccessResponse(c, constants.MsgUpdateSuccess, dto.ToProductResponse(*product))
 }
 
-// Delete removes a product by ID.
+// Delete product (admin only)
 // @Summary      Delete product
-// @Description  Delete an existing product permanently from the catalog
+// @Description  Soft delete a product by its ID
 // @Tags         Products
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id path int true "Product ID"
-// @Success      200 {object} dto.EmptyResponse
+// @Param        id   path int true "Product ID"
+// @Success      200 {object} utils.Response
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      404 {object} utils.Response
@@ -119,22 +113,18 @@ func (ctrl *ProductController) Delete(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to delete product")
 		return
 	}
-	c.JSON(http.StatusOK, dto.EmptyResponse{
-		BaseResponse: dto.BaseResponse{Success: true, Message: constants.MsgDeleteSuccess, Code: http.StatusOK},
-	})
+	utils.SuccessResponse(c, constants.MsgDeleteSuccess, nil)
 }
 
-// GetOne retrieves a product by ID or slug.
+// GetOne returns a single product by ID or slug, with `is_liked` flag.
 // @Summary      Get product by ID or slug
-// @Description  Fetch a single product using either its numeric ID or slug (URL-friendly name)
+// @Description  Fetch a single product using either its numeric ID or slug
 // @Tags         Products
 // @Accept       json
 // @Produce      json
-// @Security     BearerAuth
-// @Param        id path string true "Product identifier (ID or slug)"
-// @Success      200 {object} dto.ProductSingleResponse
+// @Param        id   path string true "Product identifier (ID or slug)"
+// @Success      200 {object} utils.Response{data=object{product=dto.ProductResponse,is_liked=bool}}
 // @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
 // @Failure      404 {object} utils.Response
 // @Failure      500 {object} utils.Response
 // @Router       /products/{id} [get]
@@ -142,8 +132,8 @@ func (ctrl *ProductController) GetOne(c *gin.Context) {
 	identifier := c.Param("id")
 	id, parseErr := strconv.ParseUint(identifier, 10, 64)
 
+	var product *models.Product
 	var err error
-	var product *models.Product // ← keep using models internally
 	if parseErr == nil {
 		product, err = ctrl.productService.GetByID(uint(id))
 	} else {
@@ -153,21 +143,27 @@ func (ctrl *ProductController) GetOne(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to fetch product")
 		return
 	}
-	c.JSON(http.StatusOK, dto.ProductSingleResponse{
-		Success: true,
-		Message: constants.MsgFetchSuccess,
-		Code:    http.StatusOK,
-		Data:    dto.ProductSingleData{Product: dto.ToProductResponse(*product)},
+
+	isLiked := false
+	if userID, ok := middleware.GetUserID(c); ok {
+		liked, err := ctrl.userLikeService.IsLikedByUser(userID, product.ID)
+		if err == nil {
+			isLiked = liked
+		}
+	}
+
+	utils.SuccessResponse(c, constants.MsgFetchSuccess, gin.H{
+		"product":  dto.ToProductResponse(*product),
+		"is_liked": isLiked,
 	})
 }
 
-// List retrieves a paginated list of products with optional filters.
+// List returns paginated products with filters, each with `is_liked`.
 // @Summary      List products
 // @Description  Get products with pagination and optional filters
 // @Tags         Products
 // @Accept       json
 // @Produce      json
-// @Security     BearerAuth
 // @Param        limit       query int    false "Items per page (default 20, max 100)" default(20)
 // @Param        offset      query int    false "Number of items to skip"              default(0)
 // @Param        status      query string false "Product status"                       Enums(active,draft,archived)
@@ -183,9 +179,8 @@ func (ctrl *ProductController) GetOne(c *gin.Context) {
 // @Param        is_digital  query bool   false "Digital products only"
 // @Param        is_new      query bool   false "New products only"
 // @Param        sort        query string false "Sort order" Enums(rating_desc,rating_asc,newest,reviews_desc,price_asc,price_desc)
-// @Success      200 {object} dto.ProductListResponse
+// @Success      200 {object} utils.Response{data=object{products=[]object{product=dto.ProductResponse,is_liked=bool},total=int,limit=int,offset=int}}
 // @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
 // @Failure      500 {object} utils.Response
 // @Router       /products [get]
 func (ctrl *ProductController) List(c *gin.Context) {
@@ -213,20 +208,34 @@ func (ctrl *ProductController) List(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ProductListResponse{
-		Success: true,
-		Message: constants.MsgFetchSuccess,
-		Code:    http.StatusOK,
-		Data: dto.ProductListData{
-			Products: products,
-			Total:    total,
-			Limit:    limit,
-			Offset:   offset,
-		},
+	// Build liked map for authenticated user
+	likedMap := make(map[uint]bool)
+	if userID, ok := middleware.GetUserID(c); ok {
+		likedIDs, err := ctrl.userLikeService.GetUserLikedProductIDs(userID)
+		if err == nil {
+			for _, id := range likedIDs {
+				likedMap[id] = true
+			}
+		}
+	}
+
+	items := make([]gin.H, len(products))
+	for i, p := range products {
+		items[i] = gin.H{
+			"product":  dto.ToProductResponse(*p),
+			"is_liked": likedMap[p.ID],
+		}
+	}
+
+	utils.SuccessResponse(c, constants.MsgFetchSuccess, gin.H{
+		"products": items,
+		"total":    total,
+		"limit":    limit,
+		"offset":   offset,
 	})
 }
 
-// BulkCreate creates multiple products at once.
+// BulkCreate creates multiple products (admin only)
 // @Summary      Bulk create products
 // @Description  Create multiple products in a single request (admin only)
 // @Tags         Products
@@ -234,7 +243,7 @@ func (ctrl *ProductController) List(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body []dto.CreateProductRequest true "Array of products"
-// @Success      201 {object} dto.ProductListResponse
+// @Success      201 {object} utils.Response{data=[]dto.ProductResponse}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      403 {object} utils.Response
@@ -253,20 +262,14 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to bulk create products")
 		return
 	}
-	c.JSON(http.StatusCreated, dto.ProductListResponse{
-		Success: true,
-		Message: constants.MsgCreateSuccess,
-		Code:    http.StatusCreated,
-		Data: dto.ProductListData{
-			Products: products,
-			Total:    int64(len(products)),
-			Limit:    len(products),
-			Offset:   0,
-		},
-	})
+	responses := make([]dto.ProductResponse, len(products))
+	for i, p := range products {
+		responses[i] = dto.ToProductResponse(*p)
+	}
+	utils.CreatedResponse(c, "products created successfully", responses)
 }
 
-// BulkDelete removes multiple products at once.
+// BulkDelete deletes multiple products (admin only)
 // @Summary      Bulk delete products
 // @Description  Soft delete multiple products by their IDs (admin only)
 // @Tags         Products
@@ -274,7 +277,7 @@ func (ctrl *ProductController) BulkCreate(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body dto.BulkDeleteProductsRequest true "Product IDs to delete"
-// @Success      200 {object} dto.EmptyResponse
+// @Success      200 {object} utils.Response
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
 // @Failure      403 {object} utils.Response
@@ -289,23 +292,19 @@ func (ctrl *ProductController) BulkDelete(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to delete products")
 		return
 	}
-	c.JSON(http.StatusOK, dto.EmptyResponse{
-		BaseResponse: dto.BaseResponse{Success: true, Message: "products deleted successfully", Code: http.StatusOK},
-	})
+	utils.SuccessResponse(c, "products deleted successfully", nil)
 }
 
-// GetRelated retrieves products related to a given product.
+// GetRelated returns related products (public)
 // @Summary      Get related products
 // @Description  Fetch products from the same category, ordered by rating and review count
 // @Tags         Products
 // @Accept       json
 // @Produce      json
-// @Security     BearerAuth
 // @Param        id    path  int true  "Product ID"
 // @Param        limit query int false "Number of related products (default 4, max 10)"
-// @Success      200 {object} dto.ProductListResponse
+// @Success      200 {object} utils.Response{data=[]dto.ProductResponse}
 // @Failure      400 {object} utils.Response
-// @Failure      401 {object} utils.Response
 // @Failure      404 {object} utils.Response
 // @Failure      500 {object} utils.Response
 // @Router       /products/{id}/related [get]
@@ -330,16 +329,9 @@ func (ctrl *ProductController) GetRelated(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to fetch related products")
 		return
 	}
-
-	c.JSON(http.StatusOK, dto.ProductListResponse{
-		Success: true,
-		Message: constants.MsgFetchSuccess,
-		Code:    http.StatusOK,
-		Data: dto.ProductListData{
-			Products: products,
-			Total:    int64(len(products)),
-			Limit:    limit,
-			Offset:   0,
-		},
-	})
+	responses := make([]dto.ProductResponse, len(products))
+	for i, p := range products {
+		responses[i] = dto.ToProductResponse(*p)
+	}
+	utils.SuccessResponse(c, constants.MsgFetchSuccess, responses)
 }

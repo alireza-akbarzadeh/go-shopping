@@ -41,6 +41,7 @@ func (s *reviewService) Create(userID uint, req dto.CreateReviewRequest) (*model
 		UserID:    userID,
 		Rating:    req.Rating,
 		Comment:   req.Comment,
+		Title:     req.Title,
 	}
 	if err := s.db.Create(review).Error; err != nil {
 		return nil, utils.ErrInternal(err)
@@ -68,6 +69,9 @@ func (s *reviewService) Update(userID, reviewID uint, req dto.UpdateReviewReques
 	}
 	if req.Comment != nil {
 		review.Comment = *req.Comment
+	}
+	if req.Title != nil {
+		review.Title = *req.Title
 	}
 
 	if err := s.db.Save(&review).Error; err != nil {
@@ -120,8 +124,11 @@ func (s *reviewService) GetProductReviews(productID uint, limit, offset int) ([]
 
 	query := s.db.Model(&models.Review{}).Where("product_id = ?", productID)
 	query.Count(&total)
-	if err := query.Limit(limit).Offset(offset).Preload("User").Order("created_at DESC").Find(&reviews).Error; err != nil {
-		return nil, 0, utils.ErrInternal(err)
+
+	// Preload the User relation – this populates the `User` field
+	err := query.Preload("User").Limit(limit).Offset(offset).Find(&reviews).Error
+	if err != nil {
+		return nil, 0, err
 	}
 	return reviews, total, nil
 }
