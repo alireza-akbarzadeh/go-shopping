@@ -11,10 +11,11 @@ import (
 func (r *Router) Setup() {
 	r.RegisterMiddlewares()
 
-	// Static files and landing page
 	r.engine.GET(constants.RouteRoot, r.controllers.Page.LandingPage)
 	r.engine.Static(constants.RouteStatic, "./views/static")
+
 	r.engine.GET(constants.RouteSwagger, ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	r.engine.GET("/openapi", func(c *gin.Context) {
 		spec, err := getOpenAPI3Spec()
 		if err != nil {
@@ -23,31 +24,30 @@ func (r *Router) Setup() {
 		}
 		c.Data(200, "application/json", spec)
 	})
-	// API v1 group
+
 	v1 := r.engine.Group(constants.APIVersionV1)
 	{
-		// Health check (public)
 		v1.GET(constants.RouteHealth, r.controllers.Health.Check)
 
-		// Public router group (no auth)
+		// ✅ PUBLIC (guest + optional auth)
 		public := v1.Group(constants.RouteRoot)
+		public.Use(middleware.GuestAuthMiddleware(r.cfg)) // 👈 IMPORTANT
 
-		// Protected router group (JWT required)
+		// 🔒 PROTECTED (must login)
 		protected := v1.Group(constants.RouteRoot)
 		protected.Use(middleware.AuthMiddleware(r.cfg))
 
-		// Each module file receives both groups and registers its endpoints
 		SetupAuthRoutes(public, protected, r.controllers)
 		SetupProductRoutes(public, protected, r.controllers)
 		SetupCategoryRoutes(public, protected, r.controllers)
+		SetupCouponRoutes(public, protected, r.controllers)
+		SetupReviewRoutes(public, protected, r.controllers)
+
 		SetupUserRoutes(protected, r.controllers)
 		SetupCartRoutes(protected, r.controllers)
 		SetupMenuRoutes(protected, r.controllers)
 		SetupOrderRoutes(protected, r.controllers)
 		SetupShipmentRoutes(protected, r.controllers)
-		SetupCouponRoutes(public, protected, r.controllers)
 		SetupAddressRoutes(protected, r.controllers)
-		SetupReviewRoutes(public, protected, r.controllers)
-
 	}
 }

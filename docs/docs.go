@@ -2894,7 +2894,7 @@ const docTemplate = `{
                                                             "is_liked": {
                                                                 "type": "boolean"
                                                             },
-                                                            "product": {
+                                                            "items": {
                                                                 "$ref": "#/definitions/dto.ProductResponse"
                                                             }
                                                         }

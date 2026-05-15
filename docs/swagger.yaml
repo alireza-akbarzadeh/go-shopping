@@ -3193,7 +3193,7 @@ paths:
                         properties:
                           is_liked:
                             type: boolean
-                          product:
+                          items:
                             $ref: '#/definitions/dto.ProductResponse'
                         type: object
                       type: array

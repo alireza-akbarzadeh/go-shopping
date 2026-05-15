@@ -11,6 +11,7 @@ func SetupProductRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Co
 	public.GET("/products", ctrl.Product.List)
 	public.GET("/products/:id/related", ctrl.Product.GetRelated)
 	public.GET("/products/:id", ctrl.Product.GetOne)
+
 	protected.POST("/products/:id/like", ctrl.UserLike.ToggleLike)
 	protected.GET("/products/:id/liked", ctrl.UserLike.IsLikedByUser)
 	// Admin routes (protected + admin role)

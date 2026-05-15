@@ -146,7 +146,10 @@ func (ctrl *ProductController) GetOne(c *gin.Context) {
 
 	isLiked := false
 	if userID, ok := middleware.GetUserID(c); ok {
+		utils.Log.Info(userID, "userid")
+		utils.Log.Infof("GetOne: userID=%d, productID=%d", userID, product.ID)
 		liked, err := ctrl.userLikeService.IsLikedByUser(userID, product.ID)
+		utils.Log.Infof("IsLikedByUser result: %v, err: %v", liked, err)
 		if err == nil {
 			isLiked = liked
 		}
@@ -179,7 +182,7 @@ func (ctrl *ProductController) GetOne(c *gin.Context) {
 // @Param        is_digital  query bool   false "Digital products only"
 // @Param        is_new      query bool   false "New products only"
 // @Param        sort        query string false "Sort order" Enums(rating_desc,rating_asc,newest,reviews_desc,price_asc,price_desc)
-// @Success      200 {object} utils.Response{data=object{products=[]object{product=dto.ProductResponse,is_liked=bool},total=int,limit=int,offset=int}}
+// @Success      200 {object} utils.Response{data=object{products=[]object{items=dto.ProductResponse,is_liked=bool},total=int,limit=int,offset=int}}
 // @Failure      400 {object} utils.Response
 // @Failure      500 {object} utils.Response
 // @Router       /products [get]
@@ -228,10 +231,10 @@ func (ctrl *ProductController) List(c *gin.Context) {
 	}
 
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, gin.H{
-		"products": items,
-		"total":    total,
-		"limit":    limit,
-		"offset":   offset,
+		"items":  items,
+		"total":  total,
+		"limit":  limit,
+		"offset": offset,
 	})
 }
 
