@@ -3134,6 +3134,72 @@ const docTemplate = `{
                 }
             }
         },
+        "/products/suggestions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns products from the same categories as the provided product IDs, excluding the products themselves. Useful for cart page \"you might also like\".",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get smart product suggestions",
+                "parameters": [
+                    {
+                        "description": "Product IDs and limit",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuggestionsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Suggestions fetched",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.ProductResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/products/{id}": {
             "get": {
                 "description": "Fetch a single product using either its numeric ID or slug",
@@ -4613,11 +4679,24 @@ const docTemplate = `{
         "dto.CartItemDetail": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "id": {
                     "type": "integer"
                 },
+                "image": {
+                    "description": "New fields",
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
+                },
+                "original_price": {
+                    "type": "number"
                 },
                 "price": {
                     "type": "number"
@@ -4627,6 +4706,12 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "integer"
+                },
+                "size": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "total": {
                     "type": "number"
@@ -5501,6 +5586,26 @@ const docTemplate = `{
                 },
                 "label": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.SuggestionsRequest": {
+            "type": "object",
+            "required": [
+                "product_ids"
+            ],
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "maximum": 20,
+                    "minimum": 1
+                },
+                "product_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
@@ -6423,11 +6528,17 @@ const docTemplate = `{
                 "quantity"
             ],
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "product_id": {
                     "type": "integer"
                 },
                 "quantity": {
                     "type": "integer"
+                },
+                "size": {
+                    "type": "string"
                 }
             }
         },

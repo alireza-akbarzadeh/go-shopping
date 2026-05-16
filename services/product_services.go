@@ -22,6 +22,7 @@ type ProductServiceInterface interface {
 	BulkDelete(productIDs []uint) error
 	CheckLowStockAndAlert() error
 	GetRelated(productID uint, limit int) ([]*models.Product, error)
+	GetSuggestions(productIDs []uint, limit int) ([]*models.Product, error)
 }
 
 type productService struct {
@@ -396,4 +397,28 @@ func (s *productService) GetRelated(productID uint, limit int) ([]*models.Produc
 	}
 
 	return related, nil
+}
+
+func (s *productService) GetSuggestions(productIDs []uint, limit int) ([]*models.Product, error) {
+	if limit == 0 {
+		limit = 4
+	}
+
+	// Get categories of cart items
+	var categoryIDs []uint
+	s.db.Model(&models.Product{}).
+		Where("id IN ?", productIDs).
+		Distinct("category_id").
+		Pluck("category_id", &categoryIDs)
+
+	// Fetch products from those categories, excluding cart items
+	var suggestions []*models.Product
+	err := s.db.
+		Preload("Category").
+		Where("category_id IN ? AND id NOT IN ?", categoryIDs, productIDs).
+		Order("rating DESC, reviews_count DESC, created_at DESC").
+		Limit(limit).
+		Find(&suggestions).Error
+
+	return suggestions, err
 }

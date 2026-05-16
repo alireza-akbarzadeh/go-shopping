@@ -1,5 +1,7 @@
 package dto
 
+import "gorm.io/datatypes"
+
 type AddItemResponse struct {
 	BaseResponse
 	Data CartItemData `json:"data"`
@@ -28,10 +30,18 @@ type CartData struct {
 }
 
 type CartItemDetail struct {
-	ID        uint    `json:"id"`
-	ProductID uint    `json:"product_id"`
-	Name      string  `json:"name"`
-	Quantity  int     `json:"quantity"`
-	Price     float64 `json:"price"`
-	Total     float64 `json:"total"`
+	ID            uint    `json:"id"`
+	ProductID     uint    `json:"product_id"`
+	Name          string  `json:"name"`
+	Quantity      int     `json:"quantity"`
+	Price         float64 `json:"price"`
+	Total         float64 `json:"total"`
+	SelectedColor string  `gorm:"size:50" json:"color"`
+	SelectedSize  string  `gorm:"size:50" json:"size"`
+
+	// New fields
+	Image         string         `json:"image,omitempty"`
+	OriginalPrice float64        `json:"original_price,omitempty"`
+	Color         datatypes.JSON `json:"color,omitempty"`
+	Size          datatypes.JSON `json:"size,omitempty"`
 }

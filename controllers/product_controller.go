@@ -334,3 +334,34 @@ func (ctrl *ProductController) GetRelated(c *gin.Context) {
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, responses)
 }
+
+// GetProductSuggestions returns product recommendations based on a list of product IDs.
+// @Summary      Get smart product suggestions
+// @Description  Returns products from the same categories as the provided product IDs, excluding the products themselves. Useful for cart page "you might also like".
+// @Tags         Products
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body dto.SuggestionsRequest true "Product IDs and limit"
+// @Success      200 {object} utils.Response{data=[]dto.ProductResponse} "Suggestions fetched"
+// @Failure      400 {object} utils.Response "Invalid request"
+// @Failure      500 {object} utils.Response "Internal error"
+// @Router       /products/suggestions [post]
+func (ctrl *ProductController) GetProductSuggestions(c *gin.Context) {
+	var req dto.SuggestionsRequest
+	if !utils.BindAndValidate(c, &req, ctrl.validate) {
+		return
+	}
+
+	suggestions, err := ctrl.productService.GetSuggestions(req.ProductIDs, req.Limit)
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to get suggestions")
+		return
+	}
+
+	responses := make([]dto.ProductResponse, len(suggestions))
+	for i, p := range suggestions {
+		responses[i] = dto.ToProductResponse(*p)
+	}
+	utils.SuccessResponse(c, "suggestions fetched", responses)
+}

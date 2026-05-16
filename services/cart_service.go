@@ -13,6 +13,9 @@ import (
 type AddItemRequest struct {
 	ProductID uint `json:"product_id" validate:"required,gt=0"`
 	Quantity  int  `json:"quantity" validate:"required,gt=0"`
+
+	Color string `json:"color"`
+	Size  string `json:"size"`
 }
 
 type UpdateCartItemRequest struct {

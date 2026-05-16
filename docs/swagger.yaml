@@ -79,16 +79,29 @@ definitions:
     type: object
   dto.CartItemDetail:
     properties:
+      color:
+        items:
+          type: integer
+        type: array
       id:
         type: integer
+      image:
+        description: New fields
+        type: string
       name:
         type: string
+      original_price:
+        type: number
       price:
         type: number
       product_id:
         type: integer
       quantity:
         type: integer
+      size:
+        items:
+          type: integer
+        type: array
       total:
         type: number
     type: object
@@ -676,6 +689,20 @@ definitions:
         type: string
       label:
         type: string
+    type: object
+  dto.SuggestionsRequest:
+    properties:
+      limit:
+        maximum: 20
+        minimum: 1
+        type: integer
+      product_ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - product_ids
     type: object
   dto.UpdateAddressRequest:
     properties:
@@ -1296,10 +1323,14 @@ definitions:
     type: object
   services.AddItemRequest:
     properties:
+      color:
+        type: string
       product_id:
         type: integer
       quantity:
         type: integer
+      size:
+        type: string
     required:
     - product_id
     - quantity
@@ -3610,6 +3641,47 @@ paths:
       security:
       - BearerAuth: []
       summary: Bulk create products
+      tags:
+      - Products
+  /products/suggestions:
+    post:
+      consumes:
+      - application/json
+      description: Returns products from the same categories as the provided product
+        IDs, excluding the products themselves. Useful for cart page "you might also
+        like".
+      parameters:
+      - description: Product IDs and limit
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SuggestionsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Suggestions fetched
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ProductResponse'
+                  type: array
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get smart product suggestions
       tags:
       - Products
   /profile:

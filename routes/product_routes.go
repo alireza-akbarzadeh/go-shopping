@@ -14,6 +14,8 @@ func SetupProductRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Co
 
 	protected.POST("/products/:id/like", ctrl.UserLike.ToggleLike)
 	protected.GET("/products/:id/liked", ctrl.UserLike.IsLikedByUser)
+	protected.POST("/products/suggestions", ctrl.Product.GetProductSuggestions)
+
 	// Admin routes (protected + admin role)
 	productActions := protected.Group("/products")
 	productActions.Use(middleware.RequireRole("admin"))

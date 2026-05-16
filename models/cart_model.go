@@ -30,8 +30,10 @@ type CartItem struct {
 	CartID    uint    `gorm:"not null;index" json:"cart_id"`
 	ProductID uint    `gorm:"not null;index" json:"product_id"`
 	Quantity  int     `gorm:"not null" json:"quantity" validate:"required,gt=0"`
-	Price     float64 `gorm:"type:decimal(10,2);not null" json:"price"` // snapshot
+	Price     float64 `gorm:"type:decimal(10,2);not null" json:"price"`
 
+	Color string `gorm:"column:color;size:50;default:''" json:"color"`
+	Size  string `gorm:"column:size;size:50;default:''" json:"size"`
 	// Associations
 	Cart    Cart    `gorm:"foreignKey:CartID" json:"-"`
 	Product Product `gorm:"foreignKey:ProductID" json:"product,omitempty"`

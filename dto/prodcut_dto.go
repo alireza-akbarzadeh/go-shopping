@@ -216,3 +216,8 @@ type ProductListItem struct {
 	Items   ProductResponse `json:"items"`
 	IsLiked bool            `json:"is_liked"`
 }
+
+type SuggestionsRequest struct {
+	ProductIDs []uint `json:"product_ids" validate:"required,min=1,dive,gt=0"`
+	Limit      int    `json:"limit" validate:"omitempty,min=1,max=20"`
+}

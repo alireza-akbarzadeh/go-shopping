@@ -94,13 +94,24 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 	for i, item := range cart.Items {
 		itemTotal := float64(item.Quantity) * item.Price
 		total += itemTotal
+		origPrice := 0.0
+		if item.Product.CompareAtPrice != nil {
+			origPrice = *item.Product.CompareAtPrice
+		}
+
 		items[i] = dto.CartItemDetail{
-			ID:        item.ID,
-			ProductID: item.ProductID,
-			Name:      item.Product.Name,
-			Quantity:  item.Quantity,
-			Price:     item.Price,
-			Total:     itemTotal,
+			ID:            item.ID,
+			ProductID:     item.ProductID,
+			Name:          item.Product.Name,
+			Quantity:      item.Quantity,
+			Price:         item.Price,
+			Total:         itemTotal,
+			Image:         item.Product.Images[0],
+			OriginalPrice: origPrice,
+			Color:         item.Product.Colors,
+			Size:          item.Product.Sizes,
+			SelectedColor: item.Color,
+			SelectedSize:  item.Size,
 		}
 	}
 	resp := dto.GetCartResponse{
