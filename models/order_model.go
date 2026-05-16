@@ -48,3 +48,5 @@ type OrderItem struct {
 	Order   Order   `gorm:"foreignKey:OrderID" json:"-"`
 	Product Product `gorm:"foreignKey:ProductID" json:"product,omitempty"`
 }
+
+

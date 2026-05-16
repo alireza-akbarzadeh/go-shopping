@@ -13,7 +13,7 @@ import (
 )
 
 type OrderServiceInterface interface {
-	Checkout(userID uint, couponCode string) (*models.Order, error)
+	Checkout(userID uint, req dto.CheckoutRequest) (*models.Order, error)
 	GetUserOrders(userID uint, filters dto.OrderListFilters) ([]models.Order, int64, error)
 	GetOrderByID(orderID uint, userID uint) (*models.Order, error)
 	GetAllOrders(filters AdminOrderFilters, limit, offset int) ([]models.Order, int64, error)
@@ -36,7 +36,7 @@ func NewOrderService(db *gorm.DB, notificationSvc NotificationServiceInterface, 
 }
 
 // Checkout converts the user's active cart into an order.
-func (s *orderService) Checkout(userID uint, couponCode string) (*models.Order, error) {
+func (s *orderService) Checkout(userID uint, req dto.CheckoutRequest) (*models.Order, error) {
 	// 1. Get active cart (same as before)
 	var cart models.Cart
 	err := s.db.Where("user_id = ? AND status = ?", userID, "active").
@@ -52,10 +52,18 @@ func (s *orderService) Checkout(userID uint, couponCode string) (*models.Order, 
 		return nil, utils.ErrBadRequest("cart is empty")
 	}
 
-	// 2. Start transaction
+	// 2. Create or find shipping address
+	address := dto.MappAddress(userID, req)
+	err = s.db.Where("user_id = ? AND address_line1 = ? AND postal_code = ?", userID, req.AddressLine1, req.Zip).
+		FirstOrCreate(&address, address).Error
+	if err != nil {
+		return nil, utils.ErrInternal(err)
+	}
+
+	// 3. Start transaction (rest of the existing logic)
 	var order *models.Order
 	err = s.db.Transaction(func(tx *gorm.DB) error {
-		// 2.1 Calculate subtotal and validate stock
+		// 3.1 Calculate subtotal and validate stock
 		var subtotal float64
 		for _, item := range cart.Items {
 			if item.Product.Stock < item.Quantity {
@@ -64,13 +72,13 @@ func (s *orderService) Checkout(userID uint, couponCode string) (*models.Order, 
 			subtotal += item.Price * float64(item.Quantity)
 		}
 
-		// 2.2 Apply coupon if provided
+		// 3.2 Apply coupon if provided
 		var discount float64
 		var couponID *uint
-		if couponCode != "" {
-			coupon, disc, err := s.couponService.ValidateCoupon(couponCode, userID, subtotal)
+		if req.CouponCode != "" {
+			coupon, disc, err := s.couponService.ValidateCoupon(req.CouponCode, userID, subtotal)
 			if err != nil {
-				return err // returns AppError already
+				return err
 			}
 			discount = disc
 			couponID = &coupon.ID
@@ -81,19 +89,22 @@ func (s *orderService) Checkout(userID uint, couponCode string) (*models.Order, 
 			totalAmount = 0
 		}
 
-		// 2.3 Create order
+		// 3.3 Create order with address IDs
 		order = &models.Order{
-			UserID:      userID,
-			OrderNumber: generateOrderNumber(userID),
-			Status:      constants.OrderStatusPending,
-			TotalAmount: totalAmount,
-			Currency:    "USD",
+			UserID:            userID,
+			OrderNumber:       generateOrderNumber(userID),
+			Status:            constants.OrderStatusPending,
+			TotalAmount:       totalAmount,
+			Currency:          "USD",
+			ShippingAddressID: &address.ID,
+			BillingAddressID:  &address.ID, // or separate billing if needed
+			// ShippingMethod, PaymentMethod could be stored in separate fields or JSON
 		}
 		if err := tx.Create(order).Error; err != nil {
 			return utils.ErrInternal(err)
 		}
 
-		// 2.4 Create order items and update stock
+		// 3.4 Create order items and update stock (unchanged)
 		for _, item := range cart.Items {
 			orderItem := &models.OrderItem{
 				OrderID:   order.ID,
@@ -110,14 +121,14 @@ func (s *orderService) Checkout(userID uint, couponCode string) (*models.Order, 
 			}
 		}
 
-		// 2.5 Mark cart as converted
+		// 3.5 Mark cart as converted
 		if err := tx.Model(&cart).Update("status", "converted").Error; err != nil {
 			return utils.ErrInternal(err)
 		}
 
-		// 2.6 Apply coupon usage (creates coupon_usage entry and updates used_count)
-		if couponCode != "" && couponID != nil {
-			if err := s.couponService.ApplyCoupon(userID, order.ID, couponCode, subtotal); err != nil {
+		// 3.6 Apply coupon usage
+		if req.CouponCode != "" && couponID != nil {
+			if err := s.couponService.ApplyCoupon(userID, order.ID, req.CouponCode, subtotal); err != nil {
 				return err
 			}
 		}

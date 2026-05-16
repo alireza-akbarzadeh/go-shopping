@@ -11,4 +11,5 @@ func SetupCartRoutes(protected *gin.RouterGroup, ctrl *controllers.Container) {
 	protected.POST("/cart/items", ctrl.Cart.AddItem)
 	protected.PUT("/cart/items/:id", ctrl.Cart.UpdateItem)
 	protected.DELETE("/cart/items/:id", ctrl.Cart.RemoveItem)
+	protected.DELETE("/cart/items", ctrl.Cart.ClearCart)
 }

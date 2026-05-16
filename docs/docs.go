@@ -1361,6 +1361,38 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete all items from the active cart",
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Clear cart",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.EmptyResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
             }
         },
         "/cart/items/{id}": {
@@ -2457,7 +2489,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Converts the authenticated user's cart into an order. Optionally applies a coupon code.",
+                "description": "Converts the authenticated user's cart into an order. Requires shipping and payment information.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2470,11 +2502,12 @@ const docTemplate = `{
                 "summary": "Checkout",
                 "parameters": [
                     {
-                        "description": "Checkout request (optional coupon_code)",
+                        "description": "Checkout details",
                         "name": "request",
                         "in": "body",
+                        "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/dto.CheckoutRequest"
                         }
                     }
                 ],
@@ -4685,6 +4718,9 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
+                "discount": {
+                    "type": "number"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -4823,6 +4859,72 @@ const docTemplate = `{
                 "new_password": {
                     "type": "string",
                     "minLength": 6
+                }
+            }
+        },
+        "dto.CheckoutRequest": {
+            "type": "object",
+            "required": [
+                "address_line1",
+                "city",
+                "country",
+                "email",
+                "first_name",
+                "last_name",
+                "phone",
+                "state",
+                "zip"
+            ],
+            "properties": {
+                "address_line1": {
+                    "type": "string"
+                },
+                "address_line2": {
+                    "type": "string"
+                },
+                "card_last4": {
+                    "description": "for display",
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "coupon_code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "newsletter": {
+                    "type": "boolean"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "save_info": {
+                    "type": "boolean"
+                },
+                "shipping_method": {
+                    "description": "store if needed",
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
                 }
             }
         },

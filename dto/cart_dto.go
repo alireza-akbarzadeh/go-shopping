@@ -44,4 +44,5 @@ type CartItemDetail struct {
 	OriginalPrice float64        `json:"original_price,omitempty"`
 	Color         datatypes.JSON `json:"color,omitempty"`
 	Size          datatypes.JSON `json:"size,omitempty"`
+	Discount      float64        `json:"discount"`
 }

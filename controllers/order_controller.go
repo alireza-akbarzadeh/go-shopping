@@ -25,14 +25,14 @@ func NewOrderController(orderService services.OrderServiceInterface) *OrderContr
 	}
 }
 
-// Checkout creates an order from the current cart, optionally applying a coupon.
+// Checkout creates an order from the current cart.
 // @Summary      Checkout
-// @Description  Converts the authenticated user's cart into an order. Optionally applies a coupon code.
+// @Description  Converts the authenticated user's cart into an order. Requires shipping and payment information.
 // @Tags         Orders
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body object false "Checkout request (optional coupon_code)" SchemaExample({"coupon_code":"SAVE10"})
+// @Param        request body dto.CheckoutRequest true "Checkout details"
 // @Success      201 {object} utils.Response{data=models.Order}
 // @Failure      400 {object} utils.Response
 // @Failure      401 {object} utils.Response
@@ -45,13 +45,19 @@ func (ctrl *OrderController) Checkout(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		CouponCode string `json:"coupon_code,omitempty"`
+	var req dto.CheckoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, 400, "invalid request body: "+err.Error())
+		return
 	}
-	// Bind JSON (optional, no error if body empty)
-	_ = c.ShouldBindJSON(&req)
 
-	order, err := ctrl.orderService.Checkout(userID, req.CouponCode)
+	// Basic validation (optional – already done by validator tags)
+	if err := ctrl.validate.Struct(req); err != nil {
+		utils.ErrorResponse(c, 400, err.Error())
+		return
+	}
+
+	order, err := ctrl.orderService.Checkout(userID, req)
 	if err != nil {
 		utils.HandleAppError(c, err, "failed to create order")
 		return

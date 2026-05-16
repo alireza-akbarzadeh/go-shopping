@@ -98,6 +98,10 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 		if item.Product.CompareAtPrice != nil {
 			origPrice = *item.Product.CompareAtPrice
 		}
+		discount := 0.0
+		if item.Product.CompareAtPrice != nil && *item.Product.CompareAtPrice > item.Price {
+			discount = (*item.Product.CompareAtPrice - item.Price) * float64(item.Quantity)
+		}
 
 		items[i] = dto.CartItemDetail{
 			ID:            item.ID,
@@ -112,6 +116,7 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 			Size:          item.Product.Sizes,
 			SelectedColor: item.Color,
 			SelectedSize:  item.Size,
+			Discount:      discount,
 		}
 	}
 	resp := dto.GetCartResponse{
@@ -212,4 +217,26 @@ func (ctrl *CartController) RemoveItem(c *gin.Context) {
 		},
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+// ClearCart removes all items from the authenticated user's cart.
+// @Summary      Clear cart
+// @Description  Delete all items from the active cart
+// @Tags         Cart
+// @Security     BearerAuth
+// @Success      200 {object} dto.EmptyResponse
+// @Failure      401 {object} utils.Response
+// @Failure      500 {object} utils.Response
+// @Router       /cart/items [delete]
+func (ctrl *CartController) ClearCart(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
+		return
+	}
+	if err := ctrl.cartService.ClearCart(userID); err != nil {
+		utils.HandleAppError(c, err, "failed to clear cart")
+		return
+	}
+	utils.SuccessResponse(c, "cart cleared successfully", nil)
 }
