@@ -1405,7 +1405,7 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    email: support@shopping-platform.com
+    email: support@luxe.com
     name: API Support
   description: Production-grade e-commerce backend
   license:

@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 )
 
 // Job represents a unit of work.

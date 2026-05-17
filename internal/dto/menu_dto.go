@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/models"
+	"github.com/alireza-akbarzadeh/luxe/internal/models"
 )
 
 // ------------------- Request DTOs -------------------

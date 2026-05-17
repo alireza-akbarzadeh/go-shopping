@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
+	"github.com/alireza-akbarzadeh/luxe/internal/config"
 	"github.com/golang-jwt/jwt/v5"
 )
 

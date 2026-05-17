@@ -1,8 +1,8 @@
 package jobs
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/constants"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/constants"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 )
 
 func (c *CronJobs) registerOrderJobs() {

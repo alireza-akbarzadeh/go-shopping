@@ -4,9 +4,9 @@ package jobs
 import (
 	"time"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/services"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/tasks"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/services"
+	"github.com/alireza-akbarzadeh/luxe/internal/tasks"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 	"github.com/robfig/cron/v3"
 )
 

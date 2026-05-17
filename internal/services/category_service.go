@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/dto"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/models"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/dto"
+	"github.com/alireza-akbarzadeh/luxe/internal/models"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 	"gorm.io/gorm"
 )
 

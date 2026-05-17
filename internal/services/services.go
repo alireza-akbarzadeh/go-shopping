@@ -2,9 +2,9 @@
 package services
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/tasks"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/websocket"
+	"github.com/alireza-akbarzadeh/luxe/internal/config"
+	"github.com/alireza-akbarzadeh/luxe/internal/tasks"
+	"github.com/alireza-akbarzadeh/luxe/internal/websocket"
 	"gorm.io/gorm"
 )
 

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/constants"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/dto"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/services"
+	"github.com/alireza-akbarzadeh/luxe/internal/constants"
+	"github.com/alireza-akbarzadeh/luxe/internal/dto"
+	"github.com/alireza-akbarzadeh/luxe/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

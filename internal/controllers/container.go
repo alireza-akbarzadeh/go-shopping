@@ -2,8 +2,8 @@
 package controllers
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/services"
+	"github.com/alireza-akbarzadeh/luxe/internal/config"
+	"github.com/alireza-akbarzadeh/luxe/internal/services"
 	"gorm.io/gorm"
 )
 

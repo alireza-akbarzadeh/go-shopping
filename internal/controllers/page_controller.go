@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/views"
+	"github.com/alireza-akbarzadeh/luxe/views"
 	"github.com/gin-gonic/gin"
 )
 

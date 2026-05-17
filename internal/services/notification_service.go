@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/models"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/websocket"
+	"github.com/alireza-akbarzadeh/luxe/internal/models"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/websocket"
 	"gorm.io/gorm"
 )
 

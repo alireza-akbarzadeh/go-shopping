@@ -3,11 +3,11 @@ package controllers
 import (
 	"strconv"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/constants"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/dto"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/middleware"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/services"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/constants"
+	"github.com/alireza-akbarzadeh/luxe/internal/dto"
+	"github.com/alireza-akbarzadeh/luxe/internal/middleware"
+	"github.com/alireza-akbarzadeh/luxe/internal/services"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )

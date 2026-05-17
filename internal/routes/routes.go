@@ -2,9 +2,9 @@
 package routes
 
 import (
-	_ "github.com/alireza-akbarzadeh/shopping-platform/docs"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/controllers"
+	_ "github.com/alireza-akbarzadeh/luxe/docs"
+	"github.com/alireza-akbarzadeh/luxe/internal/config"
+	"github.com/alireza-akbarzadeh/luxe/internal/controllers"
 	"github.com/gin-gonic/gin"
 )
 

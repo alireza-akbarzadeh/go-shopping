@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/constants"
+	"github.com/alireza-akbarzadeh/luxe/internal/constants"
 )
 
 // AppError represents a custom application error with HTTP status and a message.

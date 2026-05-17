@@ -47,8 +47,8 @@ Production‑grade e‑commerce backend API built with Go, Gin, GORM, PostgreSQL
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/shopping-platform.git
-cd shopping-platform
+git clone https://github.com/yourusername/luxe.git
+cd luxe
 ```
 
 ### 2. Environment setup

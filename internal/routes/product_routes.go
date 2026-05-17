@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/controllers"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/middleware"
+	"github.com/alireza-akbarzadeh/luxe/internal/controllers"
+	"github.com/alireza-akbarzadeh/luxe/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 

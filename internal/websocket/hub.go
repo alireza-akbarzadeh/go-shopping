@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 	"github.com/gorilla/websocket"
 )
 

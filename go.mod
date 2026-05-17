@@ -1,4 +1,4 @@
-module github.com/alireza-akbarzadeh/shopping-platform
+module github.com/alireza-akbarzadeh/luxe
 
 go 1.25.5
 

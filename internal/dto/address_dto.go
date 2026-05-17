@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/alireza-akbarzadeh/shopping-platform/internal/models"
+import "github.com/alireza-akbarzadeh/luxe/internal/models"
 
 type CreateAddressRequest struct {
 	AddressType   string `json:"address_type" validate:"required,oneof=shipping billing both"`

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/smtp"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
+	"github.com/alireza-akbarzadeh/luxe/internal/config"
 )
 
 // SendPasswordResetEmail sends a reset link to the user.

@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/config"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

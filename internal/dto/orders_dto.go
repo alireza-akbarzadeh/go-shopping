@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/models"
+	"github.com/alireza-akbarzadeh/luxe/internal/models"
 )
 
 type CheckoutRequest struct {

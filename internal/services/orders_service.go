@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/constants"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/dto"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/models"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/constants"
+	"github.com/alireza-akbarzadeh/luxe/internal/dto"
+	"github.com/alireza-akbarzadeh/luxe/internal/models"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 	"gorm.io/gorm"
 )
 

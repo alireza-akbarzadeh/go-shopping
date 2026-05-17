@@ -4,13 +4,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/controllers"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/jobs"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/routes"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/services"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/tasks"
-	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
+	"github.com/alireza-akbarzadeh/luxe/internal/config"
+	"github.com/alireza-akbarzadeh/luxe/internal/controllers"
+	"github.com/alireza-akbarzadeh/luxe/internal/jobs"
+	"github.com/alireza-akbarzadeh/luxe/internal/routes"
+	"github.com/alireza-akbarzadeh/luxe/internal/services"
+	"github.com/alireza-akbarzadeh/luxe/internal/tasks"
+	"github.com/alireza-akbarzadeh/luxe/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,7 +20,7 @@ import (
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
-// @contact.email  support@shopping-platform.com
+// @contact.email  support@luxe.com
 
 // @license.name   MIT
 // @license.url    https://opensource.org/licenses/MIT
