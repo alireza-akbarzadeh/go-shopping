@@ -140,5 +140,5 @@ reset-db: migrate-reset migrate-up ## Full reset: rollback all migrations and re
 
 swagger: ## Generate Swagger documentation
 	@echo "${GREEN}Generating Swagger docs...${RESET}"
-	swag init --parseDependency --parseInternal -g cmd/api/main.go
+	swag init --parseDependency --parseInternal --parseDepth 3 --overridesFile .swaggo -g cmd/api/main.go
 	@echo "${GREEN}Swagger docs generated${RESET}"

@@ -4877,7 +4877,6 @@
                     "type": "string"
                 },
                 "card_last4": {
-                    "description": "for display",
                     "type": "string"
                 },
                 "city": {
@@ -4911,7 +4910,6 @@
                     "type": "boolean"
                 },
                 "shipping_method": {
-                    "description": "store if needed",
                     "type": "string"
                 },
                 "state": {

@@ -4883,7 +4883,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "card_last4": {
-                    "description": "for display",
                     "type": "string"
                 },
                 "city": {
@@ -4917,7 +4916,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "shipping_method": {
-                    "description": "store if needed",
                     "type": "string"
                 },
                 "state": {

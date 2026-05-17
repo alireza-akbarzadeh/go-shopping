@@ -185,7 +185,6 @@ definitions:
       address_line2:
         type: string
       card_last4:
-        description: for display
         type: string
       city:
         type: string
@@ -208,7 +207,6 @@ definitions:
       save_info:
         type: boolean
       shipping_method:
-        description: store if needed
         type: string
       state:
         type: string
