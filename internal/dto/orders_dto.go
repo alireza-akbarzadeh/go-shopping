@@ -1,0 +1,42 @@
+package dto
+
+import (
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/models"
+)
+
+type CheckoutRequest struct {
+	CouponCode     string `json:"coupon_code,omitempty"`
+	Email          string `json:"email" validate:"required,email"`
+	FirstName      string `json:"first_name" validate:"required"`
+	LastName       string `json:"last_name" validate:"required"`
+	AddressLine1   string `json:"address_line1" validate:"required"`
+	AddressLine2   string `json:"address_line2"`
+	City           string `json:"city" validate:"required"`
+	State          string `json:"state" validate:"required"`
+	Zip            string `json:"zip" validate:"required"`
+	Country        string `json:"country" validate:"required"`
+	Phone          string `json:"phone" validate:"required"`
+	ShippingMethod string `json:"shipping_method"`
+	PaymentMethod  string `json:"payment_method"`
+	SaveInfo       bool   `json:"save_info"`
+	Newsletter     bool   `json:"newsletter"`
+	CardLast4      string `json:"card_last4,omitempty"`
+}
+
+func MappAddress(userID uint, req CheckoutRequest) models.Address {
+	recipientName := req.FirstName + " " + req.LastName
+	return models.Address{
+		UserID:        userID,
+		AddressType:   "shipping",
+		IsDefault:     req.SaveInfo,
+		RecipientName: recipientName,
+		Phone:         req.Phone,
+		AddressLine1:  req.AddressLine1,
+		AddressLine2:  req.AddressLine2,
+		City:          req.City,
+		State:         req.State,
+		PostalCode:    req.Zip,
+		Country:       req.Country,
+		Instructions:  "",
+	}
+}

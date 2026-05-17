@@ -4,13 +4,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/controllers"
-	"github.com/alireza-akbarzadeh/shopping-platform/jobs"
-	"github.com/alireza-akbarzadeh/shopping-platform/routes"
-	"github.com/alireza-akbarzadeh/shopping-platform/services"
-	"github.com/alireza-akbarzadeh/shopping-platform/tasks"
-	"github.com/alireza-akbarzadeh/shopping-platform/utils"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/controllers"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/jobs"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/routes"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/services"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/tasks"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 

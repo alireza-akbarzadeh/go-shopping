@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/alireza-akbarzadeh/shopping-platform/config"
-	"github.com/alireza-akbarzadeh/shopping-platform/utils"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/config"
+	"github.com/alireza-akbarzadeh/shopping-platform/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
