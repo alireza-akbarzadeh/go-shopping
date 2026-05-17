@@ -2,11 +2,13 @@ package utils
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"time"
 
+	"github.com/alireza-akbarzadeh/shopping-platform/config"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -21,8 +23,10 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-// GenerateToken creates a new JWT token for a user.
-func GenerateToken(userID uint, email, role, firstName, lastName, phone, secret string, expiration time.Duration) (string, error) {
+func GenerateToken(userID uint, email, role, firstName, lastName, phone string) (string, error) {
+	expiration := config.AppConfig.JWT.AccessTokenExpiry
+	secret := config.AppConfig.JWT.Secret
+
 	claims := JWTClaims{
 		UserID:    userID,
 		Email:     email,
@@ -30,7 +34,6 @@ func GenerateToken(userID uint, email, role, firstName, lastName, phone, secret 
 		FirstName: firstName,
 		LastName:  lastName,
 		Phone:     phone,
-
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -39,11 +42,7 @@ func GenerateToken(userID uint, email, role, firstName, lastName, phone, secret 
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(secret))
-	if err != nil {
-		return "", fmt.Errorf("failed to sign token: %w", err)
-	}
-	return tokenString, nil
+	return token.SignedString([]byte(secret))
 }
 
 // ValidateToken parses and validates a JWT token.
@@ -82,4 +81,9 @@ func GenerateRandomToken() (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(bytes), nil
+}
+
+func HashRefreshToken(raw string) string {
+	hash := sha256.Sum256([]byte(raw))
+	return hex.EncodeToString(hash[:])
 }

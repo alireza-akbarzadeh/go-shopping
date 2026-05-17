@@ -1,8 +1,11 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/alireza-akbarzadeh/shopping-platform/config"
 	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/dto"
 	"github.com/alireza-akbarzadeh/shopping-platform/middleware"
@@ -126,16 +129,38 @@ type RefreshRequest struct {
 // @Failure      401 {object} dto.MessageResponse
 // @Router       /auth/refresh [post]
 func (ctrl *AuthController) Refresh(c *gin.Context) {
-	var req RefreshRequest
-	if !utils.BindAndValidate(c, &req, ctrl.validate) {
+	// 1. Read refresh token from cookie
+	refreshToken, err := c.Cookie("refresh_token")
+	if err != nil {
+		utils.HandleAppError(c, utils.ErrUnauthorized("missing or invalid refresh token"), "refresh token cookie not found")
 		return
 	}
 
-	newAccessToken, newRefreshToken, err := ctrl.authService.RefreshTokens(req.RefreshToken)
+	// 2. Validate that the cookie is not empty
+	if refreshToken == "" {
+		utils.HandleAppError(c, utils.ErrUnauthorized("empty refresh token"), "refresh token cookie is empty")
+		return
+	}
+
+	newAccessToken, newRefreshToken, err := ctrl.authService.RefreshTokens(refreshToken)
 	if err != nil {
 		utils.HandleAppError(c, err, "failed to refresh tokens")
 		return
 	}
+	refreshExpiry := config.AppConfig.JWT.RefreshTokenExpiry
+	isProduction := strings.EqualFold(config.AppConfig.Server.Mode, "release")
+
+	c.SetCookie(
+		"refresh_token",
+		newRefreshToken,
+		int(refreshExpiry.Seconds()), // maxAge in seconds
+		"/",                          // path
+		"",                           // domain (current domain)
+		isProduction,                 // secure (HTTPS only in production)
+		true,                         // httpOnly
+	)
+
+	c.Header("Set-Cookie", fmt.Sprintf("%s; SameSite=Lax", c.Writer.Header().Get("Set-Cookie")))
 
 	resp := dto.RefreshResponse{
 		Success: true,

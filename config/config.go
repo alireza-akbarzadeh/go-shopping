@@ -4,6 +4,7 @@ package config
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -28,11 +29,13 @@ type ServerConfig struct {
 	Mode string
 }
 type DatabaseConfig struct {
-	Host     string // Can be a full connection string
+	Host string // Can be a full connection string
 }
 
 type JWTConfig struct {
-	Secret string
+	Secret             string
+	AccessTokenExpiry  time.Duration
+	RefreshTokenExpiry time.Duration
 }
 type LogConfig struct {
 	Level string
@@ -70,14 +73,17 @@ func Load() (*Config, error) {
 	viper.SetDefault("EMAIL_FROM", "noreply@yourapp.com")
 	viper.SetDefault("FRONTEND_URL", "http://localhost:3000")
 
+	viper.SetDefault("JWT_ACCESS_TOKEN_EXPIRY", "15m")
+	viper.SetDefault("JWT_REFRESH_TOKEN_EXPIRY", "168h")
+
 	cfg := &Config{
 		Server: ServerConfig{
 			Port: viper.GetString("SERVER_PORT"),
 			Mode: viper.GetString("GIN_MODE"),
 		},
-		   Database: DatabaseConfig{
-			   Host:     viper.GetString("DB_HOST"),
-		   },
+		Database: DatabaseConfig{
+			Host: viper.GetString("DB_HOST"),
+		},
 		JWT: JWTConfig{
 			Secret: viper.GetString("JWT_SECRET"),
 		},
@@ -96,10 +102,10 @@ func Load() (*Config, error) {
 
 // DSN returns the PostgreSQL connection string
 func (c *Config) DSN() string {
-	       // If Host looks like a URL, return as is (for Neon or cloud DBs)
-	       if strings.HasPrefix(c.Database.Host, "postgresql://") || strings.HasPrefix(c.Database.Host, "postgres://") {
-		       return c.Database.Host
-	       }
-	       // Fallback to legacy style
-	       return fmt.Sprintf("host=%s", c.Database.Host)
+	// If Host looks like a URL, return as is (for Neon or cloud DBs)
+	if strings.HasPrefix(c.Database.Host, "postgresql://") || strings.HasPrefix(c.Database.Host, "postgres://") {
+		return c.Database.Host
+	}
+	// Fallback to legacy style
+	return fmt.Sprintf("host=%s", c.Database.Host)
 }

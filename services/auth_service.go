@@ -106,25 +106,38 @@ func (s *AuthService) Login(req dto.LoginRequest) (string, string, *models.User,
 
 // GenerateTokenPair creates both access and refresh tokens.
 func (s *AuthService) GenerateTokenPair(user *models.User) (accessToken, refreshToken string, err error) {
-	accessToken, err = utils.GenerateToken(user.ID, user.Email, user.Role, user.FirstName, user.LastName, user.Phone, s.cfg.JWT.Secret, 15*time.Minute)
+	// Access token with configured expiry
+	accessToken, err = utils.GenerateToken(
+		user.ID,
+		user.Email,
+		user.Role,
+		user.FirstName,
+		user.LastName,
+		user.Phone,
+	)
 	if err != nil {
 		return "", "", utils.ErrInternal(err)
 	}
 
+	// Raw refresh token (random string)
 	rawRefresh, err := utils.GenerateRefreshToken()
 	if err != nil {
 		return "", "", utils.ErrInternal(err)
 	}
 
+	// Hash the refresh token before storing in DB
 	hashedRefresh, err := utils.HashPassword(rawRefresh)
 	if err != nil {
 		return "", "", utils.ErrInternal(err)
 	}
 
+	// Use configured refresh token expiry (e.g., 168h = 7 days)
+	refreshExpiry := config.AppConfig.JWT.RefreshTokenExpiry
+
 	refreshTokenObj := &models.RefreshToken{
 		Token:     hashedRefresh,
 		UserID:    user.ID,
-		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		ExpiresAt: time.Now().Add(refreshExpiry),
 		Revoked:   false,
 	}
 	if err := s.db.Create(refreshTokenObj).Error; err != nil {
@@ -135,45 +148,57 @@ func (s *AuthService) GenerateTokenPair(user *models.User) (accessToken, refresh
 }
 
 // RefreshTokens validates a refresh token, revokes it, and returns a new token pair.
-func (s *AuthService) RefreshTokens(refreshToken string) (newAccessToken, newRefreshToken string, err error) {
-	// 1. Find the non‑revoked, non‑expired refresh token
+func (s *AuthService) RefreshTokens(rawRefreshToken string) (newAccessToken, newRawRefreshToken string, err error) {
+	hashed := utils.HashRefreshToken(rawRefreshToken)
+
+	// 2. Find the token in DB
 	var storedToken models.RefreshToken
-	now := time.Now()
-	err = s.db.Where("revoked = ? AND expires_at > ?", false, now).
-		Joins("JOIN users ON users.id = refresh_tokens.user_id").
-		Where("users.is_active = ?", true).
+	err = s.db.Where("token = ? AND revoked = ? AND expires_at > ?", hashed, false, time.Now()).
 		First(&storedToken).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return "", "", utils.ErrUnauthorized(constants.ErrInvalidToken)
+			return "", "", utils.ErrUnauthorized("invalid or expired refresh token")
 		}
 		return "", "", utils.ErrInternal(err)
 	}
 
-	// 2. Verify the provided refresh token matches the stored hash
-	if !utils.CheckPasswordHash(refreshToken, storedToken.Token) {
-		return "", "", utils.ErrUnauthorized(constants.ErrInvalidToken)
-	}
-
-	// 3. Revoke the old token (rotation)
+	// 3. Revoke the old token (one-time use)
 	storedToken.Revoked = true
 	if err := s.db.Save(&storedToken).Error; err != nil {
 		return "", "", utils.ErrInternal(err)
 	}
 
-	// 4. Get the user
+	// 4. Get the associated user
 	var user models.User
 	if err := s.db.First(&user, storedToken.UserID).Error; err != nil {
-		return "", "", utils.ErrUnauthorized(constants.ErrUserNotFound)
+		return "", "", utils.ErrInternal(err)
 	}
 
-	// 5. Generate a fresh token pair (access + new refresh)
-	newAccess, newRefresh, err := s.GenerateTokenPair(&user)
+	// 5. Generate new token pair using your config expiries
+	newAccessToken, err = utils.GenerateToken(
+		user.ID, user.Email, user.Role, user.FirstName, user.LastName, user.Phone,
+	)
 	if err != nil {
 		return "", "", err
 	}
 
-	return newAccess, newRefresh, nil
+	newRawRefreshToken, err = utils.GenerateRefreshToken()
+	if err != nil {
+		return "", "", err
+	}
+
+	hashedNew, _ := utils.HashPassword(newRawRefreshToken)
+	newTokenRecord := &models.RefreshToken{
+		Token:     hashedNew,
+		UserID:    user.ID,
+		ExpiresAt: time.Now().Add(config.AppConfig.JWT.RefreshTokenExpiry),
+		Revoked:   false,
+	}
+	if err := s.db.Create(newTokenRecord).Error; err != nil {
+		return "", "", utils.ErrInternal(err)
+	}
+
+	return newAccessToken, newRawRefreshToken, nil
 }
 
 // Logout revokes all refresh tokens for a user (or a specific one).
