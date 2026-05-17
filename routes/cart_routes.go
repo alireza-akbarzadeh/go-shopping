@@ -6,8 +6,8 @@ import (
 )
 
 // SetupCartRoutes registers all cart endpoints (require JWT authentication).
-func SetupCartRoutes(protected *gin.RouterGroup, ctrl *controllers.Container) {
-	protected.GET("/cart", ctrl.Cart.GetCart)
+func SetupCartRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Container) {
+	public.GET("/cart", ctrl.Cart.GetCart)
 	protected.POST("/cart/items", ctrl.Cart.AddItem)
 	protected.PUT("/cart/items/:id", ctrl.Cart.UpdateItem)
 	protected.DELETE("/cart/items/:id", ctrl.Cart.RemoveItem)

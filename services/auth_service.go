@@ -125,11 +125,7 @@ func (s *AuthService) GenerateTokenPair(user *models.User) (accessToken, refresh
 		return "", "", utils.ErrInternal(err)
 	}
 
-	// Hash the refresh token before storing in DB
-	hashedRefresh, err := utils.HashPassword(rawRefresh)
-	if err != nil {
-		return "", "", utils.ErrInternal(err)
-	}
+	hashedRefresh := utils.HashRefreshToken(rawRefresh)
 
 	// Use configured refresh token expiry (e.g., 168h = 7 days)
 	refreshExpiry := config.AppConfig.JWT.RefreshTokenExpiry

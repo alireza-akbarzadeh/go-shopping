@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"github.com/alireza-akbarzadeh/shopping-platform/constants"
 	"github.com/alireza-akbarzadeh/shopping-platform/controllers"
 	"github.com/gin-gonic/gin"
 )
@@ -9,18 +8,18 @@ import (
 // SetupAuthRoutes registers all authentication routes (public + protected)
 func SetupAuthRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Container) {
 	// 1. Public auth endpoints (no auth required)
-	authGroup := public.Group(constants.RouteAuth)
+	authGroup := public.Group("/auth")
 	{
-		authGroup.POST(constants.RouteAuthRegister, ctrl.Auth.Register)
-		authGroup.POST(constants.RouteAuthLogin, ctrl.Auth.Login)
+		authGroup.POST("/register", ctrl.Auth.Register)
+		authGroup.POST("/login", ctrl.Auth.Login)
 	}
-	authGroup.POST(constants.RouteAuth+constants.RouteAuthRefresh, ctrl.Auth.Refresh)
 	authGroup.POST("/forgot-password", ctrl.Auth.ForgotPassword)
 	authGroup.POST("/reset-password", ctrl.Auth.ResetPassword)
+	authGroup.POST("/refresh", ctrl.Auth.Refresh)
 
 	authGroup.GET("/verify-email", ctrl.Auth.VerifyEmail)
 	// 2. Protected auth endpoints (require a valid JWT token)
-	protected.POST(constants.RouteAuth+"/send-verification", ctrl.Auth.SendVerificationEmail)
-	protected.POST(constants.RouteAuth+constants.RouteAuthLogout, ctrl.Auth.Logout)
-	protected.POST(constants.RouteAuth+"/change-password", ctrl.Auth.ChangePassword)
+	protected.POST("/send-verification", ctrl.Auth.SendVerificationEmail)
+	protected.POST("/logout", ctrl.Auth.Logout)
+	protected.POST("/change-password", ctrl.Auth.ChangePassword)
 }

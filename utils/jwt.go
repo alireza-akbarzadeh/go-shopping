@@ -87,3 +87,5 @@ func HashRefreshToken(raw string) string {
 	hash := sha256.Sum256([]byte(raw))
 	return hex.EncodeToString(hash[:])
 }
+
+

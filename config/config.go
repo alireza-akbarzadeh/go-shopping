@@ -51,6 +51,7 @@ func Load() (*Config, error) {
 
 	_ = viper.ReadInConfig()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
 	// Server defaults
 	viper.SetDefault("SERVER_PORT", "8080")
 	viper.SetDefault("GIN_MODE", "debug")
@@ -62,8 +63,12 @@ func Load() (*Config, error) {
 	viper.SetDefault("DB_PASSWORD", "postgres")
 	viper.SetDefault("DB_NAME", "shopping_platform")
 	viper.SetDefault("DB_SSLMODE", "disable")
-	// JWT defaults (only for development – must be overridden in production)
+
+	// JWT defaults
 	viper.SetDefault("JWT_SECRET", "dev_secret_do_not_use_in_production")
+	viper.SetDefault("JWT_ACCESS_TOKEN_EXPIRY", "15m")
+	viper.SetDefault("JWT_REFRESH_TOKEN_EXPIRY", "168h")
+
 	viper.SetDefault("LOG_LEVEL", "info")
 
 	viper.SetDefault("EMAIL_HOST", "smtp.gmail.com")
@@ -73,8 +78,15 @@ func Load() (*Config, error) {
 	viper.SetDefault("EMAIL_FROM", "noreply@yourapp.com")
 	viper.SetDefault("FRONTEND_URL", "http://localhost:3000")
 
-	viper.SetDefault("JWT_ACCESS_TOKEN_EXPIRY", "15m")
-	viper.SetDefault("JWT_REFRESH_TOKEN_EXPIRY", "168h")
+	// Parse token expiries
+	accessExpiry, err := time.ParseDuration(viper.GetString("JWT_ACCESS_TOKEN_EXPIRY"))
+	if err != nil {
+		accessExpiry = 15 * time.Minute
+	}
+	refreshExpiry, err := time.ParseDuration(viper.GetString("JWT_REFRESH_TOKEN_EXPIRY"))
+	if err != nil {
+		refreshExpiry = 168 * time.Hour
+	}
 
 	cfg := &Config{
 		Server: ServerConfig{
@@ -85,12 +97,24 @@ func Load() (*Config, error) {
 			Host: viper.GetString("DB_HOST"),
 		},
 		JWT: JWTConfig{
-			Secret: viper.GetString("JWT_SECRET"),
+			Secret:             viper.GetString("JWT_SECRET"),
+			AccessTokenExpiry:  accessExpiry,
+			RefreshTokenExpiry: refreshExpiry,
 		},
 		Log: LogConfig{
 			Level: viper.GetString("LOG_LEVEL"),
 		},
+		Email: Email{
+			Host:        viper.GetString("EMAIL_HOST"),
+			Port:        viper.GetInt("EMAIL_PORT"),
+			Username:    viper.GetString("EMAIL_USERNAME"),
+			Password:    viper.GetString("EMAIL_PASSWORD"),
+			From:        viper.GetString("EMAIL_FROM"),
+			FrontendURL: viper.GetString("FRONTEND_URL"),
+		},
 	}
+
+	// Set global config (used by utils.GenerateToken etc.)
 	AppConfig = cfg
 
 	// Validate required fields

@@ -75,7 +75,6 @@ func GuestAuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		}
 		claims, err := utils.ValidateToken(tokenString, cfg.JWT.Secret)
 		if err != nil {
-			utils.Log.WithError(err).Error("GuestAuth: token validation failed")
 			c.Next()
 			return
 		}
