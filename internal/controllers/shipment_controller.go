@@ -202,13 +202,13 @@ func (ctrl *ShipmentController) UpdateShipmentStatus(c *gin.Context) {
 }
 
 // GetShippingProvider godoc
-// @Summary      Get active shipping methods
-// @Description  Returns all active shipping methods (public)
+// @Summary      Get active shipping providers
+// @Description  Returns all active shipping providers (public)
 // @Tags         Shipping
 // @Accept       json
 // @Produce      json
 // @Success      200 {object} utils.Response{data=[]models.ShippingMethod}
-// @Router       /shipping-methods [get]
+// @Router       /shipping-providers [get]
 func (ctrl *ShipmentController) GetShippingProvider(c *gin.Context) {
 	methods, err := ctrl.shipmentService.GetShippingProvider()
 	if err != nil {

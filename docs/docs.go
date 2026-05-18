@@ -4515,9 +4515,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/shipping-methods": {
+        "/shipping-providers": {
             "get": {
-                "description": "Returns all active shipping methods (public)",
+                "description": "Returns all active shipping providers (public)",
                 "consumes": [
                     "application/json"
                 ],
@@ -4527,7 +4527,7 @@ const docTemplate = `{
                 "tags": [
                     "Shipping"
                 ],
-                "summary": "Get active shipping methods",
+                "summary": "Get active shipping providers",
                 "responses": {
                     "200": {
                         "description": "OK",

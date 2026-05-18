@@ -4398,11 +4398,11 @@ paths:
       summary: Get shipment by ID
       tags:
       - Shipments
-  /shipping-methods:
+  /shipping-providers:
     get:
       consumes:
       - application/json
-      description: Returns all active shipping methods (public)
+      description: Returns all active shipping providers (public)
       produces:
       - application/json
       responses:
@@ -4417,7 +4417,7 @@ paths:
                     $ref: '#/definitions/models.ShippingMethod'
                   type: array
               type: object
-      summary: Get active shipping methods
+      summary: Get active shipping providers
       tags:
       - Shipping
   /user/menu:
