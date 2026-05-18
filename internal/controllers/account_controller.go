@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/alireza-akbarzadeh/luxe/internal/constants"
 	"github.com/alireza-akbarzadeh/luxe/internal/dto"
 	"github.com/alireza-akbarzadeh/luxe/internal/middleware"
@@ -113,4 +115,137 @@ func toAddressDTO(addr *models.Address) *dto.DefaultAddressDTO {
 		Country:      addr.Country,
 		Phone:        addr.Phone,
 	}
+}
+
+// GetUserOrderAccount returns user's order history with product images and pagination.
+// @Summary      Get user order history
+// @Description  Returns paginated list of user orders including items with product details
+// @Tags         Account
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit  query   int  false  "Items per page (default 10, max 50)"
+// @Param        offset query   int  false  "Pagination offset"
+// @Success      200    {object} utils.Response{data=dto.OrderListResponseData}
+// @Failure      401    {object} utils.Response
+// @Router       /account/orders [get]
+func (ac *AccountController) GetUserOrderAccount(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
+		return
+	}
+
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if limit > 50 {
+		limit = 50
+	}
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+
+	orders, total, err := ac.orderService.GetUserOrders(userID, dto.OrderListFilters{
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to fetch orders")
+		return
+	}
+
+	orderDTOs := make([]dto.OrderDetailDTO, len(orders))
+	for i, order := range orders {
+		itemsDTO := make([]dto.OrderItemDetailDTO, len(order.Items))
+		for j, item := range order.Items {
+			product := item.Product
+			itemsDTO[j] = dto.OrderItemDetailDTO{
+				ProductID:   product.ID,
+				ProductName: product.Name,
+				Quantity:    item.Quantity,
+				Price:       item.Price,
+				ImageURL:    product.Images[0],
+			}
+		}
+		orderDTOs[i] = dto.OrderDetailDTO{
+			ID:          order.ID,
+			OrderNumber: order.OrderNumber,
+			CreatedAt:   order.CreatedAt,
+			Status:      order.Status,
+			TotalAmount: order.TotalAmount,
+			Items:       itemsDTO,
+		}
+	}
+
+	data := dto.OrderListResponseData{
+		Orders: orderDTOs,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}
+	utils.SuccessResponse(c, "order history retrieved", data)
+}
+
+// GetUserWishlist returns paginated list of products liked by the user.
+// @Summary      Get user's wishlist
+// @Description  Returns products the user has liked, with product details (image, price, name)
+// @Tags         Account, Wishlist
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit  query   int  false  "Items per page (default 10, max 50)"
+// @Param        offset query   int  false  "Pagination offset"
+// @Success      200    {object} utils.Response{data=dto.WishlistResponseData}
+// @Failure      401    {object} utils.Response
+// @Router       /account/wishlist [get]
+func (ctrl *AccountController) GetUserWishlist(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		utils.UnauthorizedResponse(c, constants.ErrUnauthorized)
+		return
+	}
+
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if limit > 50 {
+		limit = 50
+	}
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+
+	products, total, err := ctrl.likeService.GetUserWishlist(userID, limit, offset)
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to fetch wishlist")
+		return
+	}
+
+	items := make([]dto.WishlistItemDTO, len(products))
+	for i, p := range products {
+		imageURL := ""
+		if len(p.Images) > 0 {
+			imageURL = p.Images[0]
+		}
+
+		var oldPrice *float64
+		var discountPercent *int
+		if p.CompareAtPrice != nil && *p.CompareAtPrice > p.Price {
+			oldPrice = p.CompareAtPrice
+			percent := int(((*p.CompareAtPrice - p.Price) / *p.CompareAtPrice) * 100)
+			discountPercent = &percent
+		}
+
+		items[i] = dto.WishlistItemDTO{
+			ProductID:       p.ID,
+			ProductName:     p.Name,
+			Price:           p.Price,
+			ImageURL:        imageURL,
+			DiscountPercent: discountPercent,
+			IsInStock:       p.Stock > 0,
+			StockQuantity:   p.Stock,
+			OldPrice:        oldPrice,
+		}
+	}
+
+	data := dto.WishlistResponseData{
+		Items:  items,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}
+	utils.SuccessResponse(c, "wishlist retrieved", data)
 }

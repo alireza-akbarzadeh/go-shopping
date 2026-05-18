@@ -8,5 +8,11 @@ import (
 // SetupAccountRoutes handle all user acounitng info
 func SetupAccountRoutes(protected *gin.RouterGroup, ctrl *controllers.Container) {
 	// account endpoints for authenticated users
-	protected.GET("/account/summary", ctrl.Account.GetAccountSummary)
+	accountGroup := protected.Group("/account")
+	{
+		accountGroup.GET("/summary", ctrl.Account.GetAccountSummary)
+		accountGroup.GET("/orders", ctrl.Account.GetUserOrderAccount)
+		accountGroup.GET("/wishlist", ctrl.Account.GetUserWishlist)
+
+	}
 }

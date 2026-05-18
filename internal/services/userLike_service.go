@@ -13,6 +13,7 @@ type UsertLikeServiceInterface interface {
 	Unlike(userID, productID uint) error
 	IsLikedByUser(userID, productID uint) (bool, error)
 	GetUserLikedProductIDs(userID uint) ([]uint, error)
+	GetUserWishlist(userID uint, limit, offset int) ([]models.Product, int64, error)
 }
 
 type productLikeService struct {
@@ -80,4 +81,24 @@ func (s *productLikeService) GetUserLikedProductIDs(userID uint) ([]uint, error)
 		return nil, utils.ErrInternal(err)
 	}
 	return ids, nil
+}
+
+// GetUserLikedProductIDs find product liked by users
+func (s *productLikeService) GetUserWishlist(userID uint, limit, offset int) ([]models.Product, int64, error) {
+	var products []models.Product
+	var total int64
+
+	subQuery := s.db.Model(&models.ProductLike{}).
+		Where("user_id = ?", userID).
+		Select("product_id")
+
+	if err := s.db.Model(&models.Product{}).Where("id IN (?)", subQuery).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := s.db.Where("id IN (?)", subQuery).
+		Limit(limit).
+		Offset(offset).
+		Find(&products).Error
+	return products, total, err
 }

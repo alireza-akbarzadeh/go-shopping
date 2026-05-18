@@ -613,6 +613,49 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.OrderDetailDTO:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/dto.OrderItemDetailDTO'
+        type: array
+      order_number:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+    type: object
+  dto.OrderItemDetailDTO:
+    properties:
+      image_url:
+        type: string
+      price:
+        type: number
+      product_id:
+        type: integer
+      product_name:
+        type: string
+      quantity:
+        type: integer
+    type: object
+  dto.OrderListResponseData:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      orders:
+        items:
+          $ref: '#/definitions/dto.OrderDetailDTO'
+        type: array
+      total:
+        type: integer
+    type: object
   dto.OrderResponse:
     properties:
       created_at:
@@ -1013,6 +1056,40 @@ definitions:
     required:
     - code
     - order_total
+    type: object
+  dto.WishlistItemDTO:
+    properties:
+      discount_percent:
+        type: integer
+      image_url:
+        type: string
+      is_active:
+        type: boolean
+      is_in_stock:
+        type: boolean
+      old_price:
+        type: number
+      price:
+        type: number
+      product_id:
+        type: integer
+      product_name:
+        type: string
+      stock_quantity:
+        type: integer
+    type: object
+  dto.WishlistResponseData:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.WishlistItemDTO'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
     type: object
   gorm.DeletedAt:
     properties:
@@ -1476,6 +1553,42 @@ info:
   title: Shopping Platform API
   version: "1.0"
 paths:
+  /account/orders:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated list of user orders including items with product
+        details
+      parameters:
+      - description: Items per page (default 10, max 50)
+        in: query
+        name: limit
+        type: integer
+      - description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.OrderListResponseData'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user order history
+      tags:
+      - Account
   /account/summary:
     get:
       consumes:
@@ -1503,6 +1616,43 @@ paths:
       summary: Get user dashboard summary
       tags:
       - Account
+  /account/wishlist:
+    get:
+      consumes:
+      - application/json
+      description: Returns products the user has liked, with product details (image,
+        price, name)
+      parameters:
+      - description: Items per page (default 10, max 50)
+        in: query
+        name: limit
+        type: integer
+      - description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.WishlistResponseData'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user's wishlist
+      tags:
+      - Account
+      - Wishlist
   /addresses:
     post:
       consumes:
