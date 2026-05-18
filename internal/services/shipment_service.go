@@ -29,6 +29,7 @@ type ShipmentServiceInterface interface {
 	GetShipmentByID(id uint) (*models.Shipment, error)
 	GetShipmentsByOrderID(orderID uint) ([]models.Shipment, error)
 	UpdateShipmentStatus(id uint, status string) error
+	GetShippingProvider() ([]models.ShippingMethod, error)
 }
 
 type shipmentService struct {
@@ -47,7 +48,6 @@ func NewShipmentService(db *gorm.DB, workerPool *tasks.WorkerPool, notificationS
 
 // CreateShipment creates a shipment record and enqueues a background job.
 func (s *shipmentService) CreateShipment(req CreateShipmentRequest) (*models.Shipment, error) {
-
 	var order models.Order
 	if err := s.db.First(&order, req.OrderID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -226,4 +226,10 @@ func (s *shipmentService) getShipmentStatusNotificationMessage(status, trackingN
 	default:
 		return "Shipment Update", fmt.Sprintf("Your shipment status has been updated to: %s", status)
 	}
+}
+
+func (s *shipmentService) GetShippingProvider() ([]models.ShippingMethod, error) {
+	var methods []models.ShippingMethod
+	err := s.db.Where("is_active = ?", true).Order("price ASC").Find(&methods).Error
+	return methods, err
 }

@@ -75,7 +75,7 @@ func (ctrl *CartController) AddItem(c *gin.Context) {
 // @Tags         Cart
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200 {object} dto.GetCartResponse
+// @Success      200 {object} utils.Response{data=object{id=uint,items=[]dto.CartItemDetail,total=float64}}
 // @Failure      401 {object} utils.Response
 // @Router       /cart [get]
 func (ctrl *CartController) GetCart(c *gin.Context) {
@@ -89,18 +89,30 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 		utils.InternalServerErrorResponse(c, err, "failed to fetch cart")
 		return
 	}
+
 	items := make([]dto.CartItemDetail, len(cart.Items))
 	var total float64
+
 	for i, item := range cart.Items {
 		itemTotal := float64(item.Quantity) * item.Price
 		total += itemTotal
+
+		// Original price (compare at price)
 		origPrice := 0.0
 		if item.Product.CompareAtPrice != nil {
 			origPrice = *item.Product.CompareAtPrice
 		}
+
+		// Discount amount for the item
 		discount := 0.0
 		if item.Product.CompareAtPrice != nil && *item.Product.CompareAtPrice > item.Price {
 			discount = (*item.Product.CompareAtPrice - item.Price) * float64(item.Quantity)
+		}
+
+		// First image
+		image := ""
+		if len(item.Product.Images) > 0 {
+			image = item.Product.Images[0]
 		}
 
 		items[i] = dto.CartItemDetail{
@@ -110,7 +122,7 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 			Quantity:      item.Quantity,
 			Price:         item.Price,
 			Total:         itemTotal,
-			Image:         item.Product.Images[0],
+			Image:         image,
 			OriginalPrice: origPrice,
 			Color:         item.Product.Colors,
 			Size:          item.Product.Sizes,
@@ -119,21 +131,14 @@ func (ctrl *CartController) GetCart(c *gin.Context) {
 			Discount:      discount,
 		}
 	}
-	resp := dto.GetCartResponse{
-		BaseResponse: dto.BaseResponse{
-			Success: true,
-			Message: constants.MsgFetchSuccess,
-			Code:    http.StatusOK,
-		},
-		Data: dto.GetCartData{
-			Cart: dto.CartData{
-				ID:    cart.ID,
-				Items: items,
-			},
-			Total: total,
-		},
+
+	data := gin.H{
+		"id":    cart.ID,
+		"items": items,
+		"total": total,
 	}
-	c.JSON(http.StatusOK, resp)
+
+	utils.SuccessResponse(c, "cart retrieved successfully", data)
 }
 
 // UpdateItem updates cart item quantity.

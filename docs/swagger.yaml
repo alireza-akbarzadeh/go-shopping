@@ -57,15 +57,6 @@ definitions:
     required:
     - product_ids
     type: object
-  dto.CartData:
-    properties:
-      id:
-        type: integer
-      items:
-        items:
-          $ref: '#/definitions/dto.CartItemDetail'
-        type: array
-    type: object
   dto.CartItemData:
     properties:
       id:
@@ -100,6 +91,10 @@ definitions:
         type: integer
       quantity:
         type: integer
+      selected_color:
+        type: string
+      selected_size:
+        type: string
       size:
         items:
           type: integer
@@ -546,24 +541,6 @@ definitions:
         type: string
     required:
     - email
-    type: object
-  dto.GetCartData:
-    properties:
-      cart:
-        $ref: '#/definitions/dto.CartData'
-      total:
-        type: number
-    type: object
-  dto.GetCartResponse:
-    properties:
-      code:
-        type: integer
-      data:
-        $ref: '#/definitions/dto.GetCartData'
-      message:
-        type: string
-      success:
-        type: boolean
     type: object
   dto.LoginRequest:
     properties:
@@ -1507,6 +1484,23 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  models.ShippingMethod:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      price:
+        type: number
+      updated_at:
+        type: string
     type: object
   services.AddItemRequest:
     properties:
@@ -2497,7 +2491,22 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetCartResponse'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    id:
+                      type: integer
+                    items:
+                      items:
+                        $ref: '#/definitions/dto.CartItemDetail'
+                      type: array
+                    total:
+                      format: float64
+                      type: number
+                  type: object
+              type: object
         "401":
           description: Unauthorized
           schema:
@@ -4389,6 +4398,28 @@ paths:
       summary: Get shipment by ID
       tags:
       - Shipments
+  /shipping-methods:
+    get:
+      consumes:
+      - application/json
+      description: Returns all active shipping methods (public)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.ShippingMethod'
+                  type: array
+              type: object
+      summary: Get active shipping methods
+      tags:
+      - Shipping
   /user/menu:
     get:
       description: Returns the sidebar menu filtered by user's role and optional search

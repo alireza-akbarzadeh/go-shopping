@@ -200,3 +200,20 @@ func (ctrl *ShipmentController) UpdateShipmentStatus(c *gin.Context) {
 
 	utils.SuccessResponse(c, "shipment status updated successfully", nil)
 }
+
+// GetShippingProvider godoc
+// @Summary      Get active shipping methods
+// @Description  Returns all active shipping methods (public)
+// @Tags         Shipping
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} utils.Response{data=[]models.ShippingMethod}
+// @Router       /shipping-methods [get]
+func (ctrl *ShipmentController) GetShippingProvider(c *gin.Context) {
+	methods, err := ctrl.shipmentService.GetShippingProvider()
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to fetch shipping methods")
+		return
+	}
+	utils.SuccessResponse(c, "shipping methods retrieved", methods)
+}

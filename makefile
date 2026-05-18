@@ -4,7 +4,7 @@
 BINARY_NAME=shopping-platform-api
 GOBASE=$(shell pwd)
 GOBIN=$(GOBASE)/bin
-MIGRATIONS_DIR=./migrations
+MIGRATIONS_DIR=./internal/migrations
 
 # Database DSN – defaults to environment variable, falls back to dev settings
 # Override with: make migrate-up DATABASE_URL="postgres://user:pass@localhost:5432/db?sslmode=disable"

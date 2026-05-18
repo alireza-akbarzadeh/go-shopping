@@ -50,6 +50,6 @@ func (r *Router) Setup() {
 		SetupCartRoutes(public, protected, r.controllers)
 		SetupMenuRoutes(protected, r.controllers)
 		SetupOrderRoutes(protected, r.controllers)
-		SetupShipmentRoutes(protected, r.controllers)
+		SetupShipmentRoutes(public, protected, r.controllers)
 	}
 }

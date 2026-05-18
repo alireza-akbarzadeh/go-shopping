@@ -36,8 +36,8 @@ type CartItemDetail struct {
 	Quantity      int     `json:"quantity"`
 	Price         float64 `json:"price"`
 	Total         float64 `json:"total"`
-	SelectedColor string  `gorm:"size:50" json:"color"`
-	SelectedSize  string  `gorm:"size:50" json:"size"`
+	SelectedColor string  `gorm:"size:50" json:"selected_color"`
+	SelectedSize  string  `gorm:"size:50" json:"selected_size"`
 
 	// New fields
 	Image         string         `json:"image,omitempty"`

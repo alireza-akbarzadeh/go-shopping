@@ -32,3 +32,13 @@ type Shipment struct {
 	Order Order `gorm:"foreignKey:OrderID" json:"-"`
 	User  User  `gorm:"foreignKey:UserID" json:"-"`
 }
+
+type ShippingMethod struct {
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Name        string    `gorm:"not null" json:"name"`
+	Description string    `json:"description"`
+	Price       float64   `gorm:"type:decimal(10,2);not null;default:0" json:"price"`
+	IsActive    bool      `gorm:"not null;default:true" json:"is_active"`
+}

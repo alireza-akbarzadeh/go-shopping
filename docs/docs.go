@@ -1513,7 +1513,34 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.GetCartResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/definitions/dto.CartItemDetail"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "number",
+                                                    "format": "float64"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "401": {
@@ -4488,6 +4515,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/shipping-methods": {
+            "get": {
+                "description": "Returns all active shipping methods (public)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shipping"
+                ],
+                "summary": "Get active shipping methods",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.ShippingMethod"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/user/menu": {
             "get": {
                 "security": [
@@ -4903,20 +4968,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CartData": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CartItemDetail"
-                    }
-                }
-            }
-        },
         "dto.CartItemData": {
             "type": "object",
             "properties": {
@@ -4967,6 +5018,12 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "integer"
+                },
+                "selected_color": {
+                    "type": "string"
+                },
+                "selected_size": {
+                    "type": "string"
                 },
                 "size": {
                     "type": "array",
@@ -5624,34 +5681,6 @@ const docTemplate = `{
             "properties": {
                 "email": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.GetCartData": {
-            "type": "object",
-            "properties": {
-                "cart": {
-                    "$ref": "#/definitions/dto.CartData"
-                },
-                "total": {
-                    "type": "number"
-                }
-            }
-        },
-        "dto.GetCartResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {
-                    "$ref": "#/definitions/dto.GetCartData"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
                 }
             }
         },
@@ -7057,6 +7086,32 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.ShippingMethod": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },

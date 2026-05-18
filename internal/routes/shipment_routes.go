@@ -6,8 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupShipmentRoutes(protected *gin.RouterGroup, ctrl *controllers.Container) {
+func SetupShipmentRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Container) {
 	// User shipment endpoints (authenticated)
+	public.GET("/shipping-providers", ctrl.Shipment.GetShippingProvider)
+
 	protected.GET("/shipments/:id", ctrl.Shipment.GetShipment)
 	protected.GET("/shipments", ctrl.Shipment.GetShipmentsByOrder)
 
