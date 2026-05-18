@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/alireza-akbarzadeh/luxe/internal/models"
 )
 
@@ -39,4 +41,12 @@ func MappAddress(userID uint, req CheckoutRequest) models.Address {
 		Country:       req.Country,
 		Instructions:  "",
 	}
+}
+
+type OrderResponse struct {
+	ID          uint      `json:"id"`
+	OrderNumber string    `json:"order_number"`
+	TotalAmount float64   `json:"total_amount"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
 }

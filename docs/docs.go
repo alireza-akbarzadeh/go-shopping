@@ -23,6 +23,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/account/summary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns user profile, default addresses, address count, liked products count, and recent orders (max 3)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Get user dashboard summary",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DashboardSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/addresses": {
             "post": {
                 "security": [
@@ -3679,7 +3725,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns the profile of the currently authenticated user",
+                "description": "Returns the profile of the currently authenticated user including default addresses",
                 "consumes": [
                     "application/json"
                 ],
@@ -3706,6 +3752,12 @@ const docTemplate = `{
                                             "properties": {
                                                 "created_at": {
                                                     "type": "string"
+                                                },
+                                                "default_billing_address": {
+                                                    "type": "object"
+                                                },
+                                                "default_shipping_address": {
+                                                    "type": "object"
                                                 },
                                                 "email": {
                                                     "type": "string"
@@ -5301,6 +5353,82 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.DashboardSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "address_count": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "default_billing_address": {
+                    "$ref": "#/definitions/dto.DefaultAddressDTO"
+                },
+                "default_shipping_address": {
+                    "$ref": "#/definitions/dto.DefaultAddressDTO"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "liked_products_count": {
+                    "type": "integer"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "recent_orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OrderResponse"
+                    }
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DefaultAddressDTO": {
+            "type": "object",
+            "properties": {
+                "address_line1": {
+                    "type": "string"
+                },
+                "address_line2": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.EmptyResponse": {
             "type": "object",
             "properties": {
@@ -5425,6 +5553,26 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dto.OrderResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "order_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
                 }
             }
         },

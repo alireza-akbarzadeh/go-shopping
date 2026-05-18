@@ -38,6 +38,7 @@ func (r *Router) Setup() {
 		protected.Use(middleware.AuthMiddleware(r.cfg))
 
 		SetupAuthRoutes(public, protected, r.controllers)
+		SetupAccountRoutes(protected, r.controllers)
 		SetupProductRoutes(public, protected, r.controllers)
 		SetupCategoryRoutes(public, protected, r.controllers)
 		SetupCouponRoutes(public, protected, r.controllers)

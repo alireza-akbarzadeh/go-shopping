@@ -22,6 +22,7 @@ type Container struct {
 	Menu     *MenuController
 	Review   *ReviewController
 	UserLike *UserLikeController
+	Account  *AccountController
 }
 
 // NewContainer initializes all controllers with their dependencies.
@@ -29,13 +30,14 @@ func NewContainer(db *gorm.DB, cfg *config.Config, svc *services.Services) *Cont
 	return &Container{
 		Health:   NewHealthController(db),
 		Auth:     NewAuthController(svc.Auth),
-		User:     NewUserController(svc.User),
+		User:     NewUserController(svc.User, svc.Address),
 		Cart:     NewCartController(svc.Cart),
 		Product:  NewProductController(svc.Product, svc.UserLike),
 		Category: NewCategoryController(svc.Category),
 		Order:    NewOrderController(svc.Order),
 		Shipment: NewShipmentController(svc.Shipment),
 		Page:     NewPageController(),
+		Account:  NewAccountController(svc.Address, svc.UserLike, svc.Order, svc.User),
 		Coupon:   NewCouponController(svc.Coupon),
 		Address:  NewAddressController(svc.Address),
 		Menu:     NewMenuController(svc.Menu),

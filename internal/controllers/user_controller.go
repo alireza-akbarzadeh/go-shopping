@@ -13,25 +13,27 @@ import (
 )
 
 type UserController struct {
-	userService services.UserServiceInterface
-	validate    *validator.Validate
+	userService    services.UserServiceInterface
+	addressService services.AddressServiceInterface
+	validate       *validator.Validate
 }
 
-func NewUserController(userService services.UserServiceInterface) *UserController {
+func NewUserController(userService services.UserServiceInterface, addressService services.AddressServiceInterface) *UserController {
 	return &UserController{
-		userService: userService,
-		validate:    validator.New(),
+		userService:    userService,
+		addressService: addressService,
+		validate:       validator.New(),
 	}
 }
 
 // GetProfile returns the authenticated user's profile.
 // @Summary      Get user profile
-// @Description  Returns the profile of the currently authenticated user
+// @Description  Returns the profile of the currently authenticated user including default addresses
 // @Tags         User
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200 {object} utils.Response{data=object{id=uint,email=string,first_name=string,last_name=string,phone=string,role=string,is_active=bool,created_at=string}}
+// @Success      200 {object} utils.Response{data=object{id=uint,email=string,first_name=string,last_name=string,phone=string,role=string,is_active=bool,created_at=string,default_shipping_address=object,default_billing_address=object}}
 // @Failure      401 {object} utils.Response
 // @Failure      404 {object} utils.Response
 // @Failure      500 {object} utils.Response
@@ -49,16 +51,48 @@ func (pc *UserController) GetProfile(c *gin.Context) {
 		return
 	}
 
-	// Return safe user data (exclude password hash)
+	// Fetch default addresses
+	var defaultShipping, defaultBilling interface{}
+
+	shippingAddr, err := pc.addressService.GetDefaultAddress(userID, "shipping")
+	if err == nil && shippingAddr != nil {
+		defaultShipping = gin.H{
+			"id":            shippingAddr.ID,
+			"address_line1": shippingAddr.AddressLine1,
+			"address_line2": shippingAddr.AddressLine2,
+			"city":          shippingAddr.City,
+			"state":         shippingAddr.State,
+			"postal_code":   shippingAddr.PostalCode,
+			"country":       shippingAddr.Country,
+			"phone":         shippingAddr.Phone,
+		}
+	}
+
+	billingAddr, err := pc.addressService.GetDefaultAddress(userID, "billing")
+	if err == nil && billingAddr != nil {
+		defaultBilling = gin.H{
+			"id":            billingAddr.ID,
+			"address_line1": billingAddr.AddressLine1,
+			"address_line2": billingAddr.AddressLine2,
+			"city":          billingAddr.City,
+			"state":         billingAddr.State,
+			"postal_code":   billingAddr.PostalCode,
+			"country":       billingAddr.Country,
+			"phone":         billingAddr.Phone,
+		}
+	}
+
 	data := gin.H{
-		"id":         user.ID,
-		"email":      user.Email,
-		"first_name": user.FirstName,
-		"last_name":  user.LastName,
-		"phone":      user.Phone,
-		"role":       user.Role,
-		"is_active":  user.IsActive,
-		"created_at": user.CreatedAt,
+		"id":                       user.ID,
+		"email":                    user.Email,
+		"first_name":               user.FirstName,
+		"last_name":                user.LastName,
+		"phone":                    user.Phone,
+		"role":                     user.Role,
+		"is_active":                user.IsActive,
+		"created_at":               user.CreatedAt,
+		"default_shipping_address": defaultShipping,
+		"default_billing_address":  defaultBilling,
 	}
 	utils.SuccessResponse(c, constants.MsgFetchSuccess, data)
 }
