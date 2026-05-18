@@ -146,20 +146,16 @@ func (ac *AddressController) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// List sets an address as default for its address_type (shipping, billing, or both).
-// @Summary      Set default address
-// @Description  Marks a specific address as default for its type. Only one default per type per user.
+// List returns all addresses for the authenticated user.
+// @Summary      List user addresses
+// @Description  Returns all saved addresses for the current user.
 // @Tags         Addresses
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id   path      int  true  "Address ID"
-// @Success      200  {object}  dto.EmptyResponse
-// @Failure      400  {object}  utils.Response
+// @Success      200  {object}  utils.Response{data=object{addresses=[]models.Address}}
 // @Failure      401  {object}  utils.Response
-// @Failure      404  {object}  utils.Response
-// @Failure      500  {object}  utils.Response
-// @Router       /addresses/{id}/default [patch]
+// @Router       /addresses [get]
 func (ac *AddressController) List(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
@@ -171,13 +167,10 @@ func (ac *AddressController) List(c *gin.Context) {
 		utils.HandleAppError(c, err, "failed to fetch addresses")
 		return
 	}
-	resp := dto.AddressListResponse{
-		Success: true,
-		Message: "",
-		Code:    http.StatusOK,
-		Address: addresses,
-	}
-	c.JSON(http.StatusOK, resp)
+	// Use SuccessResponse for consistency
+	utils.SuccessResponse(c, constants.MsgFetchSuccess, gin.H{
+		"addresses": addresses,
+	})
 }
 
 // SetDefault sets an address as the default for its type.

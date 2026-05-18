@@ -7,15 +7,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SetupOrderRoutes registers order endpoints (require JWT).
 func SetupOrderRoutes(protected *gin.RouterGroup, ctrl *controllers.Container) {
+	// User order endpoints (authenticated)
 	protected.POST(constants.RouteOrders, ctrl.Order.Checkout)
 	protected.GET(constants.RouteOrders+constants.RouteOrdersMy, ctrl.Order.GetUserOrders)
 	protected.GET(constants.RouteOrders+"/:id", ctrl.Order.GetOrder)
 
-	protected.Use(middleware.RequireRole(constants.RoleAdmin))
+	// Admin order endpoints (require admin role)
+	admin := protected.Group(constants.RouteOrders)
+	admin.Use(middleware.RequireRole("admin"))
 	{
-		protected.GET(constants.RouteOrders, ctrl.Order.ListAllOrders)
-		protected.PUT(constants.RouteOrders+"/:id/status", ctrl.Order.UpdateOrderStatus)
+		admin.GET("/", ctrl.Order.ListAllOrders)
+		admin.PUT("/:id/status", ctrl.Order.UpdateOrderStatus)
 	}
 }

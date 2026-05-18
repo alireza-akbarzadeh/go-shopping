@@ -36,19 +36,20 @@ func (r *Router) Setup() {
 		// 🔒 PROTECTED (must login)
 		protected := v1.Group(constants.RouteRoot)
 		protected.Use(middleware.AuthMiddleware(r.cfg))
+		// required role protected
 
 		SetupAuthRoutes(public, protected, r.controllers)
+		SetupAddressRoutes(protected, r.controllers)
+
 		SetupAccountRoutes(protected, r.controllers)
 		SetupProductRoutes(public, protected, r.controllers)
 		SetupCategoryRoutes(public, protected, r.controllers)
 		SetupCouponRoutes(public, protected, r.controllers)
 		SetupReviewRoutes(public, protected, r.controllers)
-
 		SetupUserRoutes(protected, r.controllers)
 		SetupCartRoutes(public, protected, r.controllers)
 		SetupMenuRoutes(protected, r.controllers)
 		SetupOrderRoutes(protected, r.controllers)
 		SetupShipmentRoutes(protected, r.controllers)
-		SetupAddressRoutes(protected, r.controllers)
 	}
 }

@@ -7,17 +7,13 @@ import (
 )
 
 func SetupCouponRoutes(public, protected *gin.RouterGroup, ctrl *controllers.Container) {
-	// Public endpoints (list coupons? usually only active ones)
 	public.GET("/coupons", ctrl.Coupon.List)
 
-	// Authenticated user endpoints (validate, apply)
 	user := protected.Group("/coupons")
 	{
 		user.POST("/validate", ctrl.Coupon.Validate)
-		// POST /apply is part of checkout, not separate
 	}
 
-	// Admin endpoints
 	admin := protected.Group("/coupons")
 	admin.Use(middleware.RequireRole("admin"))
 	{

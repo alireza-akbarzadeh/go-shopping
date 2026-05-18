@@ -1654,6 +1654,36 @@ paths:
       - Account
       - Wishlist
   /addresses:
+    get:
+      consumes:
+      - application/json
+      description: Returns all saved addresses for the current user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  properties:
+                    addresses:
+                      items:
+                        $ref: '#/definitions/models.Address'
+                      type: array
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List user addresses
+      tags:
+      - Addresses
     post:
       consumes:
       - application/json
