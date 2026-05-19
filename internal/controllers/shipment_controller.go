@@ -217,3 +217,34 @@ func (ctrl *ShipmentController) GetShippingProvider(c *gin.Context) {
 	}
 	utils.SuccessResponse(c, "shipping methods retrieved", methods)
 }
+
+// DeleteShippingProvider godoc
+// @Summary      Delete a shipping provider
+// @Description  Removes a shipping provider by its ID (admin only)
+// @Tags         Shipping
+// @Accept       json
+// @Produce      json
+// @Param        id   path      uint  true  "Shipping provider ID"
+// @Success      200  {object}  utils.Response{data=nil}
+// @Failure      400  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /shipping-providers/{id} [delete]
+func (ctrl *ShipmentController) DeleteShippingProvider(c *gin.Context) {
+	idParam := c.Param("id")
+	providerIdUint64, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		utils.ErrorResponse(c, 400, "invalid provider id")
+		return
+	}
+
+	providerId := uint(providerIdUint64)
+
+	err = ctrl.shipmentService.DeleteShippingProvider(providerId)
+	if err != nil {
+		utils.HandleAppError(c, err, "failed to delete shipping provider")
+		return
+	}
+
+	// Success response
+	utils.SuccessResponse(c, "successfully removed", nil)
+}

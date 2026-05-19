@@ -29,7 +29,8 @@ type ShipmentServiceInterface interface {
 	GetShipmentByID(id uint) (*models.Shipment, error)
 	GetShipmentsByOrderID(orderID uint) ([]models.Shipment, error)
 	UpdateShipmentStatus(id uint, status string) error
-	GetShippingProvider() ([]models.ShippingMethod, error)
+	GetShippingProvider() ([]models.ShippingProviders, error)
+	DeleteShippingProvider(providerId uint) error
 }
 
 type shipmentService struct {
@@ -228,8 +229,20 @@ func (s *shipmentService) getShipmentStatusNotificationMessage(status, trackingN
 	}
 }
 
-func (s *shipmentService) GetShippingProvider() ([]models.ShippingMethod, error) {
-	var methods []models.ShippingMethod
+func (s *shipmentService) GetShippingProvider() ([]models.ShippingProviders, error) {
+	var methods []models.ShippingProviders
 	err := s.db.Where("is_active = ?", true).Order("price ASC").Find(&methods).Error
 	return methods, err
+}
+
+// DeleteShippingProvider remove  provider with the given id
+func (s *shipmentService) DeleteShippingProvider(providerId uint) error {
+	result := s.db.Delete(models.ShippingProviders{}, providerId)
+	if result.Error != nil {
+		return utils.ErrInternal(result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return utils.ErrNotFound("product not found")
+	}
+	return nil
 }

@@ -18,6 +18,7 @@ func SetupShipmentRoutes(public, protected *gin.RouterGroup, ctrl *controllers.C
 	admin.Use(middleware.RequireRole("admin"))
 	{
 		admin.POST("/", ctrl.Shipment.CreateShipment)
+		admin.DELETE("/", ctrl.Shipment.DeleteShippingProvider)
 		admin.PUT("/:id/status", ctrl.Shipment.UpdateShipmentStatus)
 	}
 }
